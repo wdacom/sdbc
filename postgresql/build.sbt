@@ -1,4 +1,4 @@
-name := "postgresql"
+name := "sdbc-postgresql"
 
 description := "An implementation of WDA SDBC for accessing PostgreSQL."
 

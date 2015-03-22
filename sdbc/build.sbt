@@ -1,4 +1,4 @@
-name := "sql"
+name := "sdbc"
 
 description := "SDBC is a database API for Scala."
 
