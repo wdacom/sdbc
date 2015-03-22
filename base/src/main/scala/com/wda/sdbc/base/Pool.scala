@@ -20,7 +20,7 @@ trait Pool {
 
     val underlying = new HikariDataSource(configuration)
 
-    val dbms: DBMS = self
+    implicit val dbms: DBMS = self
 
     def getConnection(): Connection = {
       val connection = underlying.getConnection()
