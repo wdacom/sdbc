@@ -24,8 +24,9 @@ private[base] object CompiledStatement {
   //http://www.postgresql.org/docs/9.4/static/sql-syntax-lexical.html
   //We use '$' to signal the beginning of named parameter.
   //Parameters are optionally quoted by backticks.
+  //Two '$' in a row are ignored.
   private val parameterMatcher =
-    """(?U)\$((?:`[^`]+`)|(?:[\p{L}_][\p{L}\p{N}_$]*))""".r
+    """(?U)\$(?<!\$\$)(?:`([^`]+)`|([\p{L}_][\p{L}\p{N}_$]*))""".r
 
   /**
    * Split the string into its parts up to and including the first
@@ -46,14 +47,7 @@ private[base] object CompiledStatement {
           }
         }
 
-        val parameter = {
-          val parameterGroup = m.group(1)
-          if (parameterGroup.charAt(0) == '`') {
-            parameterGroup.substring(1, parameterGroup.length - 1)
-          } else {
-            parameterGroup
-          }
-        }
+        val parameter = Option(m.group(1)).getOrElse(m.group(2))
 
         val afterParameter = {
           if (m.end == value.length)

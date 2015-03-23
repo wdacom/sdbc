@@ -110,4 +110,12 @@ class CompiledStatementSpec extends FunSuite {
     assert(statement.parameterPositions.contains("t"))
   }
 
+  test("Two '$' in a row are ignored.") {
+    val queryText = "$$hello"
+    val statement = CompiledStatement(queryText)
+
+    assert(statement.parameterPositions.size == 0)
+    assert(statement.queryText == queryText)
+  }
+
 }
