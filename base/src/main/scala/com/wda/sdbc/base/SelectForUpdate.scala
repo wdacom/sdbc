@@ -4,7 +4,7 @@ trait SelectForUpdate {
   self: Connection with ParameterValue with AbstractQuery with Row =>
 
   case class SelectForUpdate private[sdbc] (
-    override protected val statement: CompiledStatement,
+    statement: CompiledStatement,
     override val parameterValues: Map[String, Option[ParameterValue[_]]]
   ) extends AbstractQuery[SelectForUpdate] {
 

@@ -7,7 +7,6 @@ import java.time.{Duration, OffsetTime, OffsetDateTime, LocalDateTime}
 import java.time.format.{DateTimeFormatter, DateTimeFormatterBuilder}
 import java.util.UUID
 
-import com.wda.sdbc.base
 import com.wda.sdbc.base._
 import org.json4s.JValue
 import org.postgresql.PGConnection
@@ -24,6 +23,7 @@ abstract class PostgreSql
   with IntervalImplicits
   with Getters
   with Setters
+  with InnerTypeName
 {
   override def dataSourceClassName = "org.postgresql.ds.PGSimpleDataSource"
   override def driverClassName = "org.postgresql.Driver"
@@ -125,14 +125,12 @@ abstract class PostgreSql
       case t if t =:= typeOf[UUID] => "uuid"
       case t if t =:= typeOf[InetAddress] => "inet"
       case t if t <:< typeOf[QArray[Any]] =>
-        val innerType = t.typeArgs.head.dealias
-        typeName(innerType)
+        innerTypeName(t)
       case t if t <:< typeOf[Seq[_]] =>
-        typeName(t.dealias.typeArgs.head.dealias)
+        innerTypeName(t)
       case t => throw new Exception("PostgreSQL does not understand " + t.toString)
     }
   }
-
 
   type LTree = com.wda.sdbc.postgresql.LTree
 

@@ -6,7 +6,7 @@ trait Select {
   self: Connection with ParameterValue with AbstractQuery with Row =>
 
   case class Select[T] private[sdbc] (
-    override protected val statement: CompiledStatement,
+    statement: CompiledStatement,
     override val parameterValues: Map[String, Option[ParameterValue[_]]]
   )(implicit converter: Row => T
   ) extends AbstractQuery[Select[T]] {

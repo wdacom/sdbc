@@ -78,7 +78,7 @@ trait LongParameter {
 trait IntParameter {
   self: ParameterValue with Row =>
 
-  implicit  class QInt(override val value: Int) extends ParameterValue[Int] {
+  implicit class QInt(override val value: Int) extends ParameterValue[Int] {
     override def asJDBCObject: AnyRef = Int.box(value)
 
     override def set(
