@@ -2,7 +2,7 @@ package com.wda.sdbc.base
 
 import java.sql.{PreparedStatement, SQLException}
 
-import com.typesafe.scalalogging.LazyLogging
+import com.wda.Logging
 
 import scala.collection.immutable.Seq
 
@@ -13,7 +13,7 @@ trait Batch {
     statement: CompiledStatement,
     parameterValues: Map[String, Option[ParameterValue[_]]],
     batches: Seq[Map[String, Option[ParameterValue[_]]]]
-  ) extends LazyLogging {
+  ) extends Logging {
 
     def queryText = statement.queryText
 

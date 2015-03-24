@@ -2,7 +2,7 @@ package com.wda.sdbc.base
 
 import java.sql.{PreparedStatement, SQLException}
 
-import com.typesafe.scalalogging.StrictLogging
+import com.wda.Logging
 
 /**
  * Given a query with named parameters beginning with '$',
@@ -24,7 +24,7 @@ trait AbstractQuery {
   self: Connection with ParameterValue =>
 
   trait AbstractQuery[Self <: AbstractQuery[Self]]
-    extends StrictLogging {
+    extends Logging {
 
     protected val statement: CompiledStatement
 

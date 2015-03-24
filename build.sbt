@@ -10,6 +10,8 @@ organization in ThisBuild := "com.wda.sdbc"
 
 scalaVersion in ThisBuild := "2.11.6"
 
+crossScalaVersions := Seq("2.10.5")
+
 version in ThisBuild := "0.4"
 
 licenses in ThisBuild := Seq("The BSD 3-Clause License" -> url("http://opensource.org/licenses/BSD-3-Clause"))
@@ -45,6 +47,5 @@ scalacOptions in ThisBuild ++= Seq(
   "-Xlint",
   "-Yno-adapted-args",
   "-Ywarn-dead-code",        // N.B. doesn't work well with the ??? hole
-  "-Xfuture",
-  "-Ywarn-unused-import"     // 2.11 only
+  "-Xfuture"
 )

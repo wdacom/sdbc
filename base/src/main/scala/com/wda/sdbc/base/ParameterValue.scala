@@ -33,14 +33,13 @@ trait ParameterValue {
     }
   }
 
-  implicit def ToOptionParameterValue[T, U](v: T)(implicit conversion: T => ParameterValue[U]): Option[ParameterValue[U]] = {
+  implicit def ToOptionParameterValue[T](v: T)(implicit conversion: T => ParameterValue[_]): Option[ParameterValue[_]] = {
     Some(conversion(v))
   }
 
-  implicit def OptionToOptionParameterValue[T, U](v: Option[T])(implicit conversion: T => ParameterValue[U]): Option[ParameterValue[U]] = {
+  implicit def OptionToOptionParameterValue[T](v: Option[T])(implicit conversion: T => ParameterValue[_]): Option[ParameterValue[_]] = {
     v.map(conversion)
   }
-
 
 }
 
@@ -78,7 +77,7 @@ trait LongParameter {
 trait IntParameter {
   self: ParameterValue with Row =>
 
-  implicit  class QInt(override val value: Int) extends ParameterValue[Int] {
+  implicit class QInt(override val value: Int) extends ParameterValue[Int] {
     override def asJDBCObject: AnyRef = Int.box(value)
 
     override def set(
