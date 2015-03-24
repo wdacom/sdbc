@@ -4,7 +4,7 @@ package postgresql
 import java.sql.{PreparedStatement, ResultSet}
 import java.util.UUID
 import org.apache.commons.lang3.time.StopWatch
-import org.scalatest.BeforeAndAfterEach
+import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
 
 import PostgreSql._
@@ -12,7 +12,8 @@ import PostgreSql._
 class Benchmarks
   extends PostgreSqlSuite
   with GeneratorDrivenPropertyChecks
-  with BeforeAndAfterEach {
+  with BeforeAndAfterEach
+  with BeforeAndAfterAll {
 
   val rowCount = 10000
 
@@ -78,6 +79,8 @@ class Benchmarks
       connection.commit()
     }
   }
+
+
 
   test("test JDBC batch insert") {implicit connection =>
     val p = connection.prepareStatement(TestTable.insertJdbc)
@@ -212,6 +215,14 @@ class Benchmarks
       assert(str2_ == str2_)
     }
 
+  }
+
+  override protected def beforeAll(): Unit = {
+    pgBeforeAll()
+  }
+
+  override protected def afterAll(): Unit = {
+    pgAfterAll()
   }
 
   case class TestTable(

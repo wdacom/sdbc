@@ -7,12 +7,23 @@ import java.util.UUID
 import org.json4s.JValue
 import org.json4s.jackson.JsonMethods
 import org.postgresql.util.PGInterval
+import org.scalatest.BeforeAndAfterAll
 
 import scalaz.Scalaz._
 import com.wda.sdbc.PostgreSql._
 
 class ParameterValueSpec
-  extends PostgreSqlSuite {
+  extends PostgreSqlSuite
+  with BeforeAndAfterAll {
+
+  override protected def beforeAll(): Unit = {
+    pgBeforeAll()
+    createLTree()
+  }
+
+  override protected def afterAll(): Unit = {
+    pgAfterAll()
+  }
 
   val jsonString = """{"hi":"there"}"""
 

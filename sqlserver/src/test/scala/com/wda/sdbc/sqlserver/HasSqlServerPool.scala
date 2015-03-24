@@ -2,10 +2,9 @@ package com.wda.sdbc.sqlserver
 
 import com.wda.sdbc.SqlServer._
 import com.wda.sdbc.config._
-import org.scalatest.{BeforeAndAfterAll, Suite}
 
-trait HasSqlServerPool extends BeforeAndAfterAll {
-  self: Suite with HasSqlTestingConfig =>
+trait HasSqlServerPool {
+  self: HasSqlTestingConfig =>
 
   protected var sqlPool: Option[Pool] = None
 
@@ -58,14 +57,15 @@ trait HasSqlServerPool extends BeforeAndAfterAll {
     }
   }
 
-  override protected def beforeAll(): Unit = {
+  def sqlBeforeAll(): Unit = {
     sqlCreateTestCatalog()
   }
 
-  override protected def afterAll(): Unit = {
+  def sqlAfterAll(): Unit = {
     sqlDropTestCatalog()
     sqlMasterPool.shutdown()
   }
+
 }
 
 object HasSqlServerPool extends AbstractDeployable {

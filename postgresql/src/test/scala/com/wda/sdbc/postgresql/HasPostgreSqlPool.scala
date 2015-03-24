@@ -4,8 +4,8 @@ import com.wda.sdbc.PostgreSql._
 import com.wda.sdbc.config._
 import org.scalatest.{BeforeAndAfterAll, Suite}
 
-trait HasPostgreSqlPool extends BeforeAndAfterAll {
-  this: Suite with HasPgTestingConfig =>
+trait HasPostgreSqlPool {
+  this: HasPgTestingConfig =>
 
   lazy val testCatalogName = pgConfig.getString("dataSource.databaseName")
 
@@ -78,11 +78,18 @@ trait HasPostgreSqlPool extends BeforeAndAfterAll {
     }
   }
 
-  override protected def beforeAll(): Unit = {
+  def createLTree(): Unit = {
+    withPg { implicit connection =>
+      Update("CREATE EXTENSION ltree;").execute()
+      connection.commit()
+    }
+  }
+
+  protected def pgBeforeAll(): Unit = {
     pgCreateTestCatalog()
   }
 
-  override protected def afterAll(): Unit = {
+  protected def pgAfterAll(): Unit = {
     pgDropTestCatalog()
     pgMasterPool.shutdown()
   }

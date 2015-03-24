@@ -2,13 +2,14 @@ package com.wda.sdbc.postgresql
 
 import com.wda.sdbc.PostgreSql._
 
-import org.scalatest.BeforeAndAfterEach
+import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
 
 import scala.collection.immutable.Seq
 
 class RichResultSpec
   extends PostgreSqlSuite
-  with BeforeAndAfterEach {
+  with BeforeAndAfterEach
+  with BeforeAndAfterAll {
 
   test("seq() works on a single result") {implicit connection =>
     val results = Select[Int]("SELECT 1::integer").seq()
@@ -58,4 +59,13 @@ class RichResultSpec
   override protected def afterEach(): Unit = {
     withPg(_.execute("DROP TABLE IF EXISTS tbl;"))
   }
+
+  override protected def beforeAll(): Unit = {
+    pgBeforeAll()
+  }
+
+  override protected def afterAll(): Unit = {
+    pgAfterAll()
+  }
+
 }

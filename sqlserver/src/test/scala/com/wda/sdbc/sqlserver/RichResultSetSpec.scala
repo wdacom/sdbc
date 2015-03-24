@@ -2,13 +2,22 @@ package com.wda.sdbc.sqlserver
 
 import com.wda.sdbc.SqlServer._
 
-import org.scalatest.BeforeAndAfterEach
+import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
 
 import scala.collection.immutable.Seq
 
 class RichResultSetSpec
   extends SqlServerSuite
-  with BeforeAndAfterEach {
+  with BeforeAndAfterEach
+  with BeforeAndAfterAll {
+
+  override protected def afterAll(): Unit = {
+    sqlAfterAll()
+  }
+
+  override protected def beforeAll(): Unit = {
+    sqlBeforeAll()
+  }
 
   test("seq() works on a single result") {implicit connection =>
     val results = Select[Int]("SELECT CAST(1 AS int)").seq()

@@ -1,9 +1,12 @@
 package com.wda.sdbc.postgresql
 
+import org.scalatest.BeforeAndAfterAll
+
 import scalaz.Scalaz._
 
 class SeqParameterValueSpec
-  extends PostgreSqlSuite {
+  extends PostgreSqlSuite
+  with BeforeAndAfterAll {
   testSelect[Seq[Option[Boolean]]]("SELECT '{}'::boolean[]", Seq.empty[Option[Boolean]].some)
 
   testSelect[Seq[Boolean]]("SELECT '{t}'::boolean[]", Seq(true).some)
@@ -15,6 +18,15 @@ class SeqParameterValueSpec
   testSelect[Seq[Seq[Int]]]("SELECT '{{1},{2},{3}}'::int[]", SeqParameterValueSpec.oneTwoThree.map(x => Seq(x)).some)
 
   testSelect[Seq[Seq[Int]]]("SELECT '{{1,2,3},{4,5,6}}'::int[][]", Seq(SeqParameterValueSpec.oneTwoThree, SeqParameterValueSpec.fourFiveSix).some)
+
+  override protected def beforeAll(): Unit = {
+    pgBeforeAll()
+    createLTree()
+  }
+
+  override protected def afterAll(): Unit = {
+    pgAfterAll()
+  }
 }
 
 object SeqParameterValueSpec {
