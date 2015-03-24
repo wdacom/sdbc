@@ -2,6 +2,9 @@ package com.wda.sdbc.postgresql
 
 import org.scalatest._
 
+import com.wda.sdbc.PostgreSql._
+import java.math.{BigDecimal => JBigDecimal}
+
 class SettersSpec
   extends FunSuite {
 

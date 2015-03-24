@@ -1,29 +1,27 @@
-package com.wda.sdbc
-package postgresql
+package com.wda.sdbc.postgresql
 
 import java.net.InetAddress
 import java.sql._
-import java.time.{Duration, OffsetTime, OffsetDateTime, LocalDateTime}
 import java.time.format.{DateTimeFormatter, DateTimeFormatterBuilder}
+import java.time.{Duration, LocalDateTime, OffsetDateTime, OffsetTime}
 import java.util.UUID
 
 import com.wda.sdbc.base._
+import com.wda.sdbc.{DBMS, base}
 import org.json4s.JValue
 import org.postgresql.PGConnection
 
-import scala.reflect.runtime.universe._
 import scala.collection.immutable.Seq
+import scala.reflect.runtime.universe._
 
 abstract class PostgreSql
   extends DBMS
   with ParameterValues
-  with QArray
   with HasJava8TimeFormatter
   with HasJava8DateTimeFormatter
   with IntervalImplicits
   with Getters
   with Setters
-  with InnerTypeName
 {
   override def dataSourceClassName = "org.postgresql.ds.PGSimpleDataSource"
   override def driverClassName = "org.postgresql.Driver"
@@ -90,10 +88,6 @@ abstract class PostgreSql
     Select[T](queryText)
   }
 
-  override def typeName[T](implicit tag: TypeTag[T]): String = {
-    typeName(tag.tpe)
-  }
-
   def typeName(tpe: Type): String = {
     tpe match {
       case t if t =:= typeOf[Short] => "int2"
@@ -124,10 +118,6 @@ abstract class PostgreSql
       case t if t =:= typeOf[LTree] => "ltree"
       case t if t =:= typeOf[UUID] => "uuid"
       case t if t =:= typeOf[InetAddress] => "inet"
-      case t if t <:< typeOf[QArray[Any]] =>
-        innerTypeName(t)
-      case t if t <:< typeOf[Seq[_]] =>
-        innerTypeName(t)
       case t => throw new Exception("PostgreSQL does not understand " + t.toString)
     }
   }

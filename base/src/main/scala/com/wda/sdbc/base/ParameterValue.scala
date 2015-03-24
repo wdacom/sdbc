@@ -3,6 +3,9 @@ package com.wda.sdbc.base
 import java.io.{InputStream, Reader}
 import java.sql.{Array => _, _}
 
+import scala.collection.immutable.Seq
+import scala.reflect.runtime.universe._
+
 trait ParameterValue {
   self: Row =>
 

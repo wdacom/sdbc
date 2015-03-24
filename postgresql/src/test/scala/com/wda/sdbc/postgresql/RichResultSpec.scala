@@ -1,17 +1,17 @@
-package com.wda.sdbc.sqlserver
+package com.wda.sdbc.postgresql
 
-import com.wda.sdbc.SqlServer._
+import com.wda.sdbc.PostgreSql._
 
 import org.scalatest.BeforeAndAfterEach
 
 import scala.collection.immutable.Seq
 
-class RichResultSetSqlServerSpec
-  extends SqlServerSuite
+class RichResultSpec
+  extends PostgreSqlSuite
   with BeforeAndAfterEach {
 
   test("seq() works on a single result") {implicit connection =>
-    val results = Select[Int]("SELECT CAST(1 AS int)").seq()
+    val results = Select[Int]("SELECT 1::integer").seq()
     assert(results == Seq(1))
   }
 
@@ -35,23 +35,27 @@ class RichResultSetSqlServerSpec
   test("using SelectForUpdate to update a value works") {implicit connection =>
     val randoms = Seq.fill(10)(util.Random.nextInt()).sorted
 
-    Update("CREATE TABLE tbl (id int IDENTITY(1,1) PRIMARY KEY, x int)").execute()
+    Update("CREATE TABLE tbl (id serial PRIMARY KEY, x int)").execute()
 
-    val batch = randoms.foldLeft(Batch("INSERT INTO tbl (x) VALUES ($x)")) {
-      case (batch, r) =>
+    val incrementedRandoms = randoms.map(_+1)
+
+    val batch = randoms.foldRight(Batch("INSERT INTO tbl (x) VALUES ($x)")) {
+      case (r, batch) =>
         batch.addBatch("x" -> r)
     }
 
     batch.executeBatch()
 
-    for(row <- connection.iteratorForUpdate("SELECT x FROM tbl")) {
+    for(row <- connection.iteratorForUpdate("SELECT * FROM tbl")) {
       row("x") = row[Int]("x") + 1
     }
 
-    assert(connection.seq[Int]("SELECT x FROM tbl ORDER BY x ASC").zip(randoms).forall{case (incremented, original) => incremented == original + 1})
+    val incrementedFromDb = connection.seq[Int]("SELECT x FROM tbl ORDER BY x ASC")
+
+    assert(incrementedFromDb.zip(incrementedRandoms).forall(xs => xs._1 == xs._2))
   }
 
   override protected def afterEach(): Unit = {
-    withSql(_.execute("IF object_id('dbo.tbl') IS NOT NULL DROP TABLE tbl"))
+    withPg(_.execute("DROP TABLE IF EXISTS tbl;"))
   }
 }

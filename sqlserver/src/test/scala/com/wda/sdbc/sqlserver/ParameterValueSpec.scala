@@ -11,7 +11,7 @@ import scalaz.Scalaz._
 /**
  * Note that some of these tests can fail if Sql Server's time isn't in sync with the client running the tests.
  */
-class ParameterValueSqlServerSpec
+class ParameterValueSpec
   extends SqlServerSuite {
 
   val uuid = UUID.randomUUID()

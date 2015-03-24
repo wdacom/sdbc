@@ -10,11 +10,11 @@ class DefaultSettersSpec
   with DefaultSetters {
 
   test("implicit Int conversion works") {
-    assertCompiles("val _: Option[ParameterValue[Int]] = 3")
+    assertCompiles("val _: Option[ParameterValue[_]] = 3")
   }
 
   test("implicit Option[String] conversion works") {
-    assertCompiles("val _: Option[ParameterValue[String]] = Some(\"hello\")")
+    assertCompiles("val _: Option[ParameterValue[_]] = Some(\"hello\")")
   }
 
   test("implicit scala.BigDecimal conversion works") {

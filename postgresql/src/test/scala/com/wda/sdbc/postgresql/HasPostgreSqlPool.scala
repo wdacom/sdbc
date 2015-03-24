@@ -66,7 +66,7 @@ trait HasPostgreSqlPool extends BeforeAndAfterAll {
   }
 
   private def postgresDropTestCatalog(): Unit = {
-    pgPool.map(_.shutdown())
+    pgPool.foreach(_.shutdown())
     pgPool = None
 
     withPostgresMaster { implicit connection =>
@@ -85,7 +85,6 @@ trait HasPostgreSqlPool extends BeforeAndAfterAll {
   }
 
   override protected def beforeAll(): Unit = {
-    postgresDropTestCatalog()
     postgresCreateTestCatalog()
   }
 

@@ -4,24 +4,19 @@ import java.sql.{Array => _, _}
 import java.time._
 import java.util.UUID
 
-import com.wda.sdbc.PostgreSql._
 import org.json4s.JValue
 import org.json4s.jackson.JsonMethods
 import org.postgresql.util.PGInterval
 
-import scala.collection.immutable.Seq
 import scalaz.Scalaz._
+import com.wda.sdbc.PostgreSql._
 
-class ParameterValuePostgreSqlSpec
+class ParameterValueSpec
   extends PostgreSqlSuite {
 
   val jsonString = """{"hi":"there"}"""
 
   val uuid = UUID.randomUUID()
-
-  val oneTwoThree = Seq(1, 2, 3)
-
-  val fourFiveSix = Seq(4, 5, 6)
 
   testSelect[Int]("SELECT NULL", none[Int])
 
@@ -89,16 +84,4 @@ class ParameterValuePostgreSqlSpec
   testSelect[JValue](s"SELECT '$jsonString'::json", JsonMethods.parse(jsonString).some)
 
   testSelect[JValue](s"SELECT '$jsonString'::jsonb", JsonMethods.parse(jsonString).some)
-
-  testSelect[Seq[Option[Boolean]]]("SELECT '{}'::boolean[]", Seq.empty[Option[Boolean]].some)
-
-  testSelect[Seq[Boolean]]("SELECT '{t}'::boolean[]", Seq(true).some)
-
-  testSelect[Seq[LTree]]("SELECT ARRAY['l.tree']::ltree[]", Seq(LTree("l", "tree")).some)
-
-  testSelect[Seq[Int]]("SELECT '{1,2,3}'::int[]", oneTwoThree.some)
-
-  testSelect[Seq[Seq[Int]]]("SELECT '{{1},{2},{3}}'::int[]", oneTwoThree.map(x => Seq(x)).some)
-
-  testSelect[Seq[Seq[Int]]]("SELECT '{{1,2,3},{4,5,6}}'::int[][]", Seq(oneTwoThree, fourFiveSix).some)
 }
