@@ -17,7 +17,7 @@ trait HasSqlServerPool extends BeforeAndAfterAll {
    Pool(masterConfig)
   }
 
-  private def withMaster[T](f: Connection => T): T = {
+  protected def withMaster[T](f: Connection => T): T = {
     val connection = sqlMasterPool.getConnection
     try {
       f(connection)
