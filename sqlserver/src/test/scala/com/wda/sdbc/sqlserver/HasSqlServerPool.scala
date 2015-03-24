@@ -9,7 +9,7 @@ trait HasSqlServerPool extends BeforeAndAfterAll {
 
   protected var sqlPool: Option[Pool] = None
 
-  private lazy val sqlMasterPool: Pool = {
+  protected lazy val sqlMasterPool: Pool = {
     val masterConfig = sqlConfig.toHikariConfig
     masterConfig.setMaximumPoolSize(1)
     masterConfig.setCatalog("master")
