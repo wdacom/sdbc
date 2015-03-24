@@ -12,7 +12,7 @@ It also provides support for connection pools using [HikariCP](https://github.co
 
 Include an implementation of the [SLF4J](http://slf4j.org/) logging interface, turn on debug logging, and all your query executions will be logged with the query text and the parameter name-value map.
 
-The Scala 2.10 build does not include support for array types.
+The Scala 2.10 build does not include support for arrays.
 
 ## License
 
