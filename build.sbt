@@ -18,7 +18,7 @@ licenses in ThisBuild := Seq("The BSD 3-Clause License" -> url("http://opensourc
 
 homepage in ThisBuild := Some(url("https://github.com/wdacom/"))
 
-publishArtifact in Test in ThisBuild := true
+(publishArtifact in Test) in ThisBuild := true
 
 pomExtra in ThisBuild :=
   <developers>
