@@ -1,10 +1,10 @@
-lazy val base = project.in(file("base"))
+lazy val sdbc = project.in(file("sdbc"))
 
-lazy val postgresql = project.in(file("postgresql")).dependsOn(base % "test->test;compile->compile")
+lazy val postgresql = project.in(file("postgresql")).dependsOn(sdbc % "test->test;compile->compile")
 
-lazy val sqlserver = project.in(file("sqlserver")).dependsOn(base % "test->test;compile->compile")
+lazy val sqlserver = project.in(file("sqlserver")).dependsOn(sdbc % "test->test;compile->compile")
 
-lazy val root = project.in(file(".")).settings(publishArtifact := false).aggregate(base, postgresql, sqlserver)
+lazy val root = project.in(file(".")).settings(publishArtifact := false).aggregate(sdbc, postgresql, sqlserver)
 
 organization in ThisBuild := "com.wda.sdbc"
 

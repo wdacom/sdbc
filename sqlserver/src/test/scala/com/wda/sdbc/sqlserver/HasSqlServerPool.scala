@@ -9,7 +9,7 @@ trait HasSqlServerPool extends BeforeAndAfterAll {
 
   protected var sqlPool: Option[Pool] = None
 
-  private lazy val masterPool: Pool = {
+  private lazy val sqlMasterPool: Pool = {
     val masterConfig = sqlConfig.toHikariConfig
     masterConfig.setMaximumPoolSize(1)
     masterConfig.setCatalog("master")
@@ -18,7 +18,7 @@ trait HasSqlServerPool extends BeforeAndAfterAll {
   }
 
   private def withMaster[T](f: Connection => T): T = {
-    val connection = masterPool.getConnection
+    val connection = sqlMasterPool.getConnection
     try {
       f(connection)
     } finally {
@@ -28,15 +28,17 @@ trait HasSqlServerPool extends BeforeAndAfterAll {
     }
   }
 
-  private def sqlCreateTestCatalog(): Unit = {
-    withMaster { implicit connection =>
-      HasSqlServerPool.create()
-    }
+  protected def sqlCreateTestCatalog(): Unit = {
+    if (sqlPool.isEmpty) {
+      withMaster { implicit connection =>
+        HasSqlServerPool.create()
+      }
 
-    sqlPool = Some(Pool(sqlConfig))
+      sqlPool = Some(Pool(sqlConfig))
+    }
   }
 
-  private def sqlDropTestCatalog(): Unit = {
+  protected def sqlDropTestCatalog(): Unit = {
     sqlPool.foreach(_.shutdown())
     sqlPool = None
 
@@ -62,7 +64,7 @@ trait HasSqlServerPool extends BeforeAndAfterAll {
 
   override protected def afterAll(): Unit = {
     sqlDropTestCatalog()
-    masterPool.shutdown()
+    sqlMasterPool.shutdown()
   }
 }
 

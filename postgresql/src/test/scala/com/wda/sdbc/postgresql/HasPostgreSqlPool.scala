@@ -31,7 +31,7 @@ trait HasPostgreSqlPool extends BeforeAndAfterAll {
   PostgreSQL doesn't allow changing the database for a connection,
   so we need a separate connection for the postgres database.
    */
-  private lazy val postgresMasterPool = {
+  protected lazy val pgMasterPool = {
     val masterConfig = pgConfig.toHikariConfig
     masterConfig.getDataSourceProperties.setProperty("databaseName", "postgres")
     masterConfig.setMaximumPoolSize(1)
@@ -39,8 +39,8 @@ trait HasPostgreSqlPool extends BeforeAndAfterAll {
     Pool(masterConfig)
   }
 
-  protected def withPostgresMaster[T](f: Connection => T): T = {
-    val connection = postgresMasterPool.getConnection
+  protected def withPgMaster[T](f: Connection => T): T = {
+    val connection = pgMasterPool.getConnection
     try {
       f(connection)
     } finally {
@@ -48,28 +48,22 @@ trait HasPostgreSqlPool extends BeforeAndAfterAll {
     }
   }
 
-  private def postgresCreateTestCatalog(): Unit = {
-    withPostgresMaster { implicit connection =>
-      connection.setAutoCommit(true)
-      createTestCatalog.execute()
-    }
+  protected def pgCreateTestCatalog(): Unit = {
+    if (pgPool.isEmpty) {
+      withPgMaster { implicit connection =>
+        connection.setAutoCommit(true)
+        createTestCatalog.execute()
+      }
 
-    val testConfig = pgConfig.toHikariConfig
-    testConfig.setAutoCommit(false)
-
-    pgPool = Some(Pool(testConfig))
-
-    withPg { implicit connection =>
-      Update("CREATE EXTENSION ltree;").execute()
-      connection.commit()
+      pgPool = Some(Pool(pgConfig))
     }
   }
 
-  private def postgresDropTestCatalog(): Unit = {
+  protected def pgDropTestCatalog(): Unit = {
     pgPool.foreach(_.shutdown())
     pgPool = None
 
-    withPostgresMaster { implicit connection =>
+    withPgMaster { implicit connection =>
       connection.setAutoCommit(true)
       dropTestCatalog.execute()
     }
@@ -85,11 +79,11 @@ trait HasPostgreSqlPool extends BeforeAndAfterAll {
   }
 
   override protected def beforeAll(): Unit = {
-    postgresCreateTestCatalog()
+    pgCreateTestCatalog()
   }
 
   override protected def afterAll(): Unit = {
-    postgresDropTestCatalog()
-    postgresMasterPool.shutdown()
+    pgDropTestCatalog()
+    pgMasterPool.shutdown()
   }
 }
