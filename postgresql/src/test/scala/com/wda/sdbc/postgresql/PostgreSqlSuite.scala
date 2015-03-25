@@ -3,14 +3,14 @@ package com.wda.sdbc.postgresql
 import java.time.{Instant, OffsetDateTime}
 
 import com.wda.sdbc.PostgreSql._
-import com.wda.sdbc.config.{HasPgTestingConfig, TestingConfig}
+import com.wda.sdbc.config.{PgTestingConfig, TestingConfig}
 import org.scalatest._
 
 abstract class PostgreSqlSuite
   extends fixture.FunSuite
   with HasPostgreSqlPool
   with TestingConfig
-  with HasPgTestingConfig {
+  with PgTestingConfig {
 
   def testSelect[T](query: String, expectedValue: Option[T])(implicit getter: Getter[T]): Unit = {
     test(query) { implicit connection =>
@@ -37,7 +37,5 @@ abstract class PostgreSqlSuite
       withFixture(test.toNoArgTest(connection))
     }
   }
-
-
 
 }

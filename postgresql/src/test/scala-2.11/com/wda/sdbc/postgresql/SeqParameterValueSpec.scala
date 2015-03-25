@@ -7,6 +7,7 @@ import scalaz.Scalaz._
 class SeqParameterValueSpec
   extends PostgreSqlSuite
   with BeforeAndAfterAll {
+
   testSelect[Seq[Option[Boolean]]]("SELECT '{}'::boolean[]", Seq.empty[Option[Boolean]].some)
 
   testSelect[Seq[Boolean]]("SELECT '{t}'::boolean[]", Seq(true).some)

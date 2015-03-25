@@ -4,7 +4,9 @@ import com.wda.sdbc.SqlServer._
 import com.wda.sdbc.config._
 
 trait HasSqlServerPool {
-  self: HasSqlTestingConfig =>
+  self: SqlTestingConfig =>
+
+  val sqlTestCatalogName = sqlConfig.getString("catalog")
 
   protected var sqlPool: Option[Pool] = None
 
@@ -16,7 +18,7 @@ trait HasSqlServerPool {
    Pool(masterConfig)
   }
 
-  protected def withMaster[T](f: Connection => T): T = {
+  protected def withSqlMaster[T](f: Connection => T): T = {
     val connection = sqlMasterPool.getConnection
     try {
       f(connection)
@@ -29,8 +31,8 @@ trait HasSqlServerPool {
 
   protected def sqlCreateTestCatalog(): Unit = {
     if (sqlPool.isEmpty) {
-      withMaster { implicit connection =>
-        HasSqlServerPool.create()
+      withSqlMaster { implicit connection =>
+        Update(s"CREATE DATABASE ${Identifier.quote(sqlTestCatalogName)};").execute()
       }
 
       sqlPool = Some(Pool(sqlConfig))
@@ -41,8 +43,17 @@ trait HasSqlServerPool {
     sqlPool.foreach(_.shutdown())
     sqlPool = None
 
-    withMaster { implicit connection =>
-      HasSqlServerPool.drop()
+    val dropText =
+      s"""ALTER DATABASE ${Identifier.quote(sqlTestCatalogName)}
+          |  SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+          |
+          |DROP DATABASE ${Identifier.quote(sqlTestCatalogName)};
+      """.stripMargin
+
+    val drop = Update(dropText)
+
+    withSqlMaster { implicit connection =>
+      drop.execute()
     }
   }
 
@@ -65,22 +76,5 @@ trait HasSqlServerPool {
     sqlDropTestCatalog()
     sqlMasterPool.shutdown()
   }
-
-}
-
-object HasSqlServerPool extends AbstractDeployable {
-
-  val dropText =
-    """ALTER DATABASE test
-      |  SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
-      |
-      |DROP DATABASE test;
-    """.stripMargin
-
-  val createText = "CREATE DATABASE test;"
-
-  override val createStatements: Iterable[Update] = Iterable(Update(createText))
-
-  override val dropStatements: Iterable[Update] = Iterable(Update(dropText))
 
 }

@@ -3,7 +3,7 @@ package com.wda.sdbc.sqlserver
 import java.time.{Instant, OffsetDateTime}
 
 import com.wda.sdbc.SqlServer._
-import com.wda.sdbc.config.{HasSqlTestingConfig, TestingConfig}
+import com.wda.sdbc.config.{SqlTestingConfig, TestingConfig}
 import org.scalatest._
 
 abstract class SqlServerSuite
@@ -11,7 +11,7 @@ abstract class SqlServerSuite
   with HasSqlServerPool
   with BeforeAndAfterAll
   with TestingConfig
-  with HasSqlTestingConfig {
+  with SqlTestingConfig {
 
   def testSelect[T](query: String, expectedValue: Option[T])(implicit getter: Getter[T]): Unit = {
     test(query) { implicit connection =>

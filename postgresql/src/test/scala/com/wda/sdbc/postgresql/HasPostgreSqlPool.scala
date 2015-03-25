@@ -5,25 +5,9 @@ import com.wda.sdbc.config._
 import org.scalatest.{BeforeAndAfterAll, Suite}
 
 trait HasPostgreSqlPool {
-  this: HasPgTestingConfig =>
+  this: PgTestingConfig =>
 
-  lazy val testCatalogName = pgConfig.getString("dataSource.databaseName")
-
-  lazy val dropTestCatalog: Update = {
-    val dropText =
-      s"""SELECT pg_terminate_backend(pid)
-         |FROM pg_stat_activity
-         |WHERE pg_stat_activity.datname = $$databaseName
-         |  AND pid <> pg_backend_pid();
-         |
-         |DROP DATABASE IF EXISTS ${Identifier.quote(testCatalogName)};
-      """.stripMargin
-
-    Update(dropText).on("databaseName" -> testCatalogName)
-  }
-
-  lazy val createTestCatalog =
-    Update(s"CREATE DATABASE ${Identifier.quote(testCatalogName)};")
+  val pgTestCatalogName = pgConfig.getString("dataSource.databaseName")
 
   private var pgPool: Option[Pool] = None
 
@@ -31,7 +15,7 @@ trait HasPostgreSqlPool {
   PostgreSQL doesn't allow changing the database for a connection,
   so we need a separate connection for the postgres database.
    */
-  protected lazy val pgMasterPool = {
+  protected val pgMasterPool = {
     val masterConfig = pgConfig.toHikariConfig
     masterConfig.getDataSourceProperties.setProperty("databaseName", "postgres")
     masterConfig.setMaximumPoolSize(1)
@@ -52,9 +36,9 @@ trait HasPostgreSqlPool {
     if (pgPool.isEmpty) {
       withPgMaster { implicit connection =>
         connection.setAutoCommit(true)
-        createTestCatalog.execute()
-      }
 
+        Update(s"CREATE DATABASE ${Identifier.quote(pgTestCatalogName)};").execute()
+      }
       pgPool = Some(Pool(pgConfig))
     }
   }
@@ -63,9 +47,20 @@ trait HasPostgreSqlPool {
     pgPool.foreach(_.shutdown())
     pgPool = None
 
+    val dropText =
+      s"""SELECT pg_terminate_backend(pid)
+         |FROM pg_stat_activity
+         |WHERE pg_stat_activity.datname = $$databaseName
+         |  AND pid <> pg_backend_pid();
+         |
+         |DROP DATABASE IF EXISTS ${Identifier.quote(pgTestCatalogName)};
+       """.stripMargin
+
+    val drop = Update(dropText).on("databaseName" -> pgTestCatalogName)
+
     withPgMaster { implicit connection =>
       connection.setAutoCommit(true)
-      dropTestCatalog.execute()
+      drop.execute()
     }
   }
 

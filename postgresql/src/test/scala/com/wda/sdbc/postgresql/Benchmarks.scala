@@ -80,8 +80,6 @@ class Benchmarks
     }
   }
 
-
-
   test("test JDBC batch insert") {implicit connection =>
     val p = connection.prepareStatement(TestTable.insertJdbc)
 

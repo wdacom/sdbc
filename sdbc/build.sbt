@@ -36,5 +36,3 @@ libraryDependencies <++= scalaVersion { version =>
   }
 
 }
-
-testOptions in Test += Tests.Argument("-server")
