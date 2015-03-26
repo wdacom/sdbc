@@ -43,24 +43,31 @@ trait HasPostgreSqlPool {
     }
   }
 
-  protected def pgDropTestCatalog(): Unit = {
+  protected def pgDropTestCatalogs(): Unit = {
     pgPool.foreach(_.shutdown())
     pgPool = None
 
-    val dropText =
-      s"""SELECT pg_terminate_backend(pid)
-         |FROM pg_stat_activity
-         |WHERE pg_stat_activity.datname = $$databaseName
-         |  AND pid <> pg_backend_pid();
-         |
-         |DROP DATABASE IF EXISTS ${Identifier.quote(pgTestCatalogName)};
-       """.stripMargin
-
-    val drop = Update(dropText).on("databaseName" -> pgTestCatalogName)
-
     withPgMaster { implicit connection =>
       connection.setAutoCommit(true)
-      drop.execute()
+
+      val databases =
+        Select[String]("SELECT datname FROM pg_database WHERE datname LIKE $catalogPrefix").
+        on("catalogPrefix" -> (pgTestCatalogPrefix + "%")).
+        seq()
+
+      for (database <- databases) {
+        util.Try {
+          Update(
+            """SELECT pg_terminate_backend(pid)
+              |FROM pg_stat_activity
+              |WHERE pg_stat_activity.datname = $databaseName
+              |AND pid <> pg_backend_pid();
+            """.stripMargin
+          ).on("databaseName" -> database).execute()
+
+          Update("DROP DATABASE " + Identifier.quote(database)).execute()
+        }
+      }
     }
   }
 
@@ -85,7 +92,7 @@ trait HasPostgreSqlPool {
   }
 
   protected def pgAfterAll(): Unit = {
-    pgDropTestCatalog()
+    pgDropTestCatalogs()
     pgMasterPool.shutdown()
   }
 }

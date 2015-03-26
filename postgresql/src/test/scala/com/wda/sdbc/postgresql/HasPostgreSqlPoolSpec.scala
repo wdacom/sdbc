@@ -23,7 +23,7 @@ class HasPostgreSqlPoolSpec
 
     assert(testDatabaseExists())
 
-    pgDropTestCatalog()
+    pgDropTestCatalogs()
 
     assert(! testDatabaseExists())
 
