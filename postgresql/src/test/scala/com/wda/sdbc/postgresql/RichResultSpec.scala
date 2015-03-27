@@ -11,6 +11,29 @@ class RichResultSpec
   with BeforeAndAfterEach
   with BeforeAndAfterAll {
 
+  test("option() selects nothing from an empty table") {implicit connection =>
+    Update("CREATE TABLE tbl (x int)").execute()
+
+    val result = Select[Int]("SELECT * FROM tbl").option()
+
+    assert(result.isEmpty, "Selecting from an empty table yielded a row.")
+  }
+
+  test("option() selects something from a nonempty table") {implicit connection =>
+    Update("CREATE TABLE tbl (x serial)").execute()
+    Update("INSERT INTO tbl DEFAULT VALUES").execute()
+
+    val result = Select[Int]("SELECT * FROM tbl").option()
+
+    assert(result.isDefined, "Selecting from a table with a row did not yeild a row.")
+  }
+
+  test("seq() works on an empty result") {implicit connection =>
+    Update("CREATE TABLE tbl (x serial)").execute()
+    val results = Select[Int]("SELECT * FROM tbl").seq()
+    assert(results.isEmpty)
+  }
+
   test("seq() works on a single result") {implicit connection =>
     val results = Select[Int]("SELECT 1::integer").seq()
     assert(results == Seq(1))
