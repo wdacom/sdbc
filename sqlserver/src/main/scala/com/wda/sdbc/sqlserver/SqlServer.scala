@@ -30,7 +30,7 @@ abstract class SqlServer
 {
   override def driverClassName = "net.sourceforge.jtds.jdbc.Driver"
   override def dataSourceClassName ="net.sourceforge.jtds.jdbcx.JtdsDataSource"
-  override def jdbcScheme = "jtds:sqlserver"
+  override def jdbcSchemes = Set("jtds:sqlserver")
   override def productName: String = "Microsoft SQL Server"
   override val supportsIsValid = false
 

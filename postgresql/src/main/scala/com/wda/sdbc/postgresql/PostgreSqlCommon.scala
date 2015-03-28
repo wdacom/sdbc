@@ -6,8 +6,6 @@ import com.wda.sdbc.base._
 import com.wda.sdbc.{DBMS, base}
 import org.postgresql.PGConnection
 
-import scala.collection.immutable.Seq
-
 /**
  * Created by Jeff on 3/27/2015.
  */

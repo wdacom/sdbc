@@ -9,7 +9,6 @@ import org.scalatest._
 abstract class SqlServerSuite
   extends fixture.FunSuite
   with HasSqlServerPool
-  with BeforeAndAfterAll
   with TestingConfig
   with SqlTestingConfig {
 

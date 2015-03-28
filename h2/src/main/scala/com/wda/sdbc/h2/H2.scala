@@ -1,11 +1,14 @@
 package com.wda.sdbc.h2
 
+import java.nio.file.Path
+import java.sql.DriverManager
+
 import com.wda.sdbc.DBMS
-import com.wda.sdbc.base.{DefaultGetters, DefaultSetters}
+import com.wda.sdbc.base.{Java8DefaultGetters, DefaultSetters}
 
 abstract class H2
   extends DBMS
-  with DefaultGetters
+  with Java8DefaultGetters
   with DefaultSetters {
   /**
    * Class name for the DataSource class.
@@ -37,5 +40,28 @@ abstract class H2
    * The result of getMetaData.getDatabaseProductName
    */
   override def productName: String = "H2"
+
+  def withMemConnection[T](name: String)(f: Connection => T): T = {
+    val connection: Connection = DriverManager.getConnection("jdbc:h2:mem:" + name)
+    try {
+      f(connection)
+    } finally {
+      connection.closeQuietly()
+    }
+  }
+
+  def withMemConnection[T](f: Connection => T): T = {
+    withMemConnection("")(f)
+  }
+
+  def withFileConnection[T](path: Path)(f: Connection => T): T = {
+    val connection: Connection = DriverManager.getConnection("jdbc:h2:" + path.toFile.getCanonicalPath)
+
+    try {
+      f(connection)
+    } finally {
+      connection.closeQuietly()
+    }
+  }
 
 }
