@@ -292,7 +292,8 @@ trait UUIDGetter {
       row: Row,
       columnIndex: Int
     ): Option[UUID] = {
-      Option(row.getString(columnIndex)).map(UUID.fromString)
+      Option(row.getObject(columnIndex)).
+      map(_.asInstanceOf[UUID])
     }
   }
 }

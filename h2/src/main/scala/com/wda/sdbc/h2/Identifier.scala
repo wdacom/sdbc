@@ -1,5 +1,6 @@
 package com.wda.sdbc.h2
 
+import com.wda.CISet
 import com.wda.sdbc.base
 
 import scala.util.matching.Regex
@@ -15,7 +16,7 @@ class Identifier
 
   //http://www.h2database.com/html/advanced.html#compatibility
   override val reservedWords: Set[String] =
-    Set(
+    CISet(
       "CROSS",
       "CURRENT_DATE",
       "CURRENT_TIME",

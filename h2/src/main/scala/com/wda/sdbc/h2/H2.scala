@@ -1,9 +1,12 @@
 package com.wda.sdbc.h2
 
 import com.wda.sdbc.DBMS
+import com.wda.sdbc.base.{DefaultGetters, DefaultSetters}
 
 abstract class H2
-  extends DBMS {
+  extends DBMS
+  with DefaultGetters
+  with DefaultSetters {
   /**
    * Class name for the DataSource class.
    */
