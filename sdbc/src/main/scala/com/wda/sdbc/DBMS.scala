@@ -99,7 +99,7 @@ object DBMS {
 
   private val jdbcSchemes: collection.mutable.Map[String, DBMS] = {
     import scala.collection.convert.decorateAsScala._
-    //Scala's collections don't contain an ordered immutable map,
+    //Scala's collections don't contain an ordered mutable map,
     //so just use java's.
     new java.util.TreeMap[String, DBMS](CaseInsensitiveOrdering).asScala
   }
