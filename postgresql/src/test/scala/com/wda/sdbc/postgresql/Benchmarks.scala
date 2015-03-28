@@ -113,7 +113,7 @@ class Benchmarks
   }
 
   test("test JDBC select") {implicit connection =>
-    values.foldLeft(TestTable.batchInsert){case (b, v) => v.addToBatch(b)}.executeBatch()
+    values.foldLeft(TestTable.batchInsert){case (b, v) => v.addToBatch(b)}.batch()
 
     val selectedRows = Array.ofDim[TestTable](rowCount)
 
@@ -137,7 +137,7 @@ class Benchmarks
   }
 
   test("time JDBC select") {implicit connection =>
-    values.foldLeft(TestTable.batchInsert){case (b, v) => v.addToBatch(b)}.executeBatch()
+    values.foldLeft(TestTable.batchInsert){case (b, v) => v.addToBatch(b)}.batch()
 
     connection.commit()
 
@@ -162,7 +162,7 @@ class Benchmarks
   test("time com.wda.sql batch insert") {implicit connection =>
 
     val insertDuration = averageTime(repetitions) {
-      values.foldLeft(TestTable.batchInsert){case (b, v) => v.addToBatch(b)}.executeBatch()
+      values.foldLeft(TestTable.batchInsert){case (b, v) => v.addToBatch(b)}.batch()
       connection.commit()
     }{
       TestTable.truncate.execute()
@@ -177,7 +177,7 @@ class Benchmarks
 
     val batch = values.foldLeft(TestTable.batchInsert){case (b, v) => v.addToBatch(b)}
 
-    val insertedRows = batch.executeBatch()
+    val insertedRows = batch.batch()
 
     connection.commit()
 
@@ -187,7 +187,7 @@ class Benchmarks
 
   test("time com.wda.sql select") {implicit connection =>
 
-    values.foldLeft(TestTable.batchInsert){case (b, v) => v.addToBatch(b)}.executeBatch()
+    values.foldLeft(TestTable.batchInsert){case (b, v) => v.addToBatch(b)}.batch()
 
     connection.commit()
 
@@ -201,7 +201,7 @@ class Benchmarks
 
   test("test com.wda.sql select") {implicit connection =>
 
-    values.foldLeft(TestTable.batchInsert){case (b, v) => v.addToBatch(b)}.executeBatch()
+    values.foldLeft(TestTable.batchInsert){case (b, v) => v.addToBatch(b)}.batch()
 
     connection.commit()
 
