@@ -2,25 +2,100 @@ package com.wda.sdbc
 package postgresql
 
 import java.net.InetAddress
-import java.time.Duration
-import java.util.UUID
+import java.sql.PreparedStatement
 
-import com.wda.sdbc.base._
-import org.json4s.{Formats, JValue}
+import com.wda.sdbc.base.{Java8DefaultSetters, Row, ParameterValue}
+import org.json4s._
+import org.json4s.jackson.JsonMethods
 import org.postgresql.util.PGInterval
+
 import scala.xml.Elem
 
-trait Setters extends Java8DefaultSetters {
-  self: Row with ParameterValue with ParameterValues with IntervalImplicits =>
+trait Setters
+  extends Java8DefaultSetters {
+  self: ParameterValue with Row =>
 
-  implicit def DurationToParameterValue(duration: Duration): ParameterValue[PGInterval] = QPGInterval(duration)
-  implicit def PGIntervalToParameterValue(interval: PGInterval): ParameterValue[PGInterval] = QPGInterval(interval)
-  implicit def InetAddressToParameterValue(address: InetAddress): ParameterValue[InetAddress] = QInetAddress(address)
-  implicit def JValueToParameterValue(j: JValue)(implicit formats: Formats): ParameterValue[JValue] = {
-    QJSON(j)
+  implicit class QInetAddress(override val value: InetAddress) extends ParameterValue[InetAddress] {
+    override def asJDBCObject: AnyRef = value.getHostAddress
+
+    override def set(preparedStatement: PreparedStatement, parameterIndex: Int): Unit = {
+      preparedStatement.setString(parameterIndex, value.getHostAddress)
+    }
+
+    override def update(
+      row: Row,
+      columnIndex: Int
+    ): Unit = {
+      row.updateObject(columnIndex, asJDBCObject)
+    }
   }
-  implicit def LTreeToParameterValue(ltree: LTree): ParameterValue[LTree] = QLTree(ltree)
-  implicit def UUIDToParameterValue(uuid: UUID): ParameterValue[UUID] = QUUID(uuid)
-  implicit def XmlToParameterValue(x: Elem): ParameterValue[Elem] = QXML(x)
+
+  implicit class QPGInterval(override val value: PGInterval) extends ParameterValue[PGInterval] {
+    type T = PGInterval
+
+    override def asJDBCObject: AnyRef = value
+
+    override def set(preparedStatement: PreparedStatement, parameterIndex: Int): Unit = {
+      preparedStatement.setObject(parameterIndex, asJDBCObject)
+    }
+
+    override def update(
+      row: Row,
+      columnIndex: Int
+    ): Unit = {
+      row.updateObject(columnIndex, asJDBCObject)
+    }
+  }
+
+  implicit class QJSON(override val value: JValue)(implicit formats: Formats) extends ParameterValue[JValue] {
+    type T = JValue
+
+    override def asJDBCObject: AnyRef = JsonMethods.compact(JsonMethods.render(value))
+
+    override def set(preparedStatement: PreparedStatement, parameterIndex: Int): Unit = {
+      preparedStatement.setString(parameterIndex, JsonMethods.compact(JsonMethods.render(value)))
+    }
+
+    override def update(
+      row: Row,
+      columnIndex: Int
+    ): Unit = {
+      row.updateString(columnIndex, JsonMethods.compact(JsonMethods.render(value)))
+    }
+  }
+
+  implicit class QLTree(override val value: LTree) extends ParameterValue[LTree] {
+    type T = LTree
+
+    override def asJDBCObject: AnyRef = value
+
+    override def set(preparedStatement: PreparedStatement, parameterIndex: Int): Unit = {
+      preparedStatement.setObject(parameterIndex, asJDBCObject)
+    }
+
+    override def update(
+      row: Row,
+      columnIndex: Int
+    ): Unit = {
+      row.updateObject(columnIndex, asJDBCObject)
+    }
+  }
+
+  implicit class QXML(override val value: Elem) extends ParameterValue[Elem] {
+    override def asJDBCObject: AnyRef = value.toString
+
+    override def set(preparedStatement: PreparedStatement, parameterIndex: Int): Unit = {
+      val sqlxml = preparedStatement.getConnection.createSQLXML()
+      sqlxml.setString(value.toString)
+      preparedStatement.setSQLXML(parameterIndex, sqlxml)
+    }
+
+    override def update(
+      row: Row,
+      columnIndex: Int
+    ): Unit = {
+      row.updateString(columnIndex, value.toString)
+    }
+  }
 
 }
