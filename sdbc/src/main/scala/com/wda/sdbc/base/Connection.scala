@@ -77,7 +77,7 @@ trait Connection {
     ): Int = {
       Update(queryText).on(
         parameterValues: _*
-      ).executeUpdate()(this)
+      ).update()(this)
     }
 
     def executeLargeUpdate(
@@ -86,7 +86,7 @@ trait Connection {
     ): Long = {
       Update(queryText).on(
         parameterValues: _*
-      ).executeLargeUpdate()(this)
+      ).largeUpdate()(this)
     }
 
     def execute(
