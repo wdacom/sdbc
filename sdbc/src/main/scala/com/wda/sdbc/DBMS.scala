@@ -108,7 +108,7 @@ object DBMS {
 
   private val jdbcURIRegex = "jdbc:(.+)://.+".r
 
-  def register(dbms: DBMS): Unit = {
+  private def register(dbms: DBMS): Unit = {
     this.synchronized {
       dataSources(dbms.dataSourceClassName) = dbms
       jdbcSchemes(dbms.jdbcScheme) = dbms
@@ -149,10 +149,6 @@ object DBMS {
 
   def of(r: java.sql.ResultSet): DBMS = {
     of(r.getStatement)
-  }
-
-  def wrap(c: java.sql.Connection): DBMS#Connection = {
-    of(c).Connection(c)
   }
 
 }
