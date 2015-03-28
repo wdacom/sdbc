@@ -10,7 +10,7 @@ class Identifier extends base.Identifier {
   override val rightQuote = leftQuote
 
   //http://www.postgresql.org/docs/9.4/static/sql-syntax-lexical.html
-  override val identifierMatcher: Regex = """[\p{L}_][\p{L}\d_$]*""".r
+  override val identifierMatcher: Regex = """(?U)[\p{L}_][\p{L}\d_$]*""".r
 
   //Reserved keywords from http://www.postgresql.org/docs/current/static/sql-keywords-appendix.html
   override val reservedWords: Set[String] =
