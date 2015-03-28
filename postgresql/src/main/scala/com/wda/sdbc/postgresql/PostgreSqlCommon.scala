@@ -13,12 +13,11 @@ import scala.collection.immutable.Seq
  */
 abstract class PostgreSqlCommon
   extends DBMS
-  with ParameterValues
+  with Setters
   with HasJava8TimeFormatter
   with HasJava8DateTimeFormatter
   with IntervalImplicits
-  with Getters
-  with Setters {
+  with Getters {
 
   override def dataSourceClassName = "org.postgresql.ds.PGSimpleDataSource"
   override def driverClassName = "org.postgresql.Driver"

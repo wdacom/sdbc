@@ -24,9 +24,8 @@ varbinary, hierarchyid
 abstract class SqlServer
   extends DBMS
   with HasJava8DateTimeFormatter
-  with ParameterValues
-  with Getters
   with Setters
+  with Getters
   with HierarchyId
 {
   override def driverClassName = "net.sourceforge.jtds.jdbc.Driver"
