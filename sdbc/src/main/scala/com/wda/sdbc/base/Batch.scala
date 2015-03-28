@@ -86,17 +86,17 @@ trait Batch {
       }
     }
 
-    def executeBatch()(implicit connection: Connection): Array[Int] = {
+    def executeBatch()(implicit connection: Connection): Seq[Int] = {
       logger.debug(s"""Executing a batch using "${statement.originalQueryText}".""")
-      withPreparedStatement[Array[Int]] { prepared =>
-        prepared.executeBatch()
+      withPreparedStatement[Seq[Int]] { prepared =>
+        prepared.executeBatch().toVector
       }
     }
 
-    def executeLargeBatch()(implicit connection: Connection): Array[Long] = {
+    def executeLargeBatch()(implicit connection: Connection): Seq[Long] = {
       logger.debug(s"""Executing a large batch using "${statement.originalQueryText}".""")
-      withPreparedStatement[Array[Long]] { prepared =>
-        prepared.executeLargeBatch()
+      withPreparedStatement[Seq[Long]] { prepared =>
+        prepared.executeLargeBatch().toVector
       }
     }
   }
