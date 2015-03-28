@@ -2,7 +2,6 @@ package com.wda.sdbc
 
 import com.wda.CaseInsensitiveOrdering
 import com.zaxxer.hikari.HikariConfig
-import scala.collection.immutable.Seq
 import base._
 
 abstract class DBMS
@@ -31,7 +30,7 @@ abstract class DBMS
    */
   def driverClassName: String
 
-  def jdbcScheme: String
+  def jdbcSchemes: Set[String]
 
   /**
    * The result of getMetaData.getDatabaseProductName
@@ -73,12 +72,14 @@ object DBMS {
 
   private val productNames: collection.mutable.Map[String, DBMS] = collection.mutable.Map.empty
 
-  private val jdbcURIRegex = "jdbc:(.+)://.+".r
+  private val jdbcURIRegex = "(?i)jdbc:(.+):.*".r
 
   private def register(dbms: DBMS): Unit = {
     this.synchronized {
       dataSources(dbms.dataSourceClassName) = dbms
-      jdbcSchemes(dbms.jdbcScheme) = dbms
+      for (scheme <- dbms.jdbcSchemes) {
+        jdbcSchemes(scheme) = dbms
+      }
       productNames(dbms.productName) = dbms
       Class.forName(dbms.driverClassName)
     }
