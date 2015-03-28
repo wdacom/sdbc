@@ -58,33 +58,6 @@ abstract class PostgreSqlCommon
     connection.unwrap[PGConnection](classOf[PGConnection]).addDataType("ltree", classOf[LTree])
   }
 
-  /**
-   * Creates an insert statement that returns all the values that were inserted.
-   * @param tableSchema
-   * @param tableName
-   * @param columnOrder
-   * @param defaults The columns that are to be inserted with default values.
-   * @param conversion
-   * @tparam T
-   * @return
-   */
-  override def buildInsert[T](
-    tableSchema: String,
-    tableName: String,
-    columnOrder: Seq[String],
-    defaults: Set[String]
-    )(implicit conversion: Row => T
-    ): Select[T] = {
-    val queryText =
-      s"""INSERT INTO ${Identifier.quote(tableSchema, tableName)}
-          |${QueryBuilder.columnNames(columnOrder, defaults)}
-          |VALUES
-          |${QueryBuilder.columnValues(columnOrder, defaults)}}
-                                                                |RETURNING *
-       """.stripMargin
-    Select[T](queryText)
-  }
-
   type LTree = com.wda.sdbc.postgresql.LTree
 
   val LTree = com.wda.sdbc.postgresql.LTree

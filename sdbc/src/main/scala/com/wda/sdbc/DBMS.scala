@@ -56,39 +56,6 @@ abstract class DBMS
 
   }
 
-  /**
-   * Utilities for use by buildInsert.
-   */
-  protected object QueryBuilder {
-
-    def columnNames(columnOrder: Seq[String], defaults: Set[String]): String = {
-      columnOrder.filter(c => ! defaults.contains(c)).map(Identifier.quote).mkString("(", ",", ")")
-    }
-
-    def columnValues(columnOrder: Seq[String], defaults: Set[String]): String = {
-      columnOrder.filter(c => ! defaults.contains(c)).map("$`" + _ + "`").mkString("(", ",", ")")
-    }
-
-  }
-
-  /**
-   * Creates an insert statement that returns all the values that were inserted.
-   * @param tableSchema
-   * @param tableName
-   * @param columnOrder
-   * @param defaults The columns that are to be inserted with default values.
-   * @param conversion
-   * @tparam T
-   * @return
-   */
-  def buildInsert[T](
-    tableSchema: String,
-    tableName: String,
-    columnOrder: Seq[String],
-    defaults: Set[String]
-  )(implicit conversion: Row => T
-  ): Select[T]
-
   DBMS.register(this)
 
 }
