@@ -19,7 +19,7 @@ abstract class PostgreSqlCommon
 
   override def dataSourceClassName = "org.postgresql.ds.PGSimpleDataSource"
   override def driverClassName = "org.postgresql.Driver"
-  override def jdbcScheme = "postgresql"
+  override def jdbcSchemes = Set("postgresql")
   override def productName: String = "PostgreSQL"
   override val supportsIsValid: Boolean = true
 
