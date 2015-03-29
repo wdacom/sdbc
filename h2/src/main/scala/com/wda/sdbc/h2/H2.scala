@@ -9,7 +9,8 @@ import com.wda.sdbc.base.{Java8DefaultGetters, DefaultSetters}
 abstract class H2
   extends DBMS
   with Java8DefaultGetters
-  with DefaultSetters {
+  with DefaultSetters
+  with SerializableParameter {
   /**
    * Class name for the DataSource class.
    */
