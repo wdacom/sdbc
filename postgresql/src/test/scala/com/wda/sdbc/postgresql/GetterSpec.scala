@@ -12,7 +12,7 @@ import org.scalatest.BeforeAndAfterAll
 import scalaz.Scalaz._
 import com.wda.sdbc.PostgreSql._
 
-class ParameterValueSpec
+class GetterSpec
   extends PostgreSqlSuite
   with BeforeAndAfterAll {
 
