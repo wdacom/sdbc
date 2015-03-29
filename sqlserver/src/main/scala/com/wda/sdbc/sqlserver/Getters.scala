@@ -3,6 +3,7 @@ package sqlserver
 
 import java.sql.SQLException
 import java.time.{OffsetDateTime, Instant}
+import java.util.UUID
 
 import com.wda.sdbc.base._
 
@@ -10,6 +11,12 @@ import scala.xml.{XML, Elem}
 
 trait Getters extends Java8DefaultGetters {
   self: Row with Getter with HierarchyId with HasJava8DateTimeFormatter =>
+
+  override implicit val UUIDGetter: Getter[UUID] = new Getter[UUID] {
+    override def apply(row: Row, columnIndex: Int): Option[UUID] = {
+      row.option[String](columnIndex).map(UUID.fromString)
+    }
+  }
 
   implicit val HierarchyIdGetter = new Parser[HierarchyId] {
     override def parse(asString: String): HierarchyId = {
