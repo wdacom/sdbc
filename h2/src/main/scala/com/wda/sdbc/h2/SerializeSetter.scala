@@ -4,12 +4,12 @@ import java.sql.PreparedStatement
 
 import com.wda.sdbc.base.{ParameterValue, Row}
 
-trait SerializableParameter {
-  self: ParameterValue with Row =>
+trait SerializeSetter {
+  self: ParameterValue with Row with SerializeParameterValue =>
 
-  implicit class QSerializable[T <: java.io.Serializable](override val value: T)
-    extends ParameterValue[T] {
-    override def asJDBCObject: AnyRef = value.asInstanceOf[AnyRef]
+  implicit class QSerializable[T <: AnyRef](override val value: Serialize)
+    extends ParameterValue[Serialize] {
+    override def asJDBCObject: AnyRef = value.value
 
     override def update(row: Row, columnIndex: Int): Unit = {
       row.updateObject(columnIndex, value)
