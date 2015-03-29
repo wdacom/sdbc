@@ -13,16 +13,11 @@ import scalaz.Scalaz._
 import com.wda.sdbc.PostgreSql._
 
 class GetterSpec
-  extends PostgreSqlSuite
-  with BeforeAndAfterAll {
+  extends PostgreSqlSuite {
 
   override protected def beforeAll(): Unit = {
     pgBeforeAll()
     createLTree()
-  }
-
-  override protected def afterAll(): Unit = {
-    pgAfterAll()
   }
 
   val jsonString = """{"hi":"there"}"""

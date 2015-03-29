@@ -12,8 +12,7 @@ import PostgreSql._
 class Benchmarks
   extends PostgreSqlSuite
   with GeneratorDrivenPropertyChecks
-  with BeforeAndAfterEach
-  with BeforeAndAfterAll {
+  with BeforeAndAfterEach {
 
   val rowCount = 10000
 
@@ -213,14 +212,6 @@ class Benchmarks
       assert(str2_ == str2_)
     }
 
-  }
-
-  override protected def beforeAll(): Unit = {
-    pgBeforeAll()
-  }
-
-  override protected def afterAll(): Unit = {
-    pgAfterAll()
   }
 
   case class TestTable(
