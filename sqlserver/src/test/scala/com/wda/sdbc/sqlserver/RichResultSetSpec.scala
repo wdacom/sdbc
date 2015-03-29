@@ -8,16 +8,7 @@ import scala.collection.immutable.Seq
 
 class RichResultSetSpec
   extends SqlServerSuite
-  with BeforeAndAfterEach
-  with BeforeAndAfterAll {
-
-  override protected def afterAll(): Unit = {
-    sqlAfterAll()
-  }
-
-  override protected def beforeAll(): Unit = {
-    sqlBeforeAll()
-  }
+  with BeforeAndAfterEach {
 
   test("seq() works on a single result") {implicit connection =>
     val results = Select[Int]("SELECT CAST(1 AS int)").seq()

@@ -14,7 +14,7 @@ trait Getters extends Java8DefaultGetters {
 
   override implicit val UUIDGetter: Getter[UUID] = new Getter[UUID] {
     override def apply(row: Row, columnIndex: Int): Option[UUID] = {
-      row.option[String](columnIndex).map(UUID.fromString)
+      Option(row.getString(columnIndex)).map(UUID.fromString)
     }
   }
 

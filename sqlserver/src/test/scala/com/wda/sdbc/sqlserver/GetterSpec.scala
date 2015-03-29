@@ -14,16 +14,7 @@ import scalaz.Scalaz._
  * Note that some of these tests can fail if Sql Server's time isn't in sync with the client running the tests.
  */
 class GetterSpec
-  extends SqlServerSuite
-  with BeforeAndAfterAll {
-
-  override protected def afterAll(): Unit = {
-    sqlAfterAll()
-  }
-
-  override protected def beforeAll(): Unit = {
-    sqlBeforeAll()
-  }
+  extends SqlServerSuite {
 
   val uuid = UUID.randomUUID()
 
