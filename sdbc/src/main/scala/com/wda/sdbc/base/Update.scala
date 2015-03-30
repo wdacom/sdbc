@@ -15,12 +15,12 @@ trait Update {
       Update(statement, parameterValues)
     }
 
-    def executeUpdate()(implicit connection: Connection): Int = {
+    def update()(implicit connection: Connection): Int = {
       logger.debug(s"""Executing an update using "${statement.originalQueryText}" with parameters $parameterValues.""")
       withPreparedStatement(_.executeUpdate())(connection)
     }
 
-    def executeLargeUpdate()(implicit connection: Connection): Long = {
+    def largeUpdate()(implicit connection: Connection): Long = {
       logger.debug(s"""Executing a large update using "${statement.originalQueryText}" with parameters $parameterValues.""")
       withPreparedStatement(_.executeLargeUpdate())(connection)
     }

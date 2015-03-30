@@ -14,6 +14,22 @@ Include an implementation of the [SLF4J](http://slf4j.org/) logging interface, t
 
 The Scala 2.10 build does not include support for arrays.
 
+## SBT Library Dependency
+
+### PostgreSql
+
+Packages exist on Maven Central for Scala 2.10 and 2.11.
+
+```scala
+"com.wda.sdbc" %% "postgresql" % "0.5"
+```
+
+### SQL Server
+
+```scala
+"com.wda.sdbc" %% "sqlserver" % "0.5"
+```
+
 ## License
 
 [BSD 3-Clause](http://opensource.org/licenses/BSD-3-Clause), so SDBC can be used anywhere Scala is used.

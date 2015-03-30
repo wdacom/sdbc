@@ -10,7 +10,7 @@ class Identifier extends base.Identifier {
   override val rightQuote = ']'
 
   //https://msdn.microsoft.com/en-us/library/ms175874%28v=sql.105%29.aspx
-  override val identifierMatcher: Regex = """[\p{L}_][\p{L}\d@$#_]*""".r
+  override val identifierMatcher: Regex = """(?U)[\p{L}_][\p{L}\d@$#_]*""".r
 
   //https://msdn.microsoft.com/en-us/library/ms189822.aspx
   override val reservedWords: Set[String] =

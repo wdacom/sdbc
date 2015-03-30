@@ -2,7 +2,6 @@ package com.wda.sdbc
 
 import com.wda.CaseInsensitiveOrdering
 import com.zaxxer.hikari.HikariConfig
-import scala.collection.immutable.Seq
 import base._
 
 abstract class DBMS
@@ -31,7 +30,7 @@ abstract class DBMS
    */
   def driverClassName: String
 
-  def jdbcScheme: String
+  def jdbcSchemes: Set[String]
 
   /**
    * The result of getMetaData.getDatabaseProductName
@@ -56,39 +55,6 @@ abstract class DBMS
 
   }
 
-  /**
-   * Utilities for use by buildInsert.
-   */
-  protected object QueryBuilder {
-
-    def columnNames(columnOrder: Seq[String], defaults: Set[String]): String = {
-      columnOrder.filter(c => ! defaults.contains(c)).map(Identifier.quote).mkString("(", ",", ")")
-    }
-
-    def columnValues(columnOrder: Seq[String], defaults: Set[String]): String = {
-      columnOrder.filter(c => ! defaults.contains(c)).map("$`" + _ + "`").mkString("(", ",", ")")
-    }
-
-  }
-
-  /**
-   * Creates an insert statement that returns all the values that were inserted.
-   * @param tableSchema
-   * @param tableName
-   * @param columnOrder
-   * @param defaults The columns that are to be inserted with default values.
-   * @param conversion
-   * @tparam T
-   * @return
-   */
-  def buildInsert[T](
-    tableSchema: String,
-    tableName: String,
-    columnOrder: Seq[String],
-    defaults: Set[String]
-  )(implicit conversion: Row => T
-  ): Select[T]
-
   DBMS.register(this)
 
 }
@@ -99,19 +65,21 @@ object DBMS {
 
   private val jdbcSchemes: collection.mutable.Map[String, DBMS] = {
     import scala.collection.convert.decorateAsScala._
-    //Scala's collections don't contain an ordered immutable map,
+    //Scala's collections don't contain an ordered mutable map,
     //so just use java's.
     new java.util.TreeMap[String, DBMS](CaseInsensitiveOrdering).asScala
   }
 
   private val productNames: collection.mutable.Map[String, DBMS] = collection.mutable.Map.empty
 
-  private val jdbcURIRegex = "jdbc:(.+)://.+".r
+  private val jdbcURIRegex = "(?i)jdbc:(.+):.*".r
 
-  def register(dbms: DBMS): Unit = {
+  private def register(dbms: DBMS): Unit = {
     this.synchronized {
       dataSources(dbms.dataSourceClassName) = dbms
-      jdbcSchemes(dbms.jdbcScheme) = dbms
+      for (scheme <- dbms.jdbcSchemes) {
+        jdbcSchemes(scheme) = dbms
+      }
       productNames(dbms.productName) = dbms
       Class.forName(dbms.driverClassName)
     }
@@ -149,10 +117,6 @@ object DBMS {
 
   def of(r: java.sql.ResultSet): DBMS = {
     of(r.getStatement)
-  }
-
-  def wrap(c: java.sql.Connection): DBMS#Connection = {
-    of(c).Connection(c)
   }
 
 }

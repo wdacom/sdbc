@@ -23,7 +23,7 @@ class HasSqlServerPoolSpec
 
     assert(testDatabaseExists())
 
-    sqlDropTestCatalog()
+    sqlDropTestCatalogs()
 
     assert(! testDatabaseExists())
 

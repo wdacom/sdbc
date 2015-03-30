@@ -33,7 +33,7 @@ class RichResultSetSpec
         batch.addBatch("x" -> r)
     }
 
-    val insertions = batch.executeBatch()
+    val insertions = batch.batch()
 
     assert(insertions.sum[Int] == randoms.size)
 
@@ -51,7 +51,7 @@ class RichResultSetSpec
         batch.addBatch("x" -> r)
     }
 
-    batch.executeBatch()
+    batch.batch()
 
     for(row <- connection.iteratorForUpdate("SELECT x FROM tbl")) {
       row("x") = row[Int]("x") + 1

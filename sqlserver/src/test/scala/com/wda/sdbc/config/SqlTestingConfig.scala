@@ -7,13 +7,19 @@ import scala.util.Random
 trait SqlTestingConfig {
   self: HasConfig =>
 
+  def sqlTestCatalogPrefix: String = config.getString("testCatalogPrefix")
+
+  def sqlRandomCatalog() =
+    ConfigFactory.parseString("catalog = " + sqlTestCatalogPrefix + Random.nextInt(Int.MaxValue))
+
   lazy val sqlConfig: Config =
     SqlTestingConfig.defaults.
     withFallback(config.getConfig("sql")).
-    withFallback(SqlTestingConfig.randomCatalog())
+    withFallback(sqlRandomCatalog())
 }
 
 object SqlTestingConfig {
+
   val defaults = {
     val asString =
       """autoCommit = false
@@ -23,6 +29,4 @@ object SqlTestingConfig {
     ConfigFactory.parseString(asString)
   }
 
-  def randomCatalog() =
-    ConfigFactory.parseString("catalog = sdbctest" + Random.nextInt(Int.MaxValue))
 }

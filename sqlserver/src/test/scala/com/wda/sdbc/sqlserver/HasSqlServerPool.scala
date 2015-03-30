@@ -39,21 +39,29 @@ trait HasSqlServerPool {
     }
   }
 
-  protected def sqlDropTestCatalog(): Unit = {
+  protected def sqlDropTestCatalogs(): Unit = {
     sqlPool.foreach(_.shutdown())
     sqlPool = None
 
-    val dropText =
-      s"""ALTER DATABASE ${Identifier.quote(sqlTestCatalogName)}
-          |  SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
-          |
-          |DROP DATABASE ${Identifier.quote(sqlTestCatalogName)};
-      """.stripMargin
-
-    val drop = Update(dropText)
-
     withSqlMaster { implicit connection =>
-      drop.execute()
+      connection.setAutoCommit(true)
+
+      val databases =
+        Select[String]("SELECT name FROM sysdatabases WHERE name LIKE $catalogPrefix").
+        on("catalogPrefix" -> (sqlTestCatalogPrefix + "%")).
+        seq()
+
+      for (database <- databases) {
+        util.Try {
+          Update(
+            s"""ALTER DATABASE ${Identifier.quote(database)}
+                |SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+            """.stripMargin
+          ).execute()
+
+          Update("DROP DATABASE " + Identifier.quote(database)).execute()
+        }
+      }
     }
   }
 
@@ -73,7 +81,7 @@ trait HasSqlServerPool {
   }
 
   def sqlAfterAll(): Unit = {
-    sqlDropTestCatalog()
+    sqlDropTestCatalogs()
     sqlMasterPool.shutdown()
   }
 
