@@ -9,12 +9,10 @@ import com.wda.sdbc.base.{Java8DefaultGetters, DefaultSetters}
 abstract class H2
   extends DBMS
   with Java8DefaultGetters
-  with SeqGetter
   with DefaultSetters
   with SerializeParameterValue
   with DeserializeGetter
-  with SerializeSetter
-  with SeqParameterValue {
+  with SerializeSetter {
   /**
    * Class name for the DataSource class.
    */
@@ -46,17 +44,13 @@ abstract class H2
    */
   override def productName: String = "H2"
 
-  def withMemConnection[T](name: String)(f: Connection => T): T = {
+  def withMemConnection[T](name: String = "")(f: Connection => T): T = {
     val connection: Connection = DriverManager.getConnection("jdbc:h2:mem:" + name)
     try {
       f(connection)
     } finally {
       connection.closeQuietly()
     }
-  }
-
-  def withMemConnection[T](f: Connection => T): T = {
-    withMemConnection("")(f)
   }
 
   def withFileConnection[T](path: Path)(f: Connection => T): T = {

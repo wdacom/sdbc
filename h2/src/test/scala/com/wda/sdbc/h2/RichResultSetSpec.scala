@@ -56,7 +56,7 @@ class RichResultSetSpec
   }
 
   override protected def afterEach(): Unit = {
-    withMemConnection(_.execute("DROP TABLE IF EXISTS tbl"))
+    withMemConnection()(_.execute("DROP TABLE IF EXISTS tbl"))
   }
 
 }
