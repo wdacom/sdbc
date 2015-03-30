@@ -55,7 +55,7 @@ trait SeqParameterValue {
       case t if t =:= typeOf[InetAddress] => "inet"
       case t if t <:< typeOf[QArray[Any]] =>
         innerTypeName(t)
-      case t if t <:< typeOf[Seq[_]] =>
+      case t if t <:< typeOf[scala.collection.Seq[_]] =>
         innerTypeName(t)
       case t => throw new Exception("PostgreSQL does not understand " + t.toString)
     }
