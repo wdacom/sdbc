@@ -41,9 +41,10 @@ trait Pool {
       val connection = getConnection()
       connection.setAutoCommit(false)
       try {
-        f(connection)
-      } finally {
+        val result = f(connection)
         connection.commit()
+        result
+      } finally {
         connection.closeQuietly()
       }
     }
