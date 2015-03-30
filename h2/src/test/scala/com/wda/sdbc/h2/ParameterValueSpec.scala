@@ -1,29 +1,13 @@
-package com.wda.sdbc.sqlserver
+package com.wda.sdbc.h2
 
-import com.wda.sdbc.SqlServer._
-
-import java.sql.{Date, Time, Timestamp}
+import java.sql.{Timestamp, Time, Date}
 import java.time._
 import java.util.UUID
 
-import org.scalatest.BeforeAndAfterAll
-
 import scalaz.Scalaz._
 
-/**
- * Note that some of these tests can fail if Sql Server's time isn't in sync with the client running the tests.
- */
 class ParameterValueSpec
-  extends SqlServerSuite
-  with BeforeAndAfterAll {
-
-  override protected def afterAll(): Unit = {
-    sqlAfterAll()
-  }
-
-  override protected def beforeAll(): Unit = {
-    sqlBeforeAll()
-  }
+  extends H2Suite {
 
   val uuid = UUID.randomUUID()
 
@@ -51,13 +35,9 @@ class ParameterValueSpec
 
   testSelect[java.math.BigDecimal]("SELECT CAST(3.14159 AS numeric(10,5)) --as Java BigDecimal", BigDecimal("3.14159").underlying.some)
 
-  testSelect[scala.xml.Elem]("SELECT CAST('<a>hi</a>' AS xml)", <a>hi</a>.some)
-
   testSelect[Date]("SELECT CAST('2014-12-29' AS date)", Date.valueOf("2014-12-29").some)
 
   testSelect[Time]("SELECT CAST('03:04:05' AS time) --as JDBC Time", Time.valueOf("03:04:05").some)
-
-  testSelect[LocalTime]("SELECT CAST('03:04:05' AS time) --as Java 8 LocalTime", LocalTime.parse("03:04:05").some)
 
   testSelect[Timestamp]("SELECT CAST('2014-12-29 01:02:03.5' AS datetime)", Timestamp.valueOf("2014-12-29 01:02:03.5").some)
 
@@ -75,12 +55,6 @@ class ParameterValueSpec
     testSelect[Instant]("SELECT CAST('2014-12-29 01:02:03.5' AS datetime) --as Java 8 Instant", expectedTime.some)
   }
 
-  testSelect[OffsetDateTime]("SELECT CAST('2014-12-29 01:02:03.5 -4:00' AS datetimeoffset) --as Java 8 OffsetDateTime", OffsetDateTime.parse("2014-12-29T01:02:03.5-04:00").some)
-
-  testSelect[Instant]("SELECT CAST('2014-12-29 01:02:03.5 -4:00' AS datetimeoffset) --as Java 8 Instant", Instant.parse("2014-12-29T05:02:03.5Z").some)
-
-  testSelect[com.wda.sdbc.SqlServer.HierarchyId]("SELECT CAST('/1/2/3/' AS hierarchyid).ToString()", HierarchyId(1, 2, 3).some)
-
-  testSelect[UUID](s"SELECT CAST('$uuid' AS uniqueidentifier)", uuid.some)
+  testSelect[UUID](s"SELECT CAST('$uuid' AS uuid)", uuid.some)
 
 }

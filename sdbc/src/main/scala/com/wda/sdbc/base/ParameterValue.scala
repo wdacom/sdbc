@@ -2,6 +2,7 @@ package com.wda.sdbc.base
 
 import java.io.{InputStream, Reader}
 import java.sql.{Array => _, _}
+import java.util.UUID
 
 import scala.collection.immutable.Seq
 import scala.reflect.runtime.universe._
@@ -478,6 +479,22 @@ trait InputStreamParameter {
       parameterIndex: Int
     ): Unit = {
       preparedStatement.setBinaryStream(parameterIndex, value)
+    }
+  }
+}
+
+trait UUIDParameter {
+  self: ParameterValue with Row =>
+
+  implicit class QUUID(override val value: UUID) extends ParameterValue[AnyRef] {
+    override def asJDBCObject: AnyRef = value
+
+    override def set(preparedStatement: PreparedStatement, parameterIndex: Int): Unit = {
+      preparedStatement.setObject(parameterIndex, value)
+    }
+
+    override def update(row: Row, columnIndex: Int): Unit = {
+      row.updateObject(columnIndex, value)
     }
   }
 }

@@ -8,8 +8,7 @@ import scala.collection.immutable.Seq
 
 class RichResultSpec
   extends PostgreSqlSuite
-  with BeforeAndAfterEach
-  with BeforeAndAfterAll {
+  with BeforeAndAfterEach {
 
   test("option() selects nothing from an empty table") {implicit connection =>
     Update("CREATE TABLE tbl (x int)").execute()
@@ -81,14 +80,6 @@ class RichResultSpec
 
   override protected def afterEach(): Unit = {
     withPg(_.execute("DROP TABLE IF EXISTS tbl;"))
-  }
-
-  override protected def beforeAll(): Unit = {
-    pgBeforeAll()
-  }
-
-  override protected def afterAll(): Unit = {
-    pgAfterAll()
   }
 
 }

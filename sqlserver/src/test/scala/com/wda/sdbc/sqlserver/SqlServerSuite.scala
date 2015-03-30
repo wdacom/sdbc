@@ -9,9 +9,9 @@ import org.scalatest._
 abstract class SqlServerSuite
   extends fixture.FunSuite
   with HasSqlServerPool
-  with BeforeAndAfterAll
   with TestingConfig
-  with SqlTestingConfig {
+  with SqlTestingConfig
+  with BeforeAndAfterAll {
 
   def testSelect[T](query: String, expectedValue: Option[T])(implicit getter: Getter[T]): Unit = {
     test(query) { implicit connection =>
@@ -37,5 +37,13 @@ abstract class SqlServerSuite
     withSql[Outcome] { connection =>
       withFixture(test.toNoArgTest(connection))
     }
+  }
+
+  override protected def afterAll(): Unit = {
+    sqlAfterAll()
+  }
+
+  override protected def beforeAll(): Unit = {
+    sqlBeforeAll()
   }
 }

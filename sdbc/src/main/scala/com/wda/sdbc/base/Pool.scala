@@ -9,7 +9,7 @@ trait Pool {
 
   case class Pool(configuration: HikariConfig) {
 
-    if (DBMS.of(configuration) != self) {
+    if (DBMS.of(configuration).getClass != self.getClass) {
       throw new IllegalArgumentException("HikariConfig is for the wrong DBMS.")
     }
 

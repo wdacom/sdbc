@@ -9,7 +9,7 @@ trait Connection {
 
   implicit class Connection(val underlying: java.sql.Connection) {
 
-    if (DBMS.of(underlying) != self) {
+    if (DBMS.of(underlying).getClass != self.getClass) {
       throw new IllegalArgumentException("Connection is for the wrong DBMS.")
     }
 

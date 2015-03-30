@@ -10,7 +10,8 @@ abstract class PostgreSqlSuite
   extends fixture.FunSuite
   with HasPostgreSqlPool
   with TestingConfig
-  with PgTestingConfig {
+  with PgTestingConfig
+  with BeforeAndAfterAll {
 
   def testSelect[T](query: String, expectedValue: Option[T])(implicit getter: Getter[T]): Unit = {
     test(query) { implicit connection =>
@@ -38,4 +39,11 @@ abstract class PostgreSqlSuite
     }
   }
 
+  override protected def beforeAll(): Unit = {
+    pgBeforeAll()
+  }
+
+  override protected def afterAll(): Unit = {
+    pgAfterAll()
+  }
 }

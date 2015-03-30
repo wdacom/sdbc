@@ -1,18 +1,17 @@
-package com.wda.sdbc.sqlserver
+package com.wda.sdbc.h2
 
-import com.wda.sdbc.SqlServer._
-
-import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
+import com.wda.sdbc.H2._
+import org.scalatest.BeforeAndAfterEach
 
 import scala.collection.immutable.Seq
 
 class RichResultSetSpec
-  extends SqlServerSuite
+  extends H2Suite
   with BeforeAndAfterEach {
 
   test("seq() works on a single result") {implicit connection =>
-    val results = Select[Int]("SELECT CAST(1 AS int)").seq()
-    assert(results == Seq(1))
+    val results = Select[Int]("SELECT 1").seq()
+    assertResult(Seq(1))(results)
   }
 
   test("seq() works on several results") {implicit connection =>
@@ -26,16 +25,17 @@ class RichResultSetSpec
 
     val insertions = batch.batch()
 
-    assert(insertions.sum[Int] == randoms.size)
+    assertResult(randoms.size)(insertions.sum[Int])
 
     val results = Select[Int]("SELECT x FROM tbl").seq()
-    assert(results == randoms)
+
+    assertResult(randoms)(results)
   }
 
   test("using SelectForUpdate to update a value works") {implicit connection =>
     val randoms = Seq.fill(10)(util.Random.nextInt()).sorted
 
-    Update("CREATE TABLE tbl (id int IDENTITY(1,1) PRIMARY KEY, x int)").execute()
+    Update("CREATE TABLE tbl (id identity PRIMARY KEY, x int)").execute()
 
     val batch = randoms.foldLeft(Batch("INSERT INTO tbl (x) VALUES ($x)")) {
       case (batch, r) =>
@@ -44,14 +44,19 @@ class RichResultSetSpec
 
     batch.batch()
 
-    for(row <- connection.iteratorForUpdate("SELECT x FROM tbl")) {
+    for(row <- connection.iteratorForUpdate("SELECT * FROM tbl")) {
       row("x") = row[Int]("x") + 1
     }
 
-    assert(connection.seq[Int]("SELECT x FROM tbl ORDER BY x ASC").zip(randoms).forall{case (incremented, original) => incremented == original + 1})
+    val afterBatch = connection.seq[Int]("SELECT x FROM tbl ORDER BY x ASC")
+
+    for ((afterUpdate, original) <- afterBatch.zip(randoms)) {
+      assertResult(original + 1)(afterUpdate)
+    }
   }
 
   override protected def afterEach(): Unit = {
-    withSql(_.execute("IF object_id('dbo.tbl') IS NOT NULL DROP TABLE tbl"))
+    withMemConnection()(_.execute("DROP TABLE IF EXISTS tbl"))
   }
+
 }

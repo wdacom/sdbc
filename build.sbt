@@ -1,10 +1,12 @@
 lazy val sdbc = project.in(file("sdbc"))
 
+lazy val h2 = project.in(file("h2")).dependsOn(sdbc % "test->test;compile->compile")
+
 lazy val postgresql = project.in(file("postgresql")).dependsOn(sdbc % "test->test;compile->compile")
 
 lazy val sqlserver = project.in(file("sqlserver")).dependsOn(sdbc % "test->test;compile->compile")
 
-lazy val root = project.in(file(".")).settings(publishArtifact := false).aggregate(sdbc, postgresql, sqlserver)
+lazy val root = project.in(file(".")).settings(publishArtifact := false).aggregate(sdbc, h2, postgresql, sqlserver)
 
 organization in ThisBuild := "com.wda.sdbc"
 
@@ -46,7 +48,6 @@ scalacOptions in ThisBuild ++= Seq(
   "-language:implicitConversions",
   "-unchecked",
   "-Xfatal-warnings",
-  "-Xlint",
   "-Yno-adapted-args",
   "-Ywarn-dead-code",        // N.B. doesn't work well with the ??? hole
   "-Xfuture"

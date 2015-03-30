@@ -12,17 +12,12 @@ import org.scalatest.BeforeAndAfterAll
 import scalaz.Scalaz._
 import com.wda.sdbc.PostgreSql._
 
-class ParameterValueSpec
-  extends PostgreSqlSuite
-  with BeforeAndAfterAll {
+class GetterSpec
+  extends PostgreSqlSuite {
 
   override protected def beforeAll(): Unit = {
     pgBeforeAll()
     createLTree()
-  }
-
-  override protected def afterAll(): Unit = {
-    pgAfterAll()
   }
 
   val jsonString = """{"hi":"there"}"""
