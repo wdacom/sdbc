@@ -4,7 +4,7 @@ import java.util.UUID
 
 import com.wda.sdbc.SqlServer._
 
-class RoundTripSpec
+class UUIDSpec
   extends SqlServerSuite {
 
   test("UUID survives a round trip") { implicit connection =>
