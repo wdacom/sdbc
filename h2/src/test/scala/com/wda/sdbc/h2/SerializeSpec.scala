@@ -2,22 +2,22 @@ package com.wda.sdbc.h2
 
 import com.wda.sdbc.H2._
 
-class SerializableSpec
+class SerializeSpec
   extends H2Suite {
 
   test("Serializable value survives round trip") { implicit connection =>
 
-    val v = Serialize(util.Success(BigDecimal("3.14159")))
+    val v = util.Success(BigDecimal("3.14159"))
 
     Update("CREATE TABLE tbl (obj other)").execute()
 
     Update("INSERT INTO tbl (obj) VALUES ($obj)").on(
-      "obj" -> v
+      "obj" -> Serialized(v)
     ).execute()
 
-    val result = Select[Deserialize[util.Try[BigDecimal]]]("SELECT obj FROM tbl").single()
+    val Serialized(result) = Select[Serialized]("SELECT obj FROM tbl")(GetterToRowSingleton[Serialized](SerializeGetter)).single()
 
-    assertResult(v)(result.value)
+    assertResult(v)(result)
 
   }
 

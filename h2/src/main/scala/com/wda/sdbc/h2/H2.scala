@@ -10,9 +10,9 @@ abstract class H2
   extends DBMS
   with Java8DefaultGetters
   with DefaultSetters
-  with SerializeParameterValue
-  with DeserializeGetter
-  with SerializeSetter {
+  with SerializedParameter
+  with SerializedGetter
+  with SerializedSetter {
   /**
    * Class name for the DataSource class.
    */
