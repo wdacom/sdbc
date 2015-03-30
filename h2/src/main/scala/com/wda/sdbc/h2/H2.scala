@@ -45,7 +45,7 @@ abstract class H2
   override def productName: String = "H2"
 
   def withMemConnection[T](name: String = "")(f: Connection => T): T = {
-    val connection: Connection = DriverManager.getConnection("jdbc:h2:mem:" + name)
+    val connection = DriverManager.getConnection("jdbc:h2:mem:" + name)
     try {
       f(connection)
     } finally {
@@ -54,7 +54,7 @@ abstract class H2
   }
 
   def withFileConnection[T](path: Path)(f: Connection => T): T = {
-    val connection: Connection = DriverManager.getConnection("jdbc:h2:" + path.toFile.getCanonicalPath)
+    val connection = DriverManager.getConnection("jdbc:h2:" + path.toFile.getCanonicalPath)
 
     try {
       f(connection)
