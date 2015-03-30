@@ -8,7 +8,6 @@ import java.util.UUID
 import com.wda.sdbc.base.{ParameterValue, Row}
 import org.json4s._
 
-import scala.collection.immutable.Seq
 import scala.reflect.runtime.universe._
 
 trait SeqParameterValue {
@@ -55,7 +54,7 @@ trait SeqParameterValue {
       case t if t =:= typeOf[InetAddress] => "inet"
       case t if t <:< typeOf[QArray[Any]] =>
         innerTypeName(t)
-      case t if t <:< typeOf[scala.collection.Seq[_]] =>
+      case t if t <:< typeOf[Seq[_]] =>
         innerTypeName(t)
       case t => throw new Exception("PostgreSQL does not understand " + t.toString)
     }
@@ -63,8 +62,8 @@ trait SeqParameterValue {
 
   case class QArray[T](
     override val value: Seq[Option[ParameterValue[T]]]
-    )(implicit t: TypeTag[T]
-    ) extends ParameterValue[Seq[Option[ParameterValue[T]]]] {
+  )(implicit t: TypeTag[T]
+  ) extends ParameterValue[Seq[Option[ParameterValue[T]]]] {
     /**
      * Get the values of this array in a form suitable for use
      * with Java methods that expect an Array.
