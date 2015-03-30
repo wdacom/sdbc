@@ -7,17 +7,17 @@ class SerializeSpec
 
   test("Serializable value survives round trip") { implicit connection =>
 
-    val v = util.Success(BigDecimal("3.14159"))
+    val original = util.Success(BigDecimal("3.14159"))
 
     Update("CREATE TABLE tbl (obj other)").execute()
 
     Update("INSERT INTO tbl (obj) VALUES ($obj)").on(
-      "obj" -> Serialized(v)
+      "obj" -> Serialized(original)
     ).execute()
 
     val Serialized(result) = Select[Serialized]("SELECT obj FROM tbl")(GetterToRowSingleton[Serialized](SerializeGetter)).single()
 
-    assertResult(v)(result)
+    assertResult(original)(result)
 
   }
 
