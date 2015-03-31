@@ -19,17 +19,17 @@ trait Select {
     }
 
     def iterator()(implicit connection: Connection): Iterator[T] = {
-      logger.debug(s"""Retrieving an iterator using "${statement.originalQueryText}" with parameters $parameterValues.""")
+      logger.debug(s"""Retrieving an Iterator using "${statement.originalQueryText}" with parameters $parameterValues.""")
       prepare().executeQuery().iterator().map(row => converter(row))
     }
 
     def seq()(implicit connection: Connection): Seq[T] = {
-      logger.debug(s"""Retrieving a seq using "${statement.originalQueryText}" with parameters $parameterValues.""")
+      logger.debug(s"""Retrieving a Seq using "${statement.originalQueryText}" with parameters $parameterValues.""")
       withPreparedStatement[Vector[T]](_.executeQuery().iterator().map(converter).toVector)
     }
 
     def option()(implicit connection: Connection): Option[T] = {
-      logger.debug(s"""Retrieving an option using "${statement.originalQueryText}" with parameters $parameterValues.""")
+      logger.debug(s"""Retrieving an Option using "${statement.originalQueryText}" with parameters $parameterValues.""")
       withPreparedStatement[Option[T]](_.executeQuery().iterator().map(converter).toStream.headOption)
     }
 
