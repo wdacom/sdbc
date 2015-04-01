@@ -1,6 +1,6 @@
 package com.wda.sdbc.postgresql
 
-object IntervalConstants {
+private object IntervalConstants {
   val nanosecondsPerSecond = 1000000000L
 
   //Constants from PostgreSQL's source: src/include/datatype/timestamp.h
