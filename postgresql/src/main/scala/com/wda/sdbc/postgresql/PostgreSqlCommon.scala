@@ -15,6 +15,7 @@ abstract class PostgreSqlCommon
   with HasJava8TimeFormatter
   with HasJava8DateTimeFormatter
   with IntervalImplicits
+  with ConnectionImplicits
   with Getters {
 
   override def dataSourceClassName = "org.postgresql.ds.PGSimpleDataSource"

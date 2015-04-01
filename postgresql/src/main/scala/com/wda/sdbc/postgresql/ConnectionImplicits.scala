@@ -3,8 +3,7 @@ package postgresql
 
 import org.postgresql.PGConnection
 
-trait Implicits
-  extends IntervalImplicits {
+trait ConnectionImplicits {
 
   /** Since a PostgreSql.Connection is guaranteed to be a PostgreSql Connection,
     * there is no danger in getting its underlying PGConnection value.
