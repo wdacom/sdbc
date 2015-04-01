@@ -5,9 +5,7 @@ import scala.util.Random
 trait TestingConfig extends HasConfig {
   def testCatalogPrefix: String = config.getString("testCatalogPrefix")
 
-  private lazy val randomInt = Random.nextInt(Int.MaxValue)
-
-  def testCatalogSuffix: String = randomInt.toString
+  lazy val testCatalogSuffix: String = Random.nextInt(Int.MaxValue).toString
 
   def testCatalogName: String = testCatalogPrefix + testCatalogSuffix
 }
