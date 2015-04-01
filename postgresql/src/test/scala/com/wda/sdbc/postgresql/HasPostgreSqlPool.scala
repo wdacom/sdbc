@@ -87,10 +87,30 @@ trait HasPostgreSqlPool {
     }
   }
 
+  /**
+   * Method for use with ScalaTest's beforeEach().
+   */
+  protected def pgBeforeEach(): Unit = {
+    pgCreateTestCatalog()
+  }
+
+  /**
+   * Method for use with ScalaTest's afterEach().
+   */
+  protected def pgAfterEach(): Unit = {
+    pgDropTestCatalogs()
+  }
+
+  /**
+   * Method for use with ScalaTest's beforeAll().
+   */
   protected def pgBeforeAll(): Unit = {
     pgCreateTestCatalog()
   }
 
+  /**
+   * Method for use with ScalaTest's afterAll().
+   */
   protected def pgAfterAll(): Unit = {
     pgDropTestCatalogs()
     pgMasterPool.shutdown()

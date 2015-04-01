@@ -76,11 +76,31 @@ trait HasSqlServerPool {
     }
   }
 
-  def sqlBeforeAll(): Unit = {
+  /**
+   * Method for use with ScalaTest's beforeEach().
+   */
+  protected def sqlBeforeEach(): Unit = {
     sqlCreateTestCatalog()
   }
 
-  def sqlAfterAll(): Unit = {
+  /**
+   * Method for use with ScalaTest's afterEach().
+   */
+  protected def sqlAfterEach(): Unit = {
+    sqlDropTestCatalogs()
+  }
+
+  /**
+   * Method for use with ScalaTest's beforeAll().
+   */
+  protected def sqlBeforeAll(): Unit = {
+    sqlCreateTestCatalog()
+  }
+
+  /**
+   * Method for use with ScalaTest's afterAll().
+   */
+  protected def sqlAfterAll(): Unit = {
     sqlDropTestCatalogs()
     sqlMasterPool.shutdown()
   }
