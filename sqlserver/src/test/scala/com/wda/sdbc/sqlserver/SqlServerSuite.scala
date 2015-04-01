@@ -2,6 +2,7 @@ package com.wda.sdbc.sqlserver
 
 import java.time.{Instant, OffsetDateTime}
 
+import com.typesafe.config.{ConfigFactory, Config}
 import com.wda.sdbc.SqlServer._
 import com.wda.sdbc.config.{SqlTestingConfig, TestingConfig}
 import org.scalatest._
@@ -12,6 +13,8 @@ abstract class SqlServerSuite
   with TestingConfig
   with SqlTestingConfig
   with BeforeAndAfterAll {
+
+  override def config: Config = ConfigFactory.load("sql-testing.conf")
 
   override def sqlConfigKey: String = "sql"
 

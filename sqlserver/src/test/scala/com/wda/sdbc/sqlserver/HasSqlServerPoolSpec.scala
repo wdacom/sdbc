@@ -1,5 +1,6 @@
 package com.wda.sdbc.sqlserver
 
+import com.typesafe.config.{ConfigFactory, Config}
 import com.wda.sdbc.SqlServer._
 import com.wda.sdbc.config.{SqlTestingConfig, TestingConfig}
 import org.scalatest.{BeforeAndAfterAll, FunSuite}
@@ -12,6 +13,8 @@ class HasSqlServerPoolSpec
   with BeforeAndAfterAll {
 
   override def sqlConfigKey: String = "sql"
+
+  override def config: Config = ConfigFactory.load("sql-testing.conf")
 
   def testDatabaseExists(): Boolean = {
     withSqlMaster[Boolean] { implicit connection =>

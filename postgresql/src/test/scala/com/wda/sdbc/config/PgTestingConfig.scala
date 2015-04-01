@@ -5,19 +5,19 @@ import com.typesafe.config.{ConfigFactory, Config}
 import scala.util.Random
 
 trait PgTestingConfig {
-  self: HasConfig =>
+  self: TestingConfig =>
 
-  def pgTestCatalogPrefix: String = config.getString("testCatalogPrefix")
-
-  def pgRandomCatalog() =
-    ConfigFactory.parseString("dataSource.databaseName = " + pgTestCatalogPrefix + Random.nextInt(Int.MaxValue))
+  lazy val pgTestCatalogPrefix: String = config.getString("testCatalogPrefix")
 
   def pgConfigKey: String
+
+  lazy val pgRandomCatalog =
+    ConfigFactory.parseString("dataSource.databaseName = " + testCatalogName)
 
   lazy val pgConfig: Config =
     PgTestingConfig.defaults.
     withFallback(config.getConfig(pgConfigKey)).
-    withFallback(pgRandomCatalog())
+    withFallback(pgRandomCatalog)
 
 }
 

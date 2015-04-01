@@ -2,6 +2,7 @@ package com.wda.sdbc.postgresql
 
 import java.time.{Instant, OffsetDateTime}
 
+import com.typesafe.config.{ConfigFactory, Config}
 import com.wda.sdbc.PostgreSql._
 import com.wda.sdbc.config.{PgTestingConfig, TestingConfig}
 import org.scalatest._
@@ -12,6 +13,8 @@ abstract class PostgreSqlSuite
   with TestingConfig
   with PgTestingConfig
   with BeforeAndAfterAll {
+
+  override def config: Config = ConfigFactory.load("sql-testing.conf")
 
   override def pgConfigKey: String = "pg"
 
