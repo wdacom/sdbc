@@ -12,9 +12,11 @@ trait SqlTestingConfig {
   def sqlRandomCatalog() =
     ConfigFactory.parseString("catalog = " + sqlTestCatalogPrefix + Random.nextInt(Int.MaxValue))
 
+  def sqlConfigKey: String
+
   lazy val sqlConfig: Config =
     SqlTestingConfig.defaults.
-    withFallback(config.getConfig("sql")).
+    withFallback(config.getConfig(sqlConfigKey)).
     withFallback(sqlRandomCatalog())
 }
 

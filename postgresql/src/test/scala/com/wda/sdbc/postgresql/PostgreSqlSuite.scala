@@ -13,6 +13,8 @@ abstract class PostgreSqlSuite
   with PgTestingConfig
   with BeforeAndAfterAll {
 
+  override def pgConfigKey: String = "pg"
+
   def testSelect[T](query: String, expectedValue: Option[T])(implicit getter: Getter[T]): Unit = {
     test(query) { implicit connection =>
       val result = Select[Option[T]](query).single()

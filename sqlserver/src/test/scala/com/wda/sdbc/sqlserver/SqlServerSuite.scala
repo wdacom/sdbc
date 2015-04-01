@@ -13,6 +13,8 @@ abstract class SqlServerSuite
   with SqlTestingConfig
   with BeforeAndAfterAll {
 
+  override def sqlConfigKey: String = "sql"
+
   def testSelect[T](query: String, expectedValue: Option[T])(implicit getter: Getter[T]): Unit = {
     test(query) { implicit connection =>
       val result = Select[Option[T]](query).single()

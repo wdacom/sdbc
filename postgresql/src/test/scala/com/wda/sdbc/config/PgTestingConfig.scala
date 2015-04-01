@@ -12,9 +12,11 @@ trait PgTestingConfig {
   def pgRandomCatalog() =
     ConfigFactory.parseString("dataSource.databaseName = " + pgTestCatalogPrefix + Random.nextInt(Int.MaxValue))
 
+  def pgConfigKey: String
+
   lazy val pgConfig: Config =
     PgTestingConfig.defaults.
-    withFallback(config.getConfig("pg")).
+    withFallback(config.getConfig(pgConfigKey)).
     withFallback(pgRandomCatalog())
 
 }
