@@ -8,26 +8,30 @@ It also provides support for connection pools using [HikariCP](https://github.co
 ## Requirements
 
 * Scala 2.11 or Scala 2.10
-* PostgreSQL or Microsoft SQL Server
+* H2, PostgreSQL, or Microsoft SQL Server
 
 Include an implementation of the [SLF4J](http://slf4j.org/) logging interface, turn on debug logging, and all your query executions will be logged with the query text and the parameter name-value map.
 
-The Scala 2.10 build does not include support for arrays.
-
 ## SBT Library Dependency
+
+Packages exist on Maven Central for Scala 2.10 and 2.11. The Scala 2.10 builds for PostgreSQL do not include support for arrays.
+
+### H2
+
+```scala
+"com.wda.sdbc" %% "h2" % "0.6"
+```
 
 ### PostgreSql
 
-Packages exist on Maven Central for Scala 2.10 and 2.11.
-
 ```scala
-"com.wda.sdbc" %% "postgresql" % "0.5"
+"com.wda.sdbc" %% "postgresql" % "0.6"
 ```
 
 ### SQL Server
 
 ```scala
-"com.wda.sdbc" %% "sqlserver" % "0.5"
+"com.wda.sdbc" %% "sqlserver" % "0.6"
 ```
 
 ## License
@@ -91,7 +95,7 @@ val query =
     Select[MyRow]("SELECT * FROM tbl WHERE message = $message").
     on("message" -> "hello there!")
 
-val myRows = {
+val myRow = {
     /* If you are using a Select, SelectForUpdate, Update, or Batch value,
      * you don't need the connection until you call .iterator(),
      * .seq(), .option, .single(), or one of the execute methods.
@@ -158,14 +162,14 @@ val parameters =
     )
 
 val updatedRowCount =
-	connection.executeUpdate(
+	connection.update(
 	    queryText,
 		parameters: _*
 	)
 
 //The above is equivalent to
 val updatedRowCount2 =
-    Update(queryText).on(parameters: _*).executeUpdate()
+    Update(queryText).on(parameters: _*).update()
 ```
 
 ### Batch Update
@@ -181,7 +185,7 @@ val batchUpdate =
 val updatedRowCount = {
     implicit val connection: Connection = DriverManager.getConnection("...")
     try {
-    	batchUpdate.executeBatch().sum
+    	batchUpdate.batch().sum
     finally {
         connection.close()
     }
@@ -218,3 +222,11 @@ val result = pool.withConnection { implicit connection =>
 	f()
 }
 ```
+
+## Changelog
+
+### 0.6
+
+* Add support for H2.
+* Test packages have better support for building and destroying test catalogs.
+* Some method names were shortened: executeBatch() to batch(), executeUpdate() to update()
