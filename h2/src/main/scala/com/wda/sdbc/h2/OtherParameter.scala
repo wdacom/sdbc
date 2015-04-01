@@ -9,19 +9,16 @@ import com.wda.sdbc.base.{Getter, ParameterValue, Row}
  * as a serialized object instead of trying the other implicit conversions
  * to ParameterValue.
  */
-trait SerializedParameter {
+trait OtherParameter {
+  self: ParameterValue with Getter with Row =>
 
-  case class Serialized(
+  case class Other(
     value: Serializable
   )
 
-}
-
-trait SerializedSetter {
-  self: SerializedParameter with ParameterValue with Getter with Row =>
-
-  implicit class QSerialized[T <: Serializable](override val value: Serialized)
-    extends ParameterValue[Serialized] {
+  implicit class QOther[T <: Serializable](
+    override val value: Other
+  ) extends ParameterValue[Other] {
 
     override def asJDBCObject: AnyRef = {
       new AbstractMethodError("Serializable objects are not necessarily JDBC objects.")
@@ -31,11 +28,10 @@ trait SerializedSetter {
       row: Row,
       columnIndex: Int
     ): Unit = {
-      row
-      .updateObject(
-          columnIndex,
-          value.value
-        )
+      row.updateObject(
+        columnIndex,
+        value.value
+      )
     }
 
     override def set(
@@ -50,15 +46,10 @@ trait SerializedSetter {
 
   }
 
-}
-
-trait SerializedGetter {
-  self: SerializedParameter with Row with Getter =>
-
-  implicit val SerializeGetter: Getter[Serialized] =
-    new Getter[Serialized] {
-      override def apply(row: Row, columnIndex: Int): Option[Serialized] = {
-        Option(row.getObject(columnIndex)).map(o => Serialized(o.asInstanceOf[Serializable]))
+  implicit val OtherGetter: Getter[Other] =
+    new Getter[Other] {
+      override def apply(row: Row, columnIndex: Int): Option[Other] = {
+        Option(row.getObject(columnIndex)).map(o => Other(o.asInstanceOf[Serializable]))
       }
     }
 

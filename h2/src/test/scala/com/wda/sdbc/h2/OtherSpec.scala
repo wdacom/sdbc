@@ -2,7 +2,7 @@ package com.wda.sdbc.h2
 
 import com.wda.sdbc.H2._
 
-class SerializeSpec
+class OtherSpec
   extends H2Suite {
 
   test("Serializable value survives round trip") { implicit connection =>
@@ -12,10 +12,10 @@ class SerializeSpec
     Update("CREATE TABLE tbl (obj other)").execute()
 
     Update("INSERT INTO tbl (obj) VALUES ($obj)").on(
-      "obj" -> Serialized(original)
+      "obj" -> Other(original)
     ).execute()
 
-    val Serialized(result) = Select[Serialized]("SELECT obj FROM tbl")(GetterToRowSingleton[Serialized](SerializeGetter)).single()
+    val Other(result) = Select[Other]("SELECT obj FROM tbl").single()
 
     assertResult(original)(result)
 
