@@ -1,7 +1,11 @@
 package com.wda.sdbc.config
 
-import com.typesafe.config.{ConfigFactory, Config}
+import scala.util.Random
 
 trait TestingConfig extends HasConfig {
-  override def config: Config = ConfigFactory.load("sql-testing.conf")
+  def testCatalogPrefix: String = config.getString("testCatalogPrefix")
+
+  val testCatalogSuffix: String = Random.nextInt(Int.MaxValue).toString
+
+  def testCatalog: String = testCatalogPrefix + testCatalogSuffix
 }
