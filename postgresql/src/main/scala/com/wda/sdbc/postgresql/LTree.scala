@@ -23,7 +23,7 @@ class LTree() extends PGobject() with collection.immutable.Iterable[String] with
     if (this.path.isDefined)
       throw new IllegalStateException("setPath or setValue can not be called after setPath or setValue")
 
-    com.wda.sdbc.PostgreSql.LTree.validatePath(path)
+    LTree.validatePath(path)
 
     this.path = Some(path)
   }
@@ -59,25 +59,25 @@ class LTree() extends PGobject() with collection.immutable.Iterable[String] with
   }
 
   def ++(that: String): LTree = {
-    com.wda.sdbc.PostgreSql.LTree(this.getPath ++ com.wda.sdbc.PostgreSql.LTree.fromString(that): _*)
+    LTree(this.getPath ++ LTree.fromString(that): _*)
   }
 
   def ++(that: Iterable[String]): LTree = {
-    com.wda.sdbc.PostgreSql.LTree.validatePath(that)
+    LTree.validatePath(that)
     val combined = new LTree
     combined.path = Some(this.getPath ++ that)
     combined
   }
 
   def :+(that: String): LTree = {
-    com.wda.sdbc.PostgreSql.LTree.validateNode(that)
+    LTree.validateNode(that)
     val combined = new LTree
     combined.path = Some(this.getPath :+ that)
     combined
   }
 
   def +:(that: String): LTree = {
-    com.wda.sdbc.PostgreSql.LTree.validateNode(that)
+    LTree.validateNode(that)
     val combined = new LTree
     combined.path = Some(that +: this.getPath)
     combined
