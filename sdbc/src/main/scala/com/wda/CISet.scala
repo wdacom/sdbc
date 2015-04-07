@@ -11,7 +11,7 @@ object CISet {
 
   val empty = TreeSet.empty[String]
 
-  def apply[A](elems: String*): TreeSet[String] = {
+  def apply(elems: String*): TreeSet[String] = {
     TreeSet(elems: _*)
   }
 
