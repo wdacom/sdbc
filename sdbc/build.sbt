@@ -10,14 +10,14 @@ libraryDependencies ++= Seq(
   "org.apache.logging.log4j" % "log4j-core" % "2.2" % "test",
   "org.scala-lang" % "scala-reflect" % scalaVersion.value,
   //Connection pooling
-  "com.zaxxer" % "HikariCP" % "2.3.5",
+  "com.zaxxer" % "HikariCP" % "2.3.6",
   //Config file loading
   //https://github.com/typesafehub/config
   "com.typesafe" % "config" % "1.2.1",
   "org.scalatest" %% "scalatest" % "2.2.4" % "test",
   "org.scalacheck" %% "scalacheck" % "1.12.2" % "test",
   "org.scalaz" %% "scalaz-core" % "7.1.1" % "test",
-  "org.apache.commons" % "commons-lang3" % "3.3.2" % "test"
+  "org.apache.commons" % "commons-lang3" % "3.4" % "test"
 )
 
 libraryDependencies <++= scalaVersion { version =>
