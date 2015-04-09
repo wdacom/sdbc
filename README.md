@@ -19,19 +19,19 @@ Packages exist on Maven Central for Scala 2.10 and 2.11. The Scala 2.10 builds f
 ### H2
 
 ```scala
-"com.wda.sdbc" %% "h2" % "0.7"
+"com.wda.sdbc" %% "h2" % "0.8"
 ```
 
 ### PostgreSql
 
 ```scala
-"com.wda.sdbc" %% "postgresql" % "0.7"
+"com.wda.sdbc" %% "postgresql" % "0.8"
 ```
 
 ### SQL Server
 
 ```scala
-"com.wda.sdbc" %% "sqlserver" % "0.7"
+"com.wda.sdbc" %% "sqlserver" % "0.8"
 ```
 
 ## License
@@ -224,6 +224,10 @@ val result = pool.withConnection { implicit connection =>
 ```
 
 ## Changelog
+
+### 0.8
+
+* XML getters and setters use Node instead of Elem
 
 ### 0.7
 
