@@ -7,7 +7,7 @@ import java.util.UUID
 
 import com.wda.sdbc.base._
 
-import scala.xml.{XML, Elem}
+import scala.xml.{XML, Node}
 
 trait Getters extends Java8DefaultGetters {
   self: Row with Getter with HierarchyId with HasJava8DateTimeFormatter =>
@@ -28,8 +28,8 @@ trait Getters extends Java8DefaultGetters {
 
   implicit def HierarchyIdSingleton(row: Row): HierarchyId = NullableHierarchyIdSingleton(row).get
 
-  implicit val XMLGetter: Getter[Elem] = new Getter[Elem] {
-    override def apply(row: Row, columnIndex: Int): Option[Elem] = {
+  implicit val XMLGetter: Getter[Node] = new Getter[Node] {
+    override def apply(row: Row, columnIndex: Int): Option[Node] = {
       for {
         clob <- Option(row.getClob(columnIndex))
       } yield {
@@ -43,9 +43,9 @@ trait Getters extends Java8DefaultGetters {
     }
   }
 
-  implicit def NullableXMLSingleton(row: Row): Option[Elem] = XMLGetter(row, 1)
+  implicit def NullableXMLSingleton(row: Row): Option[Node] = XMLGetter(row, 1)
 
-  implicit def XMLSingleton(row: Row): Elem = NullableXMLSingleton(row).get
+  implicit def XMLSingleton(row: Row): Node = NullableXMLSingleton(row).get
 
   /**
    * The JTDS driver fails to parse timestamps, so when it fails, use our own parser.

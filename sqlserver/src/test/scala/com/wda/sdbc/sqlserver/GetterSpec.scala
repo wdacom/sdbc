@@ -42,7 +42,7 @@ class GetterSpec
 
   testSelect[java.math.BigDecimal]("SELECT CAST(3.14159 AS numeric(10,5)) --as Java BigDecimal", BigDecimal("3.14159").underlying.some)
 
-  testSelect[scala.xml.Elem]("SELECT CAST('<a>hi</a>' AS xml)", <a>hi</a>.some)
+  testSelect[scala.xml.Node]("SELECT CAST('<a>hi</a>' AS xml)", <a>hi</a>.some)
 
   testSelect[Date]("SELECT CAST('2014-12-29' AS date)", Date.valueOf("2014-12-29").some)
 

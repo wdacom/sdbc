@@ -11,7 +11,7 @@ import org.json4s._
 import org.json4s.jackson.JsonMethods
 import org.postgresql.util.PGInterval
 
-import scala.xml.{XML, Elem}
+import scala.xml.{XML, Node}
 
 trait Getters extends Java8DefaultGetters {
   self: Row with IntervalImplicits with Getter =>
@@ -65,9 +65,9 @@ trait Getters extends Java8DefaultGetters {
     }
   }
 
-  implicit val XMLGetter: Getter[Elem] = new Parser[Elem] {
+  implicit val XMLGetter: Getter[Node] = new Parser[Node] {
     //PostgreSQL's ResultSet#getSQLXML just uses getString.
-    override def parse(asString: String): Elem = {
+    override def parse(asString: String): Node = {
       XML.loadString(asString)
     }
   }

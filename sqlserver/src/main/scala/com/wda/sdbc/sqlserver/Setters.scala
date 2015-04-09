@@ -6,7 +6,7 @@ import java.util.UUID
 
 import com.wda.sdbc.base._
 
-import scala.xml.Elem
+import scala.xml.Node
 
 //We have to use a special UUID getter, so we can't use the default setters.
 trait Setters
@@ -58,7 +58,7 @@ trait Setters
     }
   }
 
-  implicit class QXML(override val value: Elem) extends ParameterValue[Elem] {
+  implicit class QXML(override val value: Node) extends ParameterValue[Node] {
     override def asJDBCObject: AnyRef = value.toString
 
     override def set(preparedStatement: PreparedStatement, parameterIndex: Int): Unit = {

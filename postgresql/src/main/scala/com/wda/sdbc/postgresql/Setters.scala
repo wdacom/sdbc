@@ -9,7 +9,7 @@ import org.json4s._
 import org.json4s.jackson.JsonMethods
 import org.postgresql.util.PGInterval
 
-import scala.xml.Elem
+import scala.xml.Node
 
 trait Setters
   extends Java8DefaultSetters {
@@ -81,7 +81,7 @@ trait Setters
     }
   }
 
-  implicit class QXML(override val value: Elem) extends ParameterValue[Elem] {
+  implicit class QXML(override val value: Node) extends ParameterValue[Node] {
     override def asJDBCObject: AnyRef = value.toString
 
     override def set(preparedStatement: PreparedStatement, parameterIndex: Int): Unit = {
