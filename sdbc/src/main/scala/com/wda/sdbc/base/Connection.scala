@@ -71,7 +71,7 @@ trait Connection {
       ).single()(this)
     }
 
-    def executeUpdate(
+    def update(
       queryText: String,
       parameterValues: (String, Option[ParameterValue[_]])*
     ): Int = {
@@ -80,7 +80,7 @@ trait Connection {
       ).update()(this)
     }
 
-    def executeLargeUpdate(
+    def largeUpdate(
       queryText: String,
       parameterValues: (String, Option[ParameterValue[_]])*
     ): Long = {
