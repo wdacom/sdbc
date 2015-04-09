@@ -9,7 +9,7 @@ trait HasPostgreSqlPool {
 
   val pgTestCatalogName = pgConfig.getString("dataSource.databaseName")
 
-  private var pgPool: Option[Pool] = None
+  protected var pgPool: Option[Pool] = None
 
   /*
   PostgreSQL doesn't allow changing the database for a connection,
