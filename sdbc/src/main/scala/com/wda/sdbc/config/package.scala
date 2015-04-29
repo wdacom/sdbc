@@ -22,7 +22,7 @@ package object config {
         if (hikariDurationProperties.contains(key)) {
           val duration = config.getDuration(key, TimeUnit.MILLISECONDS)
           properties.setProperty(key, duration.toString)
-        } else {
+        } else if (hikariOtherProperties.contains(key)) {
           value.valueType() match {
             case ConfigValueType.STRING =>
               properties.setProperty(key, config.getString(key))
@@ -48,8 +48,6 @@ package object config {
     def toHikariConfig: HikariConfig = {
       val poolProperties = toHikariProperties
 
-      val className = poolProperties.getProperty("dataSourceClassName", poolProperties.getProperty("driverClassName"))
-
       val hikariConfig = new HikariConfig(poolProperties)
 
       //Set data source properties if they exist.
@@ -73,6 +71,37 @@ package object config {
       properties
     }
   }
+
+  val hikariOtherProperties =
+    Set(
+      "dataSourceClassName",
+      "jdbcUrl",
+      "username",
+      "password",
+      "autoCommit",
+      "connectionTimeout",
+      "idleTimeout",
+      "maxLifetime",
+      "connectionTestQuery",
+      "minimumIdle",
+      "maximumPoolSize",
+      "metricRegistry",
+      "healthCheckRegistry",
+      "poolName",
+      "initializationFailFast",
+      "isolateInternalQueries",
+      "allowPoolSuspension",
+      "readOnly",
+      "registerMbeans",
+      "catalog",
+      "connectionInitSql",
+      "driverClassName",
+      "transactionIsolation",
+      "validationTimeout",
+      "leakDetectionThreshold",
+      "dataSource",
+      "threadFactory"
+    )
 
   val hikariDurationProperties =
     Set(
