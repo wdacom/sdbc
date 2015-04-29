@@ -14,7 +14,7 @@ scalaVersion in ThisBuild := "2.11.6"
 
 crossScalaVersions := Seq("2.10.5")
 
-version in ThisBuild := "0.8"
+version in ThisBuild := "0.9"
 
 licenses in ThisBuild := Seq("The BSD 3-Clause License" -> url("http://opensource.org/licenses/BSD-3-Clause"))
 
@@ -36,7 +36,6 @@ pomExtra in ThisBuild :=
     <url>git@github.com:wdacom/sdbc.git</url>
     <connection>scm:git:git@github.com:wdacom/sdbc.git</connection>
   </scm>
-
 
 //Some helpful compiler flags from https://tpolecat.github.io/2014/04/11/scalac-flags.html
 scalacOptions in ThisBuild ++= Seq(

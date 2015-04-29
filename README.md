@@ -19,19 +19,19 @@ Packages exist on Maven Central for Scala 2.10 and 2.11. The Scala 2.10 builds f
 ### H2
 
 ```scala
-"com.wda.sdbc" %% "h2" % "0.8"
+"com.wda.sdbc" %% "h2" % "0.9"
 ```
 
 ### PostgreSql
 
 ```scala
-"com.wda.sdbc" %% "postgresql" % "0.8"
+"com.wda.sdbc" %% "postgresql" % "0.9"
 ```
 
 ### SQL Server
 
 ```scala
-"com.wda.sdbc" %% "sqlserver" % "0.8"
+"com.wda.sdbc" %% "sqlserver" % "0.9"
 ```
 
 ## License
@@ -224,6 +224,10 @@ val result = pool.withConnection { implicit connection =>
 ```
 
 ## Changelog
+
+### 0.9
+
+* Only Hikari configuration parameters are sent to the HikariConfig constructor
 
 ### 0.8
 
