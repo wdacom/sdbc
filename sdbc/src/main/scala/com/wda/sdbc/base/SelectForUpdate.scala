@@ -7,17 +7,19 @@ trait SelectForUpdate {
 
   type MutableRow
 
-  implicit def QueryResultToRowIterator(result: MutableResultSet): Iterator[MutableRow]
+  protected implicit def MutableResultSetToMutableRowIterator(result: MutableResultSet): Iterator[MutableRow]
 
   trait MutablePreparer {
-    def prepare(queryText: String)(implicit connection: Connection): PreparedStatement
+    def prepare(queryText: String)(implicit connection: UnderlyingConnection): PreparedStatement
   }
 
-  implicit def MutableRowToRow(mutableRow: MutableRow): Row
+  val isMutablePreparer: MutablePreparer
 
   trait QueryUpdatable {
-    def executeQuery(statement: PreparedStatement)(implicit connection: Connection): MutableResultSet
+    def executeQuery(statement: PreparedStatement)(implicit connection: UnderlyingConnection): MutableResultSet
   }
+
+  val isQueryUpdatable: QueryUpdatable
 
   case class SelectForUpdate private[sdbc] (
     statement: CompiledStatement,
@@ -31,9 +33,9 @@ trait SelectForUpdate {
       SelectForUpdate(statement, parameterValues)
     }
 
-    def iterator()(implicit connection: Connection, ev0: MutablePreparer, ev1: QueryUpdatable): Iterator[MutableRow] = {
+    def iterator()(implicit connection: UnderlyingConnection): Iterator[MutableRow] = {
       logger.debug(s"""Retrieving an iterator of updatable rows using "${statement.originalQueryText}" with parameters $parameterValues.""")
-      ev1.executeQuery(ev0.prepare(queryText))
+      isQueryUpdatable.executeQuery(isMutablePreparer.prepare(queryText))
     }
 
   }
