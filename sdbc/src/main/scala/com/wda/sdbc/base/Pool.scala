@@ -6,14 +6,14 @@ trait Pool {
   type UnderlyingPool
 
   trait Pool {
-    def getConnection(pool: UnderlyingPool): Connection
+    def getConnection(pool: UnderlyingPool): UnderlyingConnection
 
-    def withConnection[T](pool: UnderlyingPool)(f: Connection => T)(implicit isClosable: Closable[Connection]): T = {
+    def withConnection[T](pool: UnderlyingPool)(f: UnderlyingConnection => T): T = {
       val connection = getConnection(pool)
       try {
         f(connection)
       } finally {
-        isClosable.closeQuietly(connection)
+        isClosableConnection.closeQuietly(connection)
       }
     }
   }

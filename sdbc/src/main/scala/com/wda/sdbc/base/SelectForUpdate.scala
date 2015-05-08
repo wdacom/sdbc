@@ -1,13 +1,11 @@
 package com.wda.sdbc.base
 
 trait SelectForUpdate {
-  self: Connection with ParameterValue with AbstractQuery with Row =>
+  self: Connection with ParameterValue with AbstractQuery with Row with MutableRow =>
 
-  type MutableResultSet
+  type UnderlyingMutableResultSet
 
-  type MutableRow
-
-  protected implicit def MutableResultSetToMutableRowIterator(result: MutableResultSet): Iterator[MutableRow]
+  protected implicit def MutableResultSetToMutableRowIterator(result: UnderlyingMutableResultSet): Iterator[UnderlyingMutableRow]
 
   trait MutablePreparer {
     def prepare(queryText: String)(implicit connection: UnderlyingConnection): PreparedStatement
@@ -16,7 +14,7 @@ trait SelectForUpdate {
   val isMutablePreparer: MutablePreparer
 
   trait QueryUpdatable {
-    def executeQuery(statement: PreparedStatement)(implicit connection: UnderlyingConnection): MutableResultSet
+    def executeQuery(statement: PreparedStatement)(implicit connection: UnderlyingConnection): UnderlyingMutableResultSet
   }
 
   val isQueryUpdatable: QueryUpdatable
@@ -33,7 +31,7 @@ trait SelectForUpdate {
       SelectForUpdate(statement, parameterValues)
     }
 
-    def iterator()(implicit connection: UnderlyingConnection): Iterator[MutableRow] = {
+    def iterator()(implicit connection: UnderlyingConnection): Iterator[UnderlyingMutableRow] = {
       logger.debug(s"""Retrieving an iterator of updatable rows using "${statement.originalQueryText}" with parameters $parameterValues.""")
       isQueryUpdatable.executeQuery(isMutablePreparer.prepare(queryText))
     }
