@@ -5,11 +5,13 @@ import scala.language.reflectiveCalls
 trait Update {
   self: Connection with ParameterValue with AbstractQuery =>
 
-  trait Updateable {
+  protected trait Updateable {
     def executeUpdate(statement: PreparedStatement): Int
 
     def executeLargeUpdate(statement: PreparedStatement): Long
   }
+
+  protected val isUpdatable: Updateable
 
   case class Update private[sdbc] (
     statement: CompiledStatement,
@@ -23,14 +25,14 @@ trait Update {
       Update(statement, parameterValues)
     }
 
-    def update()(implicit connection: Connection, ev0: Preparer, ev1: Closable[PreparedStatement], ev2: Updateable): Int = {
+    def update()(implicit connection: UnderlyingConnection): Int = {
       logger.debug(s"""Executing an update using "${statement.originalQueryText}" with parameters $parameterValues.""")
-      withPreparedStatement(statement => ev2.executeUpdate(statement))
+      withPreparedStatement(statement => isUpdatable.executeUpdate(statement))
     }
 
-    def largeUpdate()(implicit connection: Connection, ev0: Preparer, ev1: Closable[PreparedStatement], ev2: Updateable): Long = {
+    def largeUpdate()(implicit connection: UnderlyingConnection): Long = {
       logger.debug(s"""Executing a large update using "${statement.originalQueryText}" with parameters $parameterValues.""")
-      withPreparedStatement(statement => ev2.executeLargeUpdate(statement))
+      withPreparedStatement(statement => isUpdatable.executeLargeUpdate(statement))
     }
 
   }

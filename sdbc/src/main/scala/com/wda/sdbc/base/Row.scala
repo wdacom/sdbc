@@ -3,48 +3,48 @@ package com.wda.sdbc.base
 trait Row {
   self: ParameterValue with Getter =>
 
-  type WrappedRow
-  
-  abstract class Row private[sdbc](
-    val underlying: WrappedRow
-  ) {
+  type UnderlyingRow
 
-    def columnIndexes: Map[String, Int]
+  val isRow: Row
 
-    def apply[V](implicit getter: Getter[V]): V = {
-      single[V]
+  trait Row {
+
+    def columnIndex(row: UnderlyingRow, columnName: String): Int
+
+    def apply[V](row: UnderlyingRow)(implicit getter: Getter[V]): V = {
+      single[V](row)
     }
 
-    def apply[V](columnName: String)(implicit getter: Getter[V]): V = {
-      single[V](columnName)
+    def apply[V](row: UnderlyingRow, columnName: String)(implicit getter: Getter[V]): V = {
+      single[V](row, columnName)
     }
 
-    def apply[V](columnIndex: Int)(implicit getter: Getter[V]): V = {
-      single[V](columnIndex)
+    def apply[V](row: UnderlyingRow, columnIndex: Int)(implicit getter: Getter[V]): V = {
+      single[V](row, columnIndex)
     }
 
-    def single[V](implicit getter: Getter[V]): V = {
-      getter(this).get
+    def single[V](row: UnderlyingRow)(implicit getter: Getter[V]): V = {
+      getter(row).get
     }
 
-    def single[V](columnName: String)(implicit getter: Getter[V]): V = {
-      getter(this, columnName).get
+    def single[V](row: UnderlyingRow, columnName: String)(implicit getter: Getter[V]): V = {
+      getter(row, columnName).get
     }
 
-    def single[V](columnIndex: Int)(implicit getter: Getter[V]): V = {
-      getter(this, columnIndex).get
+    def single[V](row: UnderlyingRow, columnIndex: Int)(implicit getter: Getter[V]): V = {
+      getter(row, columnIndex).get
     }
 
-    def option[V](implicit getter: Getter[V]): Option[V] = {
-      getter(this)
+    def option[V](row: UnderlyingRow)(implicit getter: Getter[V]): Option[V] = {
+      getter(row)
     }
 
-    def option[V](columnName: String)(implicit getter: Getter[V]): Option[V] = {
-      getter(this, columnName)
+    def option[V](row: UnderlyingRow)(columnName: String)(implicit getter: Getter[V]): Option[V] = {
+      getter(row, columnName)
     }
 
-    def option[V](columnIndex: Int)(implicit getter: Getter[V]): Option[V] = {
-      getter(this, columnIndex)
+    def option[V](row: UnderlyingRow, columnIndex: Int)(implicit getter: Getter[V]): Option[V] = {
+      getter(row, columnIndex)
     }
 
     def unapply[V](converter: PartialFunction[Row, V]): Option[V] = {
@@ -56,10 +56,6 @@ trait Row {
       converters.find(_.isDefinedAt(this)).map(_(this))
     }
 
-  }
-
-  implicit def RowToWrappedRow(row: Row): WrappedRow = {
-    row.underlying
   }
 
 }

@@ -1,41 +1,30 @@
 package com.wda.sdbc.base
 
 import scala.collection.immutable.Seq
-import scala.language.reflectiveCalls
 
 trait Connection {
   self: AbstractQuery with Row with ParameterValue with Select with Update =>
 
-  type WrappedConnection
+  protected type UnderlyingConnection
 
-  type PreparedStatement
+  protected val isConnection: Connection
 
-  trait Closable[T] {
-    def close(connection: T): Unit
+  protected val isClosableConnection: Closable[UnderlyingConnection]
 
-    def closeQuietly(connection: T): Unit = {
-      util.Try(close(connection))
-    }
-  }
+  protected type PreparedStatement
 
-  trait Preparer {
-    def prepare(connection: Connection, queryText: String): PreparedStatement
-  }
+  protected val isClosablePreparedStatement: Closable[PreparedStatement]
 
-  abstract class Connection(
-    val underlying: WrappedConnection
-  )(ev: Closable[WrappedConnection]) {
-
-    def prepareStatement(query: String): PreparedStatement
+  protected trait Connection extends Closable[Connection] {
+    def prepare(connection: UnderlyingConnection, queryText: String): PreparedStatement
 
     def iterator[T](
       queryText: String,
       parameterValues: (String, Option[ParameterValue[_]])*
-    )(implicit converter: Row => T,
-      ev0: Preparer,
-      ev1: Queryable
+    )(implicit connection: UnderlyingConnection,
+      converter: Row => T
     ): Iterator[T] = {
-      implicit val connection = this
+      implicit val isConnection = this
       Select[T](queryText).on(
         parameterValues: _*
       ).iterator()
@@ -44,13 +33,10 @@ trait Connection {
     def seq[T](
       queryText: String,
       parameterValues: (String, Option[ParameterValue[_]])*
-    )(
-      implicit converter: Row => T,
-      ev0: Preparer,
-      ev1: Queryable,
-      ev2: Closable[PreparedStatement]
+    )(implicit connection: UnderlyingConnection,
+      converter: Row => T
     ): Seq[T] = {
-      implicit val connection = this
+      implicit val isConnection = this
       Select[T](queryText).on(
         parameterValues: _*
       ).seq()
@@ -59,13 +45,10 @@ trait Connection {
     def option[T](
       queryText: String,
       parameterValues: (String, Option[ParameterValue[_]])*
-    )(
-      implicit converter: Row => T,
-      ev0: Preparer,
-      ev1: Queryable,
-      ev2: Closable[PreparedStatement]
+    )(implicit connection: UnderlyingConnection,
+      converter: Row => T
     ): Option[T] = {
-      implicit val connection = this
+      implicit val isConnection = this
       Select[T](queryText).on(
         parameterValues: _*
       ).option()
@@ -74,13 +57,10 @@ trait Connection {
     def single[T](
       queryText: String,
       parameterValues: (String, Option[ParameterValue[_]])*
-    )(
-      implicit converter: Row => T,
-      ev0: Preparer,
-      ev1: Queryable,
-      ev2: Closable[PreparedStatement]
+    )(implicit connection: UnderlyingConnection,
+      converter: Row => T
     ): T = {
-      implicit val connection = this
+      implicit val isConnection = this
       Select[T](queryText).on(
         parameterValues: _*
       ).single()
@@ -89,11 +69,9 @@ trait Connection {
     def update(
       queryText: String,
       parameterValues: (String, Option[ParameterValue[_]])*
-    )(implicit ev0: Preparer,
-      ev1: Updateable,
-      ev2: Closable[PreparedStatement]
+    )(implicit connection: UnderlyingConnection
     ): Int = {
-      implicit val connection = this
+      implicit val isConnection = this
       Update(queryText).on(
         parameterValues: _*
       ).update()
@@ -102,11 +80,10 @@ trait Connection {
     def largeUpdate(
       queryText: String,
       parameterValues: (String, Option[ParameterValue[_]])*
-    )(implicit ev0: Preparer,
-      ev1: Updateable,
-      ev2: Closable[PreparedStatement]
+    )(implicit connection: UnderlyingConnection,
+      isConnection: Connection
     ): Long = {
-      implicit val connection = this
+      implicit val isConnection = this
       Update(queryText).on(
         parameterValues: _*
       ).largeUpdate()
@@ -115,19 +92,14 @@ trait Connection {
     def execute(
       queryText: String,
       parameterValues: (String, Option[ParameterValue[_]])*
-    )(implicit ev: Executable,
-      ev1: Preparer,
-      ev2: Closable[PreparedStatement]
+    )(implicit connection: UnderlyingConnection,
+      isExecutable: Executable
     ): Unit = {
-      implicit val connection = this
+      implicit val isConnection = this
       Update(queryText).on(
         parameterValues: _*
       ).execute()
     }
-  }
-
-  implicit def ConnectionToWrappedConnection(connection: Connection): WrappedConnection = {
-    connection.underlying
   }
 
 }

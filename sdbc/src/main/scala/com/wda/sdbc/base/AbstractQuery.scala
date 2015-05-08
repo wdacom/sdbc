@@ -2,8 +2,6 @@ package com.wda.sdbc.base
 
 import com.wda.Logging
 
-import scala.language.reflectiveCalls
-
 /**
  * Given a query with named parameters beginning with '$',
  * construct the query for use with JDBC, so that named
@@ -16,16 +14,18 @@ import scala.language.reflectiveCalls
  * this scheme must be quoted by backticks.
  *
  * Examples of identifiers:
- *   \$hello
- *   \$`hello there`
- *   \$_i_am_busy
+ * \$hello
+ * \$`hello there`
+ * \$_i_am_busy
  */
 trait AbstractQuery {
   self: Connection with ParameterValue =>
 
   trait Executable {
-    def execute(statement: PreparedStatement)(implicit connection: Connection): Unit
+    def execute(statement: PreparedStatement)(implicit connection: UnderlyingConnection): Unit
   }
+
+  val executable: Executable
 
   trait AbstractQuery[Self <: AbstractQuery[Self]]
     extends Logging {
@@ -77,19 +77,25 @@ trait AbstractQuery {
      * @tparam U
      * @return
      */
-    protected def withPreparedStatement[U](f: PreparedStatement => U)(implicit connection: Connection, ev0: Preparer, ev1: Closable[PreparedStatement]): U = {
-      val statement = ev0.prepare(connection, queryText)
+    protected def withPreparedStatement[U](
+      f: PreparedStatement => U
+    )(
+      implicit connection: UnderlyingConnection
+    ): U = {
+      val statement = isConnection.prepare(connection, queryText)
       try {
         f(statement)
       } finally {
         //Close the result set, but don't throw any errors if it's already closed.
-        ev1.closeQuietly(statement)
+        isClosablePreparedStatement.closeQuietly(statement)
       }
     }
 
-    def execute()(implicit connection: Connection, ev0: Preparer, ev1: Closable[PreparedStatement], ev2: Executable): Unit = {
-      logger.debug(s"""Executing the query "$originalQueryText" with parameters $parameterValues.""")
-      withPreparedStatement(ev2.execute)
+    def execute()(
+      implicit connection: UnderlyingConnection
+    ): Unit = {
+      logger.debug( s"""Executing the query "$originalQueryText" with parameters $parameterValues.""")
+      withPreparedStatement(executable.execute)
     }
 
   }

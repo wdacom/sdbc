@@ -6,13 +6,15 @@ import scala.language.reflectiveCalls
 trait Select {
   self: Connection with ParameterValue with AbstractQuery with Row =>
 
-  type ResultSet
+  protected type ResultSet
 
-  implicit def QueryResultToRowIterator(result: ResultSet): Iterator[Row]
+  protected implicit def QueryResultToRowIterator(result: ResultSet): Iterator[Row]
 
-  trait Queryable {
-    def executeQuery(statement: PreparedStatement)(implicit connection: Connection): ResultSet
+  protected trait Queryable {
+    def executeQuery(statement: PreparedStatement)(implicit connection: UnderlyingConnection): ResultSet
   }
+
+  protected val isQueryable: Queryable
 
   case class Select[T] private[sdbc] (
     statement: CompiledStatement,
@@ -27,24 +29,24 @@ trait Select {
       Select[T](statement, parameterValues)
     }
 
-    def iterator()(implicit connection: Connection, ev0: Preparer, ev1: Queryable): Iterator[T] = {
+    def iterator()(implicit connection: UnderlyingConnection): Iterator[T] = {
       logger.debug(s"""Retrieving an Iterator using "${statement.originalQueryText}" with parameters $parameterValues.""")
-      ev1.executeQuery(ev0.prepare(connection, queryText)).map(converter)
+      isQueryable.executeQuery(isConnection.prepare(connection, queryText)).map(converter)
     }
 
-    def seq()(implicit connection: Connection, ev0: Preparer, ev1: Closable[PreparedStatement], ev2: Queryable): Seq[T] = {
+    def seq()(implicit connection: UnderlyingConnection): Seq[T] = {
       logger.debug(s"""Retrieving a Seq using "${statement.originalQueryText}" with parameters $parameterValues.""")
-      withPreparedStatement[Vector[T]](statement => ev2.executeQuery(statement).map(converter).toVector)
+      withPreparedStatement[Vector[T]](statement => isQueryable.executeQuery(statement).map(converter).toVector)
     }
 
-    def option()(implicit connection: Connection, ev0: Preparer, ev1: Closable[PreparedStatement], ev2: Queryable): Option[T] = {
+    def option()(implicit connection: UnderlyingConnection): Option[T] = {
       logger.debug(s"""Retrieving an Option using "${statement.originalQueryText}" with parameters $parameterValues.""")
-      withPreparedStatement[Option[T]](statement => ev2.executeQuery(statement).map(converter).toStream.headOption)
+      withPreparedStatement[Option[T]](statement => isQueryable.executeQuery(statement).map(converter).toStream.headOption)
     }
 
-    def single()(implicit connection: Connection, ev0: Preparer, ev1: Closable[PreparedStatement], ev2: Queryable): T = {
+    def single()(implicit connection: UnderlyingConnection): T = {
       logger.debug(s"""Retrieving a single row using "${statement.originalQueryText}" with parameters $parameterValues.""")
-      withPreparedStatement[T](statement => ev2.executeQuery(statement).map(converter).toStream.head)
+      withPreparedStatement[T](statement => isQueryable.executeQuery(statement).map(converter).toStream.head)
     }
 
   }
