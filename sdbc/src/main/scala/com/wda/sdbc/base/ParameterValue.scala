@@ -1,9 +1,7 @@
 package com.wda.sdbc.base
 
-import java.sql.{Array => _, _}
-
-trait ParameterValue[WrappedRow, PreparedStatement] {
-  self: Row[WrappedRow, PreparedStatement] =>
+trait ParameterValue {
+  self: Connection with Row =>
 
   abstract class ParameterValue[T] {
 
@@ -16,7 +14,6 @@ trait ParameterValue[WrappedRow, PreparedStatement] {
       parameterIndex: Int
     ): Unit
   }
-
 
   implicit def ToOptionParameterValue[T](v: T)(implicit conversion: T => ParameterValue[_]): Option[ParameterValue[_]] = {
     Some(conversion(v))

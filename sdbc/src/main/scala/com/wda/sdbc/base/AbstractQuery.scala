@@ -20,13 +20,12 @@ import scala.language.reflectiveCalls
  *   \$`hello there`
  *   \$_i_am_busy
  */
-trait AbstractQuery[
-  QueryResult,
-  WrappedConnection <: {def close(): Unit; def prepare(query: String): PreparedStatement},
-  PreparedStatement <: {def close(): Unit; def execute(): Unit; def setNull(parameterIndex: Int): Unit},
-  WrappedRow
-] {
-  self: Connection[QueryResult, WrappedConnection, PreparedStatement, WrappedRow] with ParameterValue[WrappedRow, PreparedStatement] =>
+trait AbstractQuery {
+  self: Connection with ParameterValue =>
+
+  trait Executable {
+    def execute(statement: PreparedStatement)(implicit connection: Connection): Unit
+  }
 
   trait AbstractQuery[Self <: AbstractQuery[Self]]
     extends Logging {
@@ -78,19 +77,19 @@ trait AbstractQuery[
      * @tparam U
      * @return
      */
-    protected def withPreparedStatement[U](f: PreparedStatement => U)(implicit connection: Connection): U = {
-      val statement = connection.prepare(queryText)
+    protected def withPreparedStatement[U](f: PreparedStatement => U)(implicit connection: Connection, ev0: Preparer, ev1: Closable[PreparedStatement]): U = {
+      val statement = ev0.prepare(connection, queryText)
       try {
         f(statement)
       } finally {
         //Close the result set, but don't throw any errors if it's already closed.
-        util.Try(statement.close())
+        ev1.closeQuietly(statement)
       }
     }
 
-    def execute()(implicit connection: Connection): Unit = {
+    def execute()(implicit connection: Connection, ev0: Preparer, ev1: Closable[PreparedStatement], ev2: Executable): Unit = {
       logger.debug(s"""Executing the query "$originalQueryText" with parameters $parameterValues.""")
-      withPreparedStatement(_.execute())(connection)
+      withPreparedStatement(ev2.execute)
     }
 
   }

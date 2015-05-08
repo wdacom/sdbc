@@ -2,13 +2,14 @@ package com.wda.sdbc.base
 
 import scala.language.reflectiveCalls
 
-trait Update[
-  QueryResult,
-  WrappedConnection <: {def close(): Unit},
-  PreparedStatement <: {def close(): Unit; def execute(): Unit; def setNull(parameterIndex: Int): Unit; def executeUpdate(): Int; def executeLargeUpdate(): Long},
-  WrappedRow
-] {
-  self: Connection[QueryResult, WrappedConnection, PreparedStatement, WrappedRow] with ParameterValue[WrappedRow, PreparedStatement] with AbstractQuery[QueryResult, WrappedConnection, PreparedStatement, WrappedRow] =>
+trait Update {
+  self: Connection with ParameterValue with AbstractQuery =>
+
+  trait Updateable {
+    def executeUpdate(statement: PreparedStatement): Int
+
+    def executeLargeUpdate(statement: PreparedStatement): Long
+  }
 
   case class Update private[sdbc] (
     statement: CompiledStatement,
@@ -22,14 +23,14 @@ trait Update[
       Update(statement, parameterValues)
     }
 
-    def update()(implicit connection: Connection): Int = {
+    def update()(implicit connection: Connection, ev0: Preparer, ev1: Closable[PreparedStatement], ev2: Updateable): Int = {
       logger.debug(s"""Executing an update using "${statement.originalQueryText}" with parameters $parameterValues.""")
-      withPreparedStatement(_.executeUpdate())(connection)
+      withPreparedStatement(statement => ev2.executeUpdate(statement))
     }
 
-    def largeUpdate()(implicit connection: Connection): Long = {
+    def largeUpdate()(implicit connection: Connection, ev0: Preparer, ev1: Closable[PreparedStatement], ev2: Updateable): Long = {
       logger.debug(s"""Executing a large update using "${statement.originalQueryText}" with parameters $parameterValues.""")
-      withPreparedStatement(_.executeLargeUpdate())(connection)
+      withPreparedStatement(statement => ev2.executeLargeUpdate(statement))
     }
 
   }

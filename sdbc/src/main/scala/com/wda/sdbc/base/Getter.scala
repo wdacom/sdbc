@@ -5,8 +5,8 @@ import java.sql.{Array => _, _}
 import java.time._
 import java.util.UUID
 
-trait Getter[WrappedRow, PreparedStatement] {
-  self: Row[WrappedRow, PreparedStatement] =>
+trait Getter {
+  self: Row =>
 
   trait Getter[+T] extends Function[Row, Option[T]] {
 

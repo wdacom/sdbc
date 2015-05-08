@@ -7,13 +7,22 @@ import scala.language.reflectiveCalls
 
 import scala.collection.immutable.Seq
 
-trait Batch[
-  QueryResult,
-  WrappedConnection <: {def close(): Unit},
-  PreparedStatement <: {def close(): Unit; def execute(): Unit; def setNull(parameterIndex: Int): Unit; def addBatch(): Unit; def executeBatch(): Array[Int]; def executeLargeBatch(): Array[Long]},
-  WrappedRow
-] {
-  self: Connection[QueryResult, WrappedConnection, PreparedStatement, WrappedRow] with ParameterValue[WrappedRow, PreparedStatement] with AbstractQuery[QueryResult, WrappedConnection, PreparedStatement, WrappedRow] =>
+trait Batch {
+  self: Connection with ParameterValue with AbstractQuery =>
+
+  trait SetNull {
+    def setNull(statement: PreparedStatement, parameterIndex: Int): Unit
+  }
+
+  trait AddBatch {
+    def addBatch(statement: PreparedStatement): Unit
+  }
+
+  trait ExecuteBatch {
+    def executeBatch(statement: PreparedStatement)(implicit connection: Connection): Seq[Int]
+
+    def executeLargeBatch(statement: PreparedStatement)(implicit connection: Connection): Seq[Long]
+  }
 
   case class Batch private(
     statement: CompiledStatement,
@@ -60,8 +69,8 @@ trait Batch[
       Batch(statement, Map.empty, batches :+ newValues)
     }
 
-    def prepare()(implicit connection: Connection): PreparedStatement = {
-      val prepared = connection.prepareStatement(queryText)
+    def prepare()(implicit connection: Connection, ev0: SetNull, ev1: AddBatch, ev2: Preparer): PreparedStatement = {
+      val prepared = ev2.prepare(connection, queryText)
 
       for (batch <- batches) {
         for ((parameterName, parameterIndexes) <- statement.parameterPositions) {
@@ -71,39 +80,35 @@ trait Batch[
           )
           for (parameterIndex <- parameterIndexes) {
             parameterValue match {
-              case None => prepared.setNull(parameterIndex)
+              case None => ev0.setNull(prepared, parameterIndex)
               case Some(sqlValue) =>
                 sqlValue.set(prepared, parameterIndex)
             }
           }
         }
-        prepared.addBatch()
+       ev1.addBatch(prepared)
       }
       prepared
     }
 
-    def withPreparedStatement[U](f: PreparedStatement => U)(implicit connection: Connection): U = {
-      val statement = prepare()
+    def withPreparedStatement[U](f: PreparedStatement => U)(implicit connection: Connection, ev0: Closable[PreparedStatement], ev1: Preparer): U = {
+      val statement = ev1.prepare(connection, queryText)
       try {
         f(statement)
       } finally {
         //Close the result set, but don't throw any errors if it's already closed.
-        util.Try(statement.close())
+        ev0.closeQuietly(statement)
       }
     }
 
-    def batch()(implicit connection: Connection): Seq[Int] = {
+    def batch()(implicit connection: Connection, ev0: ExecuteBatch, ev1: Closable[PreparedStatement], ev2: Preparer): Seq[Int] = {
       logger.debug(s"""Executing a batch using "${statement.originalQueryText}".""")
-      withPreparedStatement[Seq[Int]] { prepared =>
-        prepared.executeBatch().toVector
-      }
+      withPreparedStatement[Seq[Int]](ev0.executeBatch)
     }
 
-    def largeBatch()(implicit connection: Connection): Seq[Long] = {
+    def largeBatch()(implicit connection: Connection, ev0: ExecuteBatch, ev1: Closable[PreparedStatement], ev2: Preparer): Seq[Long] = {
       logger.debug(s"""Executing a large batch using "${statement.originalQueryText}".""")
-      withPreparedStatement[Seq[Long]] { prepared =>
-        prepared.executeLargeBatch().toVector
-      }
+      withPreparedStatement[Seq[Long]](ev0.executeLargeBatch)
     }
   }
 
