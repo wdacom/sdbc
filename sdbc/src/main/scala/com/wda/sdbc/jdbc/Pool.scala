@@ -1,7 +1,7 @@
-package com.wda.sdbc.base
+package com.wda.sdbc.jdbc
 
 import com.typesafe.config.Config
-import com.wda.sdbc.{DBMS, config}
+import com.wda.sdbc.config
 import com.zaxxer.hikari.{HikariConfig, HikariDataSource}
 
 trait Pool {

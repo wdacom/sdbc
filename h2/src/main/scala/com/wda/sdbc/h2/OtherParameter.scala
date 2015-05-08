@@ -2,7 +2,7 @@ package com.wda.sdbc.h2
 
 import java.sql.PreparedStatement
 
-import com.wda.sdbc.base.{Getter, ParameterValue, Row}
+import com.wda.sdbc.base.{Getter, JdbcParameterValue, Row}
 
 /**
  * Serialized forces the user to tell the H2 client to send the parameter
@@ -10,7 +10,7 @@ import com.wda.sdbc.base.{Getter, ParameterValue, Row}
  * to ParameterValue.
  */
 trait OtherParameter {
-  self: ParameterValue with Getter with Row =>
+  self: JdbcParameterValue with Getter with Row =>
 
   case class Other(
     value: Serializable
@@ -25,7 +25,7 @@ trait OtherParameter {
     }
 
     override def update(
-      row: Row,
+      row: JdbcRow,
       columnIndex: Int
     ): Unit = {
       row.updateObject(
@@ -48,7 +48,7 @@ trait OtherParameter {
 
   implicit val OtherGetter: Getter[Other] =
     new Getter[Other] {
-      override def apply(row: Row, columnIndex: Int): Option[Other] = {
+      override def apply(row: JdbcRow, columnIndex: Int): Option[Other] = {
         Option(row.getObject(columnIndex)).map(o => Other(o.asInstanceOf[Serializable]))
       }
     }

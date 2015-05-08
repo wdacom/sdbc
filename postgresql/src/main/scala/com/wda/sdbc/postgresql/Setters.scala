@@ -4,7 +4,8 @@ package postgresql
 import java.net.InetAddress
 import java.sql.PreparedStatement
 
-import com.wda.sdbc.base.{Java8DefaultSetters, Row, ParameterValue}
+import com.wda.sdbc.base.{Row, JdbcParameterValue}
+import com.wda.sdbc.jdbc.Java8DefaultSetters
 import org.json4s._
 import org.json4s.jackson.JsonMethods
 import org.postgresql.util.PGInterval
@@ -13,7 +14,7 @@ import scala.xml.Node
 
 trait Setters
   extends Java8DefaultSetters {
-  self: ParameterValue with Row =>
+  self: JdbcParameterValue with Row =>
 
   implicit class QInetAddress(override val value: InetAddress) extends ParameterValue[InetAddress] {
     override def asJDBCObject: AnyRef = value.getHostAddress
@@ -23,7 +24,7 @@ trait Setters
     }
 
     override def update(
-      row: Row,
+      row: JdbcRow,
       columnIndex: Int
     ): Unit = {
       row.updateObject(columnIndex, asJDBCObject)
@@ -40,7 +41,7 @@ trait Setters
     }
 
     override def update(
-      row: Row,
+      row: JdbcRow,
       columnIndex: Int
     ): Unit = {
       row.updateObject(columnIndex, asJDBCObject)
@@ -57,7 +58,7 @@ trait Setters
     }
 
     override def update(
-      row: Row,
+      row: JdbcRow,
       columnIndex: Int
     ): Unit = {
       row.updateString(columnIndex, JsonMethods.compact(JsonMethods.render(value)))
@@ -74,7 +75,7 @@ trait Setters
     }
 
     override def update(
-      row: Row,
+      row: JdbcRow,
       columnIndex: Int
     ): Unit = {
       row.updateObject(columnIndex, asJDBCObject)
@@ -91,7 +92,7 @@ trait Setters
     }
 
     override def update(
-      row: Row,
+      row: JdbcRow,
       columnIndex: Int
     ): Unit = {
       row.updateString(columnIndex, value.toString)

@@ -3,7 +3,8 @@ package com.wda.sdbc.postgresql
 import java.time.format.{DateTimeFormatter, DateTimeFormatterBuilder}
 
 import com.wda.sdbc.base._
-import com.wda.sdbc.{DBMS, base}
+import com.wda.sdbc.jdbc.DBMS
+import com.wda.sdbc.base
 import org.postgresql.PGConnection
 
 /**

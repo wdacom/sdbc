@@ -1,22 +1,21 @@
-package com.wda.sdbc
+package com.wda.sdbc.jdbc
 
 import com.wda.CaseInsensitiveOrdering
+import com.wda.sdbc.base._
 import com.zaxxer.hikari.HikariConfig
-import base._
 
 abstract class DBMS
   extends Pool
-  with Connection
+  with JdbcConnection
   with AbstractQuery
   with Update
   with Select
   with SelectForUpdate
   with Batch
   with Getter
-  with Row
+  with JdbcRow
   with GetterImplicits
-  with AbstractDeployable
-  with Resources
+  with ReadSelectUpdate
   with ParameterValue {
   self =>
 

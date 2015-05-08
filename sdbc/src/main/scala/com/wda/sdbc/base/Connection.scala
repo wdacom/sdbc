@@ -1,31 +1,22 @@
 package com.wda.sdbc.base
 
-import com.wda.sdbc.DBMS
-
 import scala.collection.immutable.Seq
+import scala.language.reflectiveCalls
 
-trait Connection {
-  self: DBMS =>
+trait Connection[
+  QueryResult,
+  WrappedConnection <: {def close(): Unit},
+  PreparedStatement <: {def close(): Unit; def execute(): Unit; def setNull(parameterIndex: Int): Unit; def executeUpdate(): Int; def executeLargeUpdate(): Long},
+  WrappedRow
+] {
+  self: AbstractQuery[QueryResult, WrappedConnection, PreparedStatement, WrappedRow] with Row[WrappedRow, PreparedStatement] with ParameterValue[WrappedRow, PreparedStatement] with Select[QueryResult, WrappedConnection, PreparedStatement, WrappedRow] with Update[QueryResult, WrappedConnection, PreparedStatement, WrappedRow] =>
 
-  implicit class Connection(val underlying: java.sql.Connection) {
+  abstract class Connection(val underlying: WrappedConnection) {
 
-    if (DBMS.of(underlying).getClass != self.getClass) {
-      throw new IllegalArgumentException("Connection is for the wrong DBMS.")
-    }
-
-    implicit val dbms: DBMS = self
+    def prepareStatement(query: String): PreparedStatement
 
     def closeQuietly() = {
       util.Try(underlying.close())
-    }
-
-    def iteratorForUpdate(
-      queryText: String,
-      parameterValues: (String, Option[ParameterValue[_]])*
-    ): Iterator[MutableRow] = {
-      SelectForUpdate(queryText).on(
-        parameterValues: _*
-      ).iterator()(this)
     }
 
     def iterator[T](
@@ -99,7 +90,7 @@ trait Connection {
     }
   }
 
-  implicit def ConnectionToJDBCConnection(connection: Connection): java.sql.Connection = {
+  implicit def ConnectionToWrappedConnection(connection: Connection): WrappedConnection = {
     connection.underlying
   }
 

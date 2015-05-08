@@ -1,7 +1,14 @@
 package com.wda.sdbc.base
 
-trait Update {
-  self: Connection with ParameterValue with AbstractQuery =>
+import scala.language.reflectiveCalls
+
+trait Update[
+  QueryResult,
+  WrappedConnection <: {def close(): Unit},
+  PreparedStatement <: {def close(): Unit; def execute(): Unit; def setNull(parameterIndex: Int): Unit; def executeUpdate(): Int; def executeLargeUpdate(): Long},
+  WrappedRow
+] {
+  self: Connection[QueryResult, WrappedConnection, PreparedStatement, WrappedRow] with ParameterValue[WrappedRow, PreparedStatement] with AbstractQuery[QueryResult, WrappedConnection, PreparedStatement, WrappedRow] =>
 
   case class Update private[sdbc] (
     statement: CompiledStatement,

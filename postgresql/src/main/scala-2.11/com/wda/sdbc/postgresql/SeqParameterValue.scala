@@ -5,13 +5,13 @@ import java.sql.{Time, Date, PreparedStatement}
 import java.time.{Duration, OffsetTime, OffsetDateTime, LocalDateTime}
 import java.util.UUID
 
-import com.wda.sdbc.base.{ParameterValue, Row}
+import com.wda.sdbc.base.{JdbcParameterValue, Row}
 import org.json4s._
 
 import scala.reflect.runtime.universe._
 
 trait SeqParameterValue {
-  self: Row with ParameterValue =>
+  self: Row with JdbcParameterValue =>
 
   def typeName[T](implicit tag: TypeTag[T]): String = {
     typeName(tag.tpe)
@@ -80,7 +80,7 @@ trait SeqParameterValue {
       preparedStatement.setArray(parameterIndex, array)
     }
 
-    override def update(row: Row, columnIndex: Int): Unit = {
+    override def update(row: JdbcRow, columnIndex: Int): Unit = {
       throw new NotImplementedError("Creating a JDBC array requires access to the Connection object, which Row doesn't have a pointer to.")
     }
   }

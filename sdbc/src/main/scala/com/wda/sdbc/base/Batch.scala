@@ -1,13 +1,19 @@
 package com.wda.sdbc.base
 
-import java.sql.{PreparedStatement, SQLException}
+import java.sql.SQLException
 
 import com.wda.Logging
+import scala.language.reflectiveCalls
 
 import scala.collection.immutable.Seq
 
-trait Batch {
-  self: Connection with ParameterValue with AbstractQuery =>
+trait Batch[
+  QueryResult,
+  WrappedConnection <: {def close(): Unit},
+  PreparedStatement <: {def close(): Unit; def execute(): Unit; def setNull(parameterIndex: Int): Unit; def addBatch(): Unit; def executeBatch(): Array[Int]; def executeLargeBatch(): Array[Long]},
+  WrappedRow
+] {
+  self: Connection[QueryResult, WrappedConnection, PreparedStatement, WrappedRow] with ParameterValue[WrappedRow, PreparedStatement] with AbstractQuery[QueryResult, WrappedConnection, PreparedStatement, WrappedRow] =>
 
   case class Batch private(
     statement: CompiledStatement,
@@ -65,7 +71,7 @@ trait Batch {
           )
           for (parameterIndex <- parameterIndexes) {
             parameterValue match {
-              case None => prepared.setObject(parameterIndex, null)
+              case None => prepared.setNull(parameterIndex)
               case Some(sqlValue) =>
                 sqlValue.set(prepared, parameterIndex)
             }

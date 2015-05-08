@@ -4,6 +4,7 @@ package sqlserver
 import java.time.format.{DateTimeFormatter, DateTimeFormatterBuilder}
 
 import com.wda.sdbc.base.HasJava8DateTimeFormatter
+import com.wda.sdbc.jdbc.DBMS
 
 /*
 Note that in a result set, sql server (or jtds) doesn't do a good job of reporting the types

@@ -1,9 +1,17 @@
 package com.wda.sdbc.base
 
 import scala.collection.immutable.Seq
+import scala.language.reflectiveCalls
 
-trait Select {
-  self: Connection with ParameterValue with AbstractQuery with Row =>
+trait Select[
+  QueryResult,
+  WrappedConnection <: {def close(): Unit},
+  PreparedStatement <: {def close(): Unit; def execute(): Unit; def setNull(parameterIndex: Int): Unit; def executeQuery(): QueryResult},
+  WrappedRow
+] {
+  self: Connection[QueryResult, WrappedConnection, PreparedStatement, WrappedRow] with ParameterValue[WrappedRow, PreparedStatement] with AbstractQuery[QueryResult, WrappedConnection, PreparedStatement, WrappedRow] with Row[WrappedRow, PreparedStatement] =>
+
+  implicit def QueryResultToRowIterator(result: QueryResult): Iterator[Row]
 
   case class Select[T] private[sdbc] (
     statement: CompiledStatement,
@@ -20,22 +28,22 @@ trait Select {
 
     def iterator()(implicit connection: Connection): Iterator[T] = {
       logger.debug(s"""Retrieving an Iterator using "${statement.originalQueryText}" with parameters $parameterValues.""")
-      prepare().executeQuery().iterator().map(row => converter(row))
+      connection.prepareStatement(queryText).executeQuery().map(row => converter(row))
     }
 
     def seq()(implicit connection: Connection): Seq[T] = {
       logger.debug(s"""Retrieving a Seq using "${statement.originalQueryText}" with parameters $parameterValues.""")
-      withPreparedStatement[Vector[T]](_.executeQuery().iterator().map(converter).toVector)
+      withPreparedStatement[Vector[T]](_.executeQuery().map(converter).toVector)
     }
 
     def option()(implicit connection: Connection): Option[T] = {
       logger.debug(s"""Retrieving an Option using "${statement.originalQueryText}" with parameters $parameterValues.""")
-      withPreparedStatement[Option[T]](_.executeQuery().iterator().map(converter).toStream.headOption)
+      withPreparedStatement[Option[T]](_.executeQuery().map(converter).toStream.headOption)
     }
 
     def single()(implicit connection: Connection): T = {
       logger.debug(s"""Retrieving a single row using "${statement.originalQueryText}" with parameters $parameterValues.""")
-      withPreparedStatement[T](_.executeQuery().iterator().map(converter).toStream.head)
+      withPreparedStatement[T](_.executeQuery().map(converter).toStream.head)
     }
 
   }

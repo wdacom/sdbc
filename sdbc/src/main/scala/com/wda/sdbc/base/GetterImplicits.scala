@@ -1,7 +1,7 @@
 package com.wda.sdbc.base
 
-trait GetterImplicits {
-  self: Getter with Row =>
+trait GetterImplicits[WrappedRow, PreparedStatement] {
+  self: Getter[WrappedRow, PreparedStatement] with Row[WrappedRow, PreparedStatement] =>
 
   implicit def GetterToRowSingleton[T](implicit getter: Getter[T]): Function[Row, T] = {
       row => getter(row).get

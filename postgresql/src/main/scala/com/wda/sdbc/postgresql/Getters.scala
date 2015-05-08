@@ -7,6 +7,7 @@ import java.time.Duration
 import java.util.UUID
 
 import com.wda.sdbc.base._
+import com.wda.sdbc.jdbc.Java8DefaultGetters
 import org.json4s._
 import org.json4s.jackson.JsonMethods
 import org.postgresql.util.PGInterval
@@ -17,7 +18,7 @@ trait Getters extends Java8DefaultGetters {
   self: Row with IntervalImplicits with Getter =>
 
   implicit val LTreeGetter = new Getter[LTree] {
-    override def apply(row: Row, columnIndex: Int): Option[LTree] = {
+    override def apply(row: JdbcRow, columnIndex: Int): Option[LTree] = {
       Option(row.getObject(columnIndex)) collect {
         case l: LTree => l
         case _ => throw new SQLDataException("column does not contain an LTree value")
@@ -26,7 +27,7 @@ trait Getters extends Java8DefaultGetters {
   }
 
   implicit val PGIntervalGetter = new Getter[PGInterval] {
-    override def apply(row: Row, columnIndex: Int): Option[PGInterval] = {
+    override def apply(row: JdbcRow, columnIndex: Int): Option[PGInterval] = {
       Option(row.getObject(columnIndex)).collect {
         case pgInterval: PGInterval => pgInterval
         case _ => throw new SQLDataException("column does not contain a PGInterval")
@@ -35,7 +36,7 @@ trait Getters extends Java8DefaultGetters {
   }
 
   implicit val DurationGetter = new Getter[Duration] {
-    override def apply(row: Row, columnIndex: Int): Option[Duration] = {
+    override def apply(row: JdbcRow, columnIndex: Int): Option[Duration] = {
       row.option[PGInterval](columnIndex).map {
         case pgInterval: PGInterval =>
           val asDuration: Duration = pgInterval
@@ -45,7 +46,7 @@ trait Getters extends Java8DefaultGetters {
   }
 
   implicit val InetAddressGetter = new Getter[InetAddress] {
-    override def apply(row: Row, columnIndex: Int): Option[InetAddress] = {
+    override def apply(row: JdbcRow, columnIndex: Int): Option[InetAddress] = {
       row.option[String](columnIndex).map(InetAddress.getByName)
     }
   }
@@ -57,7 +58,7 @@ trait Getters extends Java8DefaultGetters {
   }
 
   override implicit val UUIDGetter: Getter[UUID] = new Getter[UUID] {
-    override def apply(row: Row, columnIndex: Int): Option[UUID] = {
+    override def apply(row: JdbcRow, columnIndex: Int): Option[UUID] = {
       Option(row.getObject(columnIndex)).collect {
         case uuid: UUID => uuid
         case _ => throw new SQLDataException("column does not contain a UUID")

@@ -29,12 +29,12 @@ trait Setters
   with LocalDateParameter
   with LocalTimeParameter
   with LocalDateTimeParameter{
-  self: ParameterValue with Row with HierarchyId =>
+  self: JdbcParameterValue with Row with HierarchyId =>
 
   implicit class QUUID(override val value: UUID) extends ParameterValue[UUID] {
     override def asJDBCObject: AnyRef = value.toString
 
-    override def update(row: Row, columnIndex: Int): Unit = {
+    override def update(row: JdbcRow, columnIndex: Int): Unit = {
       row.updateString(columnIndex, value.toString)
     }
 
@@ -51,7 +51,7 @@ trait Setters
     }
 
     override def update(
-      row: Row,
+      row: JdbcRow,
       columnIndex: Int
     ): Unit = {
       row.updateString(columnIndex, value.toString)
@@ -66,7 +66,7 @@ trait Setters
     }
 
     override def update(
-      row: Row,
+      row: JdbcRow,
       columnIndex: Int
     ): Unit = {
       row.updateString(columnIndex, value.toString)

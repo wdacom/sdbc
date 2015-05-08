@@ -9,18 +9,18 @@ trait SeqGetter {
   self: Row with Getter =>
 
   implicit def GetterToSeqOptionGetter[T](implicit getter: Getter[T]): Getter[Seq[Option[T]]] = new Getter[Seq[Option[T]]] {
-    override def apply(row: Row, columnIndex: Int): Option[Seq[Option[T]]] = {
+    override def apply(row: JdbcRow, columnIndex: Int): Option[Seq[Option[T]]] = {
       row.optionSeq[T](columnIndex)
     }
   }
 
   implicit def GetterToSeqGetter[T](implicit getter: Getter[T]): Getter[Seq[T]] = new Getter[Seq[T]] {
-    override def apply(row: Row, columnIndex: Int): Option[Seq[T]] = {
+    override def apply(row: JdbcRow, columnIndex: Int): Option[Seq[T]] = {
       row.optionSeq[T](columnIndex).map(_.map(_.get))
     }
   }
 
-  implicit class RowSeqOps(row: Row) {
+  implicit class RowSeqOps(row: JdbcRow) {
 
     def seq[T]()(implicit getter: Getter[T]): Seq[Option[T]] = {
       optionSeq[T].get
