@@ -1,27 +1,20 @@
 package com.wda.sdbc.jdbc
 
 import com.wda.sdbc.base
-import java.sql.{Connection => JConnection, PreparedStatement => JPreparedStatement}
+import java.sql.{Connection => JConnection, PreparedStatement => JPreparedStatement, ResultSet}
 
 trait JdbcConnection
-  extends base.Connection {
-  self: base.AbstractQuery with JdbcRow with JdbcMutableRow with JdbcParameterValue with base.Select with base.Update with base.SelectForUpdate =>
+  extends base.Connection[JConnection, JPreparedStatement, ResultSet, ResultSet] {
+    self: base.Select[JConnection, JPreparedStatement, ResultSet, ResultSet] =>
 
-  override type UnderlyingConnection = JConnection
-
-  override type PreparedStatement = JPreparedStatement
-
-  implicit class JdbcConnection(underlying: JConnection) {
-
-    def iteratorForUpdate(
-      queryText: String,
-      parameterValues: (String, Option[ParameterValue[_]])*
-    ): Iterator[JdbcMutableRow] = {
-      SelectForUpdate(queryText).on(
-        parameterValues: _*
-      ).iterator()(underlying)
-    }
-
+  override def prepare(connection: JConnection, queryText: String): JPreparedStatement = {
+    connection.prepareStatement(queryText)
   }
+
+  override def execute(preparedStatement: JPreparedStatement): Unit = {
+    preparedStatement.execute()
+  }
+
+
 
 }

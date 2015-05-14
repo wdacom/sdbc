@@ -22,36 +22,3 @@ class JdbcMutableRow private[sdbc](
   }
 
 }
-
-trait JdbcMutableRowImplicits {
-
-  implicit class ResultSetToJdbcMutableRow(rs: ResultSet) {
-    def mutableIterator(): Iterator[JdbcMutableRow] = {
-
-      def dbms = DBMS.of(rs)
-
-      val mutableRow = new JdbcMutableRow(rs, dbms)
-
-      new Iterator[JdbcMutableRow] {
-
-        override def hasNext: Boolean = {
-          if (mutableRow.wasUpdated) {
-            rs.updateRow()
-            mutableRow.wasUpdated = false
-          }
-
-          val result = rs.next()
-          if (!result) {
-            util.Try(rs.close())
-          }
-          result
-        }
-
-        override def next(): JdbcMutableRow = {
-          mutableRow
-        }
-
-      }
-    }
-  }
-}

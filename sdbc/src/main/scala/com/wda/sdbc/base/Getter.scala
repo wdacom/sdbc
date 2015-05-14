@@ -19,6 +19,6 @@ trait Getter[UnderlyingRow, +T] {
     isRow.option(row, columnIndex)
   }
 
-  def apply(row: UnderlyingRow, columnIndex: Int): Option[T]
+  def apply(row: UnderlyingRow, columnIndex: Int)(implicit isRow: Row[UnderlyingRow]): Option[T]
 
 }

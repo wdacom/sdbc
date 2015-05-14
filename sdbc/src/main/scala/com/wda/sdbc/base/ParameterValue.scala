@@ -1,6 +1,6 @@
 package com.wda.sdbc.base
 
-abstract class ParameterValue[T, PreparedStatement] {
+abstract class ParameterValue[+T, PreparedStatement] {
 
   val value: T
 

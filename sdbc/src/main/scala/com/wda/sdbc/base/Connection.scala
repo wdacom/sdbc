@@ -2,7 +2,7 @@ package com.wda.sdbc.base
 
 import scala.collection.immutable.Seq
 
-trait Connection[UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow] extends Closable[Connection[UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow]] {
+trait Connection[UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow] extends Closable[UnderlyingConnection] {
   self: Select[UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow] =>
 
   def prepare(connection: UnderlyingConnection, queryText: String): PreparedStatement

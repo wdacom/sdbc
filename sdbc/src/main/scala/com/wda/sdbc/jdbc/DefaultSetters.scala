@@ -17,7 +17,7 @@ trait DefaultSetters
   with ReaderParameter
   with InputStreamParameter
   with UUIDParameter {
-  self: JdbcParameterValue with JdbcRow with JdbcMutableRow =>
+  self: JdbcRowImplicits =>
 
 }
 
@@ -27,6 +27,6 @@ trait Java8DefaultSetters
   with LocalDateParameter
   with LocalTimeParameter
   with LocalDateTimeParameter {
-  self: JdbcParameterValue with JdbcRow with JdbcMutableRow =>
+  self: JdbcRowImplicits =>
 
 }

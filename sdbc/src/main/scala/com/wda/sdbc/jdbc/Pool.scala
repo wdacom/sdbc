@@ -1,21 +1,20 @@
 package com.wda.sdbc.jdbc
 
 import com.typesafe.config.Config
-import com.wda.sdbc.base.Closable
 import com.wda.sdbc.config
 import com.zaxxer.hikari.{HikariConfig, HikariDataSource}
+import java.sql.{Connection => JConnection}
 
 import com.wda.sdbc.base
 
 trait Pool extends base.Pool[HikariDataSource, java.sql.Connection] {
   self: DBMS =>
 
-  implicit val closableConnection: Closable[java.sql.Connection] =
-    new Closable[java.sql.Connection] {
-      override def close(connection: UnderlyingConnection): Unit = {
-        connection.close()
-      }
+  trait IsJdbcPool extends base.Pool[JdbcPool, JConnection] {
+    override def getConnection(pool: JdbcPool): JConnection = {
+      pool.getConnection()
     }
+  }
 
   case class JdbcPool(configuration: HikariConfig) {
 
@@ -32,13 +31,13 @@ trait Pool extends base.Pool[HikariDataSource, java.sql.Connection] {
 
     implicit val dbms: DBMS = self
 
-    def getConnection(): UnderlyingConnection = {
+    def getConnection(): JConnection = {
       val connection = underlying.getConnection()
       initializeConnection(connection)
       connection
     }
 
-    def withConnection[T](f: UnderlyingConnection => T): T = {
+    def withConnection[T](f: JConnection => T): T = {
       val connection = getConnection()
       try {
         f(connection)
@@ -47,7 +46,7 @@ trait Pool extends base.Pool[HikariDataSource, java.sql.Connection] {
       }
     }
 
-    def withTransaction[T](f: UnderlyingConnection => T): T = {
+    def withTransaction[T](f: JConnection => T): T = {
       val connection = getConnection()
       connection.setAutoCommit(false)
       try {

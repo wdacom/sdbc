@@ -6,7 +6,7 @@ import java.util.UUID
 
 import com.wda.sdbc.base
 
-abstract class JdbcParameterValue[T] extends base.ParameterValue[T, PreparedStatement] {
+abstract class JdbcParameterValue[+T] extends base.ParameterValue[T, PreparedStatement] {
 
   val value: T
 
@@ -34,7 +34,7 @@ abstract class JdbcParameterValue[T] extends base.ParameterValue[T, PreparedStat
 }
 
 trait LongParameter {
-  self: JdbcParameterValue with JdbcRow with JdbcMutableRow with JdbcRowImplicits =>
+  self: JdbcRowImplicits =>
 
   implicit class QLong(override val value: Long) extends JdbcParameterValue[Long] {
     override def asJDBCObject: AnyRef = Long.box(value)
@@ -65,7 +65,7 @@ trait LongParameter {
 }
 
 trait IntParameter {
-  self: JdbcParameterValue with JdbcRow with JdbcMutableRow with JdbcRowImplicits =>
+  self: JdbcRowImplicits =>
 
   implicit class QInt(override val value: Int) extends JdbcParameterValue[Int] {
     override def asJDBCObject: AnyRef = Int.box(value)
@@ -96,7 +96,7 @@ trait IntParameter {
 }
 
 trait ShortParameter {
-  self: JdbcParameterValue with JdbcRow with JdbcMutableRow with JdbcRowImplicits =>
+  self: JdbcRowImplicits =>
 
   implicit class QShort(override val value: Short) extends JdbcParameterValue[Short] {
     override def asJDBCObject: AnyRef = Short.box(value)
@@ -127,7 +127,7 @@ trait ShortParameter {
 }
 
 trait ByteParameter {
-  self: JdbcParameterValue with JdbcRow with JdbcMutableRow with JdbcRowImplicits =>
+  self: JdbcRowImplicits =>
 
   implicit class QByte(override val value: Byte) extends JdbcParameterValue[Byte] {
     override def asJDBCObject: AnyRef = Byte.box(value)
@@ -158,7 +158,7 @@ trait ByteParameter {
 }
 
 trait BytesParameter {
-  self: JdbcParameterValue with JdbcRow with JdbcMutableRow with JdbcRowImplicits =>
+  self: JdbcRowImplicits =>
 
   implicit class QBytes(override val value: Array[Byte]) extends JdbcParameterValue[Array[Byte]] {
     override def asJDBCObject: AnyRef = value
@@ -187,7 +187,7 @@ trait BytesParameter {
 }
 
 trait FloatParameter {
-  self: JdbcParameterValue with JdbcRow with JdbcMutableRow with JdbcRowImplicits =>
+  self: JdbcRowImplicits =>
 
   implicit class QFloat(override val value: Float) extends JdbcParameterValue[Float] {
     override def asJDBCObject: AnyRef = Float.box(value)
@@ -218,7 +218,7 @@ trait FloatParameter {
 }
 
 trait DoubleParameter {
-  self: JdbcParameterValue with JdbcRow with JdbcMutableRow with JdbcRowImplicits =>
+  self: JdbcRowImplicits =>
 
   implicit class QDouble(override val value: Double) extends JdbcParameterValue[Double] {
     override def asJDBCObject: AnyRef = Double.box(value)
@@ -249,7 +249,7 @@ trait DoubleParameter {
 }
 
 trait DecimalParameter {
-  self: JdbcParameterValue with JdbcRow with JdbcMutableRow with JdbcRowImplicits =>
+  self: JdbcRowImplicits =>
 
   implicit class QDecimal(override val value: java.math.BigDecimal) extends JdbcParameterValue[java.math.BigDecimal] {
     override def asJDBCObject: AnyRef = value
@@ -280,7 +280,7 @@ trait DecimalParameter {
 }
 
 trait TimestampParameter {
-  self: JdbcParameterValue with JdbcRow with JdbcMutableRow with JdbcRowImplicits =>
+  self: JdbcRowImplicits =>
 
   implicit class QTimestamp(override val value: Timestamp) extends JdbcParameterValue[Timestamp] {
     override def asJDBCObject: AnyRef = value
@@ -309,7 +309,7 @@ trait TimestampParameter {
 }
 
 trait DateParameter {
-  self: JdbcParameterValue with JdbcRow with JdbcMutableRow with JdbcRowImplicits =>
+  self: JdbcRowImplicits =>
 
   implicit class QDate(override val value: Date) extends JdbcParameterValue[Date] {
     override def asJDBCObject: AnyRef = value
@@ -338,7 +338,7 @@ trait DateParameter {
 }
 
 trait TimeParameter {
-  self: JdbcParameterValue with JdbcRow with JdbcMutableRow with JdbcRowImplicits =>
+  self: JdbcRowImplicits =>
 
   implicit class QTime(override val value: Time) extends JdbcParameterValue[Time] {
     override def asJDBCObject: AnyRef = value
@@ -367,7 +367,7 @@ trait TimeParameter {
 }
 
 trait BooleanParameter {
-  self: JdbcParameterValue with JdbcRow with JdbcMutableRow with JdbcRowImplicits =>
+  self: JdbcRowImplicits =>
 
   implicit class QBoolean(override val value: Boolean) extends JdbcParameterValue[Boolean] {
     override def asJDBCObject: AnyRef = Boolean.box(value)
@@ -398,7 +398,7 @@ trait BooleanParameter {
 }
 
 trait StringParameter {
-  self: JdbcParameterValue with JdbcRow with JdbcMutableRow with JdbcRowImplicits =>
+  self: JdbcRowImplicits =>
 
   implicit class QString(override val value: String) extends JdbcParameterValue[String] {
     override def asJDBCObject: AnyRef = value
@@ -426,7 +426,7 @@ trait StringParameter {
 }
 
 trait ReaderParameter {
-  self: JdbcParameterValue with JdbcRow with JdbcMutableRow with JdbcRowImplicits =>
+  self: JdbcRowImplicits =>
 
   implicit class QReader(override val value: Reader) extends JdbcParameterValue[Reader] {
     override def asJDBCObject: AnyRef = value
@@ -448,7 +448,7 @@ trait ReaderParameter {
 }
 
 trait InputStreamParameter {
-  self: JdbcParameterValue with JdbcRow with JdbcMutableRow with JdbcRowImplicits =>
+  self: JdbcRowImplicits =>
 
   implicit class QInputStreamReader(override val value: InputStream) extends JdbcParameterValue[InputStream] {
     override def asJDBCObject: AnyRef = value
@@ -470,7 +470,7 @@ trait InputStreamParameter {
 }
 
 trait UUIDParameter {
-  self: JdbcParameterValue with JdbcRow with JdbcMutableRow with JdbcRowImplicits =>
+  self: JdbcRowImplicits =>
 
   implicit class QUUID(override val value: UUID) extends JdbcParameterValue[AnyRef] {
     override def asJDBCObject: AnyRef = value
@@ -492,7 +492,7 @@ trait UUIDParameter {
 }
 
 trait AnyRefParameter {
-  self: JdbcParameterValue with JdbcRow with JdbcMutableRow with JdbcRowImplicits =>
+  self: JdbcRowImplicits =>
 
   implicit class QAnyRef(override val value: AnyRef) extends JdbcParameterValue[AnyRef] {
     override def asJDBCObject: AnyRef = value
@@ -515,27 +515,28 @@ trait AnyRefParameter {
 }
 
 trait InstantParameter {
-  self: JdbcParameterValue with TimestampParameter =>
+  self: TimestampParameter =>
 
   implicit def InstantToParameterValue(x: java.time.Instant): JdbcParameterValue[Timestamp] = Timestamp.from(x)
 
 }
 
 trait LocalDateParameter {
-  self: JdbcParameterValue with DateParameter =>
+  self: DateParameter =>
 
   implicit def LocalDateToParameterValue(x: java.time.LocalDate): JdbcParameterValue[Date] = Date.valueOf(x)
 
 }
 
 trait LocalTimeParameter {
-  self: JdbcParameterValue with TimeParameter =>
+  self: TimeParameter =>
 
   implicit def LocalTimeToParameterValue(x: java.time.LocalTime): JdbcParameterValue[Time] = Time.valueOf(x)
 
 }
+
 trait LocalDateTimeParameter {
-  self: JdbcParameterValue with TimestampParameter =>
+  self: TimestampParameter =>
 
   implicit def LocalDateTimeToParameterValue(x: java.time.LocalDateTime): JdbcParameterValue[Timestamp] = Timestamp.valueOf(x)
 
