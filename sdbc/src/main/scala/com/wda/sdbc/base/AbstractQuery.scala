@@ -18,86 +18,80 @@ import com.wda.Logging
  * \$`hello there`
  * \$_i_am_busy
  */
-trait AbstractQuery {
-  self: Connection with ParameterValue =>
+trait AbstractQuery[Self <: AbstractQuery[Self, UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow], UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow]
+  extends Logging {
+  abstractQuery =>
 
-  trait Executable {
-    def execute(statement: PreparedStatement)(implicit connection: UnderlyingConnection): Unit
+  def closePreparedStatement: Closable[PreparedStatement]
+
+  def isConnection: Connection[UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow]
+
+  protected def statement: CompiledStatement
+
+  def parameterValues: Map[String, Option[ParameterValue[_, PreparedStatement]]]
+
+  protected def subclassConstructor(
+    statement: CompiledStatement,
+    parameterValues: Map[String, Option[ParameterValue[_, PreparedStatement]]]
+  ): Self
+
+  /**
+   * The query text with name parameters replaced with positional parameters.
+   * @return
+   */
+  def queryText: String = statement.queryText
+
+  def originalQueryText: String = statement.originalQueryText
+
+  def parameterPositions: Map[String, Set[Int]] = statement.parameterPositions
+
+  private def setParameter(
+    parameterValues: Map[String, Option[ParameterValue[_, PreparedStatement]]],
+    nameValuePair: (String, Option[ParameterValue[_, PreparedStatement]])
+  ): Map[String, Option[ParameterValue[_, PreparedStatement]]] = {
+    if (parameterPositions.contains(nameValuePair._1)) {
+      parameterValues + nameValuePair
+    } else {
+      throw new IllegalArgumentException(s"${nameValuePair._1} is not a parameter in the query.")
+    }
   }
 
-  val executable: Executable
+  def on(parameterValues: (String, Option[ParameterValue[_, PreparedStatement]])*): Self = {
+    val newValues = setParameters(parameterValues: _*)
+    subclassConstructor(statement, newValues)
+  }
 
-  trait AbstractQuery[Self <: AbstractQuery[Self]]
-    extends Logging {
+  protected def setParameters(nameValuePairs: (String, Option[ParameterValue[_, PreparedStatement]])*): Map[String, Option[ParameterValue[_, PreparedStatement]]] = {
+    nameValuePairs.foldLeft(parameterValues)(setParameter)
+  }
 
-    protected def statement: CompiledStatement
-
-    val parameterValues: Map[String, Option[ParameterValue[_]]]
-
-    protected def subclassConstructor(
-      statement: CompiledStatement,
-      parameterValues: Map[String, Option[ParameterValue[_]]]
-    ): Self
-
-    /**
-     * The query text with name parameters replaced with positional parameters.
-     * @return
-     */
-    def queryText: String = statement.queryText
-
-    def originalQueryText: String = statement.originalQueryText
-
-    def parameterPositions: Map[String, Set[Int]] = statement.parameterPositions
-
-    private def setParameter(
-      parameterValues: Map[String, Option[ParameterValue[_]]],
-      nameValuePair: (String, Option[ParameterValue[_]])
-    ): Map[String, Option[ParameterValue[_]]] = {
-      if (parameterPositions.contains(nameValuePair._1)) {
-        parameterValues + nameValuePair
-      } else {
-        throw new IllegalArgumentException(s"${nameValuePair._1} is not a parameter in the query.")
-      }
+  /**
+   * Perform some action on a Prepared Statement, being sure to close it.
+   * Do not use this method when the result depends on an open result, such as if f returned an iterator.
+   * @param f
+   * @param connection
+   * @tparam T
+   * @return
+   */
+  protected def withPreparedStatement[T](
+    f: PreparedStatement => T
+  )(
+    implicit connection: UnderlyingConnection
+  ): T = {
+    val statement = isConnection.prepare(connection, queryText)
+    try {
+      f(statement)
+    } finally {
+      //Close the result set, but don't throw any errors if it's already closed.
+      closePreparedStatement.closeQuietly(statement)
     }
+  }
 
-    def on(parameterValues: (String, Option[ParameterValue[_]])*): Self = {
-      val newValues = setParameters(parameterValues: _*)
-      subclassConstructor(statement, newValues)
-    }
-
-    protected def setParameters(nameValuePairs: (String, Option[ParameterValue[_]])*): Map[String, Option[ParameterValue[_]]] = {
-      nameValuePairs.foldLeft(parameterValues)(setParameter)
-    }
-
-    /**
-     * Perform some action on a Prepared Statement, being sure to close it.
-     * Do not use this method when the result depends on an open result, such as if f returned an iterator.
-     * @param f
-     * @param connection
-     * @tparam U
-     * @return
-     */
-    protected def withPreparedStatement[U](
-      f: PreparedStatement => U
-    )(
-      implicit connection: UnderlyingConnection
-    ): U = {
-      val statement = isConnection.prepare(connection, queryText)
-      try {
-        f(statement)
-      } finally {
-        //Close the result set, but don't throw any errors if it's already closed.
-        isClosablePreparedStatement.closeQuietly(statement)
-      }
-    }
-
-    def execute()(
-      implicit connection: UnderlyingConnection
-    ): Unit = {
-      logger.debug( s"""Executing the query "$originalQueryText" with parameters $parameterValues.""")
-      withPreparedStatement(executable.execute)
-    }
-
+  def execute()(
+    implicit connection: UnderlyingConnection
+  ): Unit = {
+    logger.debug( s"""Executing the query "$originalQueryText" with parameters $parameterValues.""")
+    withPreparedStatement[Unit](statement => isConnection.execute(statement))
   }
 
 }

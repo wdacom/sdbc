@@ -1,51 +1,51 @@
 package com.wda.sdbc.base
 
-trait SelectForUpdate {
-  self: Connection with ParameterValue with AbstractQuery with Row with MutableRow =>
+trait SelectForUpdate[UnderlyingConnection, PreparedStatement, MutableResultSet, UnderlyingMutableRow] {
+  outer =>
 
-  type UnderlyingMutableResultSet
+  def prepare(queryText: String)(implicit connection: UnderlyingConnection): PreparedStatement
 
-  protected implicit def MutableResultSetToMutableRowIterator(result: UnderlyingMutableResultSet): Iterator[UnderlyingMutableRow]
+  def executeQuery(statement: PreparedStatement)(implicit connection: Connection): MutableResultSet
 
-  trait MutablePreparer {
-    def prepare(queryText: String)(implicit connection: UnderlyingConnection): PreparedStatement
-  }
+  protected implicit def MutableResultSetToMutableRowIterator(result: MutableResultSet): Iterator[MutableRow]
 
-  val isMutablePreparer: MutablePreparer
+  def closePreparedStatement: Closable[PreparedStatement]
 
-  trait QueryUpdatable {
-    def executeQuery(statement: PreparedStatement)(implicit connection: UnderlyingConnection): UnderlyingMutableResultSet
-  }
+  def isConnection: Connection[UnderlyingConnection, PreparedStatement, MutableResultSet, UnderlyingMutableRow]
 
-  val isQueryUpdatable: QueryUpdatable
-
-  case class SelectForUpdate private[sdbc] (
+  case class SelectForUpdate private[sdbc](
     statement: CompiledStatement,
-    override val parameterValues: Map[String, Option[ParameterValue[_]]]
-  ) extends AbstractQuery[SelectForUpdate] {
+    override val parameterValues: Map[String, Option[ParameterValue[_, PreparedStatement]]]
+  ) extends AbstractQuery[SelectForUpdate, UnderlyingConnection, PreparedStatement, MutableResultSet, UnderlyingMutableRow] {
+
+    override def isConnection: Connection[UnderlyingConnection, PreparedStatement, MutableResultSet, UnderlyingMutableRow] =
+      outer.isConnection
+
+    override def closePreparedStatement: Closable[PreparedStatement] =
+      outer.closePreparedStatement
 
     override protected def subclassConstructor(
       statement: CompiledStatement,
-      parameterValues: Map[String, Option[ParameterValue[_]]]
+      parameterValues: Map[String, Option[ParameterValue[_, PreparedStatement]]]
     ): SelectForUpdate = {
       SelectForUpdate(statement, parameterValues)
     }
 
-    def iterator()(implicit connection: UnderlyingConnection): Iterator[UnderlyingMutableRow] = {
-      logger.debug(s"""Retrieving an iterator of updatable rows using "${statement.originalQueryText}" with parameters $parameterValues.""")
-      isQueryUpdatable.executeQuery(isMutablePreparer.prepare(queryText))
+    def iterator()(implicit connection: UnderlyingConnection): Iterator[MutableRow] = {
+      logger.debug( s"""Retrieving an iterator of updatable rows using "${statement.originalQueryText}" with parameters $parameterValues.""")
+      executeQuery(prepare(queryText))
     }
 
   }
 
   object SelectForUpdate {
 
-    def apply[T](
+    def apply(
       queryText: String,
       hasParameters: Boolean = true
     ): SelectForUpdate = {
       val statement = CompiledStatement(queryText, hasParameters)
-      SelectForUpdate(statement, Map.empty[String, Option[ParameterValue[_]]])
+      SelectForUpdate(statement, Map.empty[String, Option[ParameterValue[_, PreparedStatement]]])
     }
 
   }

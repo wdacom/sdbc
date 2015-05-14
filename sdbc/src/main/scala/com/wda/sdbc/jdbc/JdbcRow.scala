@@ -1,46 +1,36 @@
 package com.wda.sdbc.jdbc
 
+import java.sql.ResultSet
+
 import com.wda.CaseInsensitiveOrdering
+import scala.collection.immutable.TreeMap
 import com.wda.sdbc.base
 
-import scala.collection.immutable.TreeMap
+class JdbcRow private[sdbc](
+  val underlying: ResultSet,
+  val dbms: DBMS
+) {
 
-trait JdbcRow extends base.Row[java.sql.ResultSet] {
-  self: JdbcParameterValue with JdbcGetter =>
-
-  class JdbcRow private[sdbc](
-    underlying: java.sql.ResultSet,
-    val dbms: DBMS
-  ) extends Row(underlying) {
-
-    override val columnIndexes: Map[String, Int] = {
-      //This works because "1 to 0" gives an empty list.
-      TreeMap[String, Int](
-        1.to(underlying.getMetaData.getColumnCount).map { case i => underlying.getMetaData.getColumnName(i) -> i}: _*
-      )(CaseInsensitiveOrdering)
-    }
-
+  val columnIndexes: Map[String, Int] = {
+    //This works because "1 to 0" gives an empty list.
+    TreeMap[String, Int](
+      1.to(underlying.getMetaData.getColumnCount).map { case i => underlying.getMetaData.getColumnName(i) -> i}: _*
+    )(CaseInsensitiveOrdering)
   }
 
-  class MutableJdbcRow private[sdbc](
-    underlying: java.sql.ResultSet,
-    dbms: DBMS
-  ) extends JdbcRow(underlying, dbms) {
+}
 
-    //This flag is set to check and see if .updateRow() should be called.
-    //It will be set to false when the iterator advances.
-    private[sdbc] var wasUpdated: Boolean = false
+trait IsJdbcRow extends base.Row[JdbcRow] {
+  self: base.Getter[JdbcRow] =>
+  override def columnIndex(row: JdbcRow, columnName: String): Int = {
+    row.columnIndexes(columnName)
+  }
+}
 
-    def update[T, U](columnIndex: Int, value: T)(implicit TToParameterValue: T => JdbcParameterValue[U]): Unit = {
-      wasUpdated = true
-      value.update(this, columnIndex)
-    }
+trait JdbcRowImplicits {
 
-    def update[T, U](columnName: String, value: T)(implicit TToParameterValue: T => JdbcParameterValue[U]): Unit = {
-      wasUpdated = true
-      value.update(this, columnName)
-    }
-
+  implicit def JdbcRowToUnderlyingRow(row: JdbcRow): ResultSet = {
+    row.underlying
   }
 
   implicit class ResultSetToRowIterator(rs: java.sql.ResultSet) {
@@ -74,32 +64,6 @@ trait JdbcRow extends base.Row[java.sql.ResultSet] {
 
       }
 
-    }
-
-    def mutableIterator(): Iterator[MutableJdbcRow] = {
-
-      val mutableRow = new MutableJdbcRow(rs, dbms)
-
-      new Iterator[MutableJdbcRow] {
-
-        override def hasNext: Boolean = {
-          if (mutableRow.wasUpdated) {
-            rs.updateRow()
-            mutableRow.wasUpdated = false
-          }
-
-          val result = rs.next()
-          if (!result) {
-            util.Try(rs.close())
-          }
-          result
-        }
-
-        override def next(): MutableJdbcRow = {
-          mutableRow
-        }
-
-      }
     }
   }
 

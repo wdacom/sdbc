@@ -1,9 +1,11 @@
 package com.wda.sdbc.base
 
-trait Closable[T] {
-  def close(connection: T): Unit
+trait Closable[UnderlyingClosable] {
 
-  def closeQuietly(connection: T): Unit = {
-    util.Try(close(connection))
+  def close(connection: UnderlyingClosable): Unit
+
+  def closeQuietly(closable: UnderlyingClosable): Unit = {
+    util.Try(close(closable))
   }
+
 }

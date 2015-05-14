@@ -1,28 +1,25 @@
 package com.wda.sdbc.jdbc
 
 import com.wda.sdbc.base
-import java.sql.{Connection => JConnection, ResultSet, PreparedStatement}
+import java.sql.{Connection => JConnection, PreparedStatement => JPreparedStatement}
 
 trait JdbcConnection
-  extends base.Connection[ResultSet, JConnection, PreparedStatement, ResultSet] {
-  self: DBMS with JdbcRow =>
+  extends base.Connection {
+  self: base.AbstractQuery with JdbcRow with JdbcMutableRow with JdbcParameterValue with base.Select with base.Update with base.SelectForUpdate =>
 
-  implicit class JdbcConnection(underlying: JConnection)
-    extends Connection(underlying) {
+  override type UnderlyingConnection = JConnection
 
-    if (DBMS.of(underlying).getClass != self.getClass) {
-      throw new IllegalArgumentException("Connection is for the wrong DBMS.")
-    }
+  override type PreparedStatement = JPreparedStatement
 
-    implicit val dbms: DBMS = self
+  implicit class JdbcConnection(underlying: JConnection) {
 
     def iteratorForUpdate(
       queryText: String,
       parameterValues: (String, Option[ParameterValue[_]])*
-      ): Iterator[MutableJdbcRow] = {
+    ): Iterator[JdbcMutableRow] = {
       SelectForUpdate(queryText).on(
         parameterValues: _*
-      ).iterator()(this)
+      ).iterator()(underlying)
     }
 
   }

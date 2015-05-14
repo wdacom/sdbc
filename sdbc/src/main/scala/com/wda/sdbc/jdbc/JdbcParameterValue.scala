@@ -6,40 +6,35 @@ import java.util.UUID
 
 import com.wda.sdbc.base
 
-trait JdbcParameterValue {
-  self: JdbcRow with base.ParameterValue =>
+abstract class JdbcParameterValue[T] extends base.ParameterValue[T, PreparedStatement] {
 
-  abstract class JdbcParameterValue[T] extends ParameterValue[T] {
+  val value: T
 
-    val value: T
+  def asJDBCObject: AnyRef
 
-    def asJDBCObject: AnyRef
+  def set(
+    preparedStatement: PreparedStatement,
+    parameterIndex: Int
+  ): Unit
 
-    def set(
-      preparedStatement: PreparedStatement,
-      parameterIndex: Int
-      ): Unit
+  def update(
+    row: JdbcMutableRow,
+    columnIndex: Int
+  ): Unit
 
-    def update(
-      row: MutableJdbcRow,
-      columnIndex: Int
-      ): Unit
-
-    def update(
-      row: MutableJdbcRow,
-      columnName: String
-      ): Unit = {
-      update(
-        row,
-        row.columnIndexes(columnName)
-      )
-    }
+  def update(
+    row: JdbcMutableRow,
+    columnName: String
+  ): Unit = {
+    update(
+      row,
+      row.columnIndexes(columnName)
+    )
   }
-
 }
 
 trait LongParameter {
-  self: JdbcParameterValue with JdbcRow =>
+  self: JdbcParameterValue with JdbcRow with JdbcMutableRow with JdbcRowImplicits =>
 
   implicit class QLong(override val value: Long) extends JdbcParameterValue[Long] {
     override def asJDBCObject: AnyRef = Long.box(value)
@@ -47,7 +42,7 @@ trait LongParameter {
     override def set(
       preparedStatement: PreparedStatement,
       parameterIndex: Int
-      ): Unit = {
+    ): Unit = {
       preparedStatement.setLong(
         parameterIndex,
         value
@@ -55,9 +50,9 @@ trait LongParameter {
     }
 
     override def update(
-      row: MutableJdbcRow,
+      row: JdbcMutableRow,
       columnIndex: Int
-      ): Unit = {
+    ): Unit = {
       row.updateLong(
         columnIndex,
         value
@@ -70,7 +65,7 @@ trait LongParameter {
 }
 
 trait IntParameter {
-  self: JdbcParameterValue with JdbcRow =>
+  self: JdbcParameterValue with JdbcRow with JdbcMutableRow with JdbcRowImplicits =>
 
   implicit class QInt(override val value: Int) extends JdbcParameterValue[Int] {
     override def asJDBCObject: AnyRef = Int.box(value)
@@ -78,7 +73,7 @@ trait IntParameter {
     override def set(
       preparedStatement: PreparedStatement,
       parameterIndex: Int
-      ): Unit = {
+    ): Unit = {
       preparedStatement.setInt(
         parameterIndex,
         value
@@ -86,9 +81,9 @@ trait IntParameter {
     }
 
     override def update(
-      row: JdbcRow,
+      row: JdbcMutableRow,
       columnIndex: Int
-      ): Unit = {
+    ): Unit = {
       row.updateInt(
         columnIndex,
         value
@@ -101,7 +96,7 @@ trait IntParameter {
 }
 
 trait ShortParameter {
-  self: JdbcParameterValue with JdbcRow =>
+  self: JdbcParameterValue with JdbcRow with JdbcMutableRow with JdbcRowImplicits =>
 
   implicit class QShort(override val value: Short) extends JdbcParameterValue[Short] {
     override def asJDBCObject: AnyRef = Short.box(value)
@@ -109,7 +104,7 @@ trait ShortParameter {
     override def set(
       statement: PreparedStatement,
       parameterIndex: Int
-      ): Unit = {
+    ): Unit = {
       statement.setShort(
         parameterIndex,
         value
@@ -117,9 +112,9 @@ trait ShortParameter {
     }
 
     override def update(
-      row: JdbcRow,
+      row: JdbcMutableRow,
       columnIndex: Int
-      ): Unit = {
+    ): Unit = {
       row.updateShort(
         columnIndex,
         value
@@ -132,7 +127,7 @@ trait ShortParameter {
 }
 
 trait ByteParameter {
-  self: JdbcParameterValue with JdbcRow =>
+  self: JdbcParameterValue with JdbcRow with JdbcMutableRow with JdbcRowImplicits =>
 
   implicit class QByte(override val value: Byte) extends JdbcParameterValue[Byte] {
     override def asJDBCObject: AnyRef = Byte.box(value)
@@ -140,7 +135,7 @@ trait ByteParameter {
     override def set(
       preparedStatement: PreparedStatement,
       parameterIndex: Int
-      ): Unit = {
+    ): Unit = {
       preparedStatement.setByte(
         parameterIndex,
         value
@@ -148,9 +143,9 @@ trait ByteParameter {
     }
 
     override def update(
-      row: JdbcRow,
+      row: JdbcMutableRow,
       columnIndex: Int
-      ): Unit = {
+    ): Unit = {
       row.updateByte(
         columnIndex,
         value
@@ -163,7 +158,7 @@ trait ByteParameter {
 }
 
 trait BytesParameter {
-  self: JdbcParameterValue with JdbcRow =>
+  self: JdbcParameterValue with JdbcRow with JdbcMutableRow with JdbcRowImplicits =>
 
   implicit class QBytes(override val value: Array[Byte]) extends JdbcParameterValue[Array[Byte]] {
     override def asJDBCObject: AnyRef = value
@@ -171,7 +166,7 @@ trait BytesParameter {
     override def set(
       preparedStatement: PreparedStatement,
       parameterIndex: Int
-      ): Unit = {
+    ): Unit = {
       preparedStatement.setBytes(
         parameterIndex,
         value
@@ -179,9 +174,9 @@ trait BytesParameter {
     }
 
     override def update(
-      row: JdbcRow,
+      row: JdbcMutableRow,
       columnIndex: Int
-      ): Unit = {
+    ): Unit = {
       row.updateBytes(
         columnIndex,
         value
@@ -192,7 +187,7 @@ trait BytesParameter {
 }
 
 trait FloatParameter {
-  self: JdbcParameterValue with JdbcRow =>
+  self: JdbcParameterValue with JdbcRow with JdbcMutableRow with JdbcRowImplicits =>
 
   implicit class QFloat(override val value: Float) extends JdbcParameterValue[Float] {
     override def asJDBCObject: AnyRef = Float.box(value)
@@ -200,7 +195,7 @@ trait FloatParameter {
     override def set(
       preparedStatement: PreparedStatement,
       parameterIndex: Int
-      ): Unit = {
+    ): Unit = {
       preparedStatement.setFloat(
         parameterIndex,
         value
@@ -208,9 +203,9 @@ trait FloatParameter {
     }
 
     override def update(
-      row: JdbcRow,
+      row: JdbcMutableRow,
       columnIndex: Int
-      ): Unit = {
+    ): Unit = {
       row.updateFloat(
         columnIndex,
         value
@@ -223,7 +218,7 @@ trait FloatParameter {
 }
 
 trait DoubleParameter {
-  self: JdbcParameterValue with JdbcRow =>
+  self: JdbcParameterValue with JdbcRow with JdbcMutableRow with JdbcRowImplicits =>
 
   implicit class QDouble(override val value: Double) extends JdbcParameterValue[Double] {
     override def asJDBCObject: AnyRef = Double.box(value)
@@ -231,7 +226,7 @@ trait DoubleParameter {
     override def set(
       preparedStatement: PreparedStatement,
       parameterIndex: Int
-      ): Unit = {
+    ): Unit = {
       preparedStatement.setDouble(
         parameterIndex,
         value
@@ -239,9 +234,9 @@ trait DoubleParameter {
     }
 
     override def update(
-      row: JdbcRow,
+      row: JdbcMutableRow,
       columnIndex: Int
-      ): Unit = {
+    ): Unit = {
       row.updateDouble(
         columnIndex,
         value
@@ -254,7 +249,7 @@ trait DoubleParameter {
 }
 
 trait DecimalParameter {
-  self: JdbcParameterValue with JdbcRow =>
+  self: JdbcParameterValue with JdbcRow with JdbcMutableRow with JdbcRowImplicits =>
 
   implicit class QDecimal(override val value: java.math.BigDecimal) extends JdbcParameterValue[java.math.BigDecimal] {
     override def asJDBCObject: AnyRef = value
@@ -262,7 +257,7 @@ trait DecimalParameter {
     override def set(
       preparedStatement: PreparedStatement,
       parameterIndex: Int
-      ): Unit = {
+    ): Unit = {
       preparedStatement.setBigDecimal(
         parameterIndex,
         value
@@ -270,9 +265,9 @@ trait DecimalParameter {
     }
 
     override def update(
-      row: JdbcRow,
+      row: JdbcMutableRow,
       columnIndex: Int
-      ): Unit = {
+    ): Unit = {
       row.updateBigDecimal(
         columnIndex,
         value
@@ -285,7 +280,7 @@ trait DecimalParameter {
 }
 
 trait TimestampParameter {
-  self: JdbcParameterValue with JdbcRow =>
+  self: JdbcParameterValue with JdbcRow with JdbcMutableRow with JdbcRowImplicits =>
 
   implicit class QTimestamp(override val value: Timestamp) extends JdbcParameterValue[Timestamp] {
     override def asJDBCObject: AnyRef = value
@@ -293,7 +288,7 @@ trait TimestampParameter {
     override def set(
       preparedStatement: PreparedStatement,
       parameterIndex: Int
-      ): Unit = {
+    ): Unit = {
       preparedStatement.setTimestamp(
         parameterIndex,
         value
@@ -301,9 +296,9 @@ trait TimestampParameter {
     }
 
     override def update(
-      row: JdbcRow,
+      row: JdbcMutableRow,
       columnIndex: Int
-      ): Unit = {
+    ): Unit = {
       row.updateTimestamp(
         columnIndex,
         value
@@ -314,7 +309,7 @@ trait TimestampParameter {
 }
 
 trait DateParameter {
-  self: JdbcParameterValue with JdbcRow =>
+  self: JdbcParameterValue with JdbcRow with JdbcMutableRow with JdbcRowImplicits =>
 
   implicit class QDate(override val value: Date) extends JdbcParameterValue[Date] {
     override def asJDBCObject: AnyRef = value
@@ -322,7 +317,7 @@ trait DateParameter {
     override def set(
       preparedStatement: PreparedStatement,
       parameterIndex: Int
-      ): Unit = {
+    ): Unit = {
       preparedStatement.setDate(
         parameterIndex,
         value
@@ -330,9 +325,9 @@ trait DateParameter {
     }
 
     override def update(
-      row: JdbcRow,
+      row: JdbcMutableRow,
       columnIndex: Int
-      ): Unit = {
+    ): Unit = {
       row.updateDate(
         columnIndex,
         value
@@ -343,7 +338,7 @@ trait DateParameter {
 }
 
 trait TimeParameter {
-  self: JdbcParameterValue with JdbcRow =>
+  self: JdbcParameterValue with JdbcRow with JdbcMutableRow with JdbcRowImplicits =>
 
   implicit class QTime(override val value: Time) extends JdbcParameterValue[Time] {
     override def asJDBCObject: AnyRef = value
@@ -351,7 +346,7 @@ trait TimeParameter {
     override def set(
       preparedStatement: PreparedStatement,
       parameterIndex: Int
-      ): Unit = {
+    ): Unit = {
       preparedStatement.setTime(
         parameterIndex,
         value
@@ -359,9 +354,9 @@ trait TimeParameter {
     }
 
     override def update(
-      row: JdbcRow,
+      row: JdbcMutableRow,
       columnIndex: Int
-      ): Unit = {
+    ): Unit = {
       row.updateTime(
         columnIndex,
         value
@@ -372,7 +367,7 @@ trait TimeParameter {
 }
 
 trait BooleanParameter {
-  self: JdbcParameterValue with JdbcRow =>
+  self: JdbcParameterValue with JdbcRow with JdbcMutableRow with JdbcRowImplicits =>
 
   implicit class QBoolean(override val value: Boolean) extends JdbcParameterValue[Boolean] {
     override def asJDBCObject: AnyRef = Boolean.box(value)
@@ -380,7 +375,7 @@ trait BooleanParameter {
     override def set(
       preparedStatement: PreparedStatement,
       parameterIndex: Int
-      ): Unit = {
+    ): Unit = {
       preparedStatement.setBoolean(
         parameterIndex,
         value
@@ -388,9 +383,9 @@ trait BooleanParameter {
     }
 
     override def update(
-      row: JdbcRow,
+      row: JdbcMutableRow,
       columnIndex: Int
-      ): Unit = {
+    ): Unit = {
       row.updateBoolean(
         columnIndex,
         value
@@ -403,7 +398,7 @@ trait BooleanParameter {
 }
 
 trait StringParameter {
-  self: JdbcParameterValue with JdbcRow =>
+  self: JdbcParameterValue with JdbcRow with JdbcMutableRow with JdbcRowImplicits =>
 
   implicit class QString(override val value: String) extends JdbcParameterValue[String] {
     override def asJDBCObject: AnyRef = value
@@ -411,7 +406,7 @@ trait StringParameter {
     override def set(
       preparedStatement: PreparedStatement,
       parameterIndex: Int
-      ): Unit = {
+    ): Unit = {
       preparedStatement.setString(
         parameterIndex,
         value
@@ -419,9 +414,9 @@ trait StringParameter {
     }
 
     override def update(
-      row: JdbcRow,
+      row: JdbcMutableRow,
       columnIndex: Int
-      ): Unit = {
+    ): Unit = {
       row.updateString(
         columnIndex,
         value
@@ -431,75 +426,88 @@ trait StringParameter {
 }
 
 trait ReaderParameter {
-  self: JdbcParameterValue with JdbcRow =>
+  self: JdbcParameterValue with JdbcRow with JdbcMutableRow with JdbcRowImplicits =>
 
   implicit class QReader(override val value: Reader) extends JdbcParameterValue[Reader] {
     override def asJDBCObject: AnyRef = value
 
     override def update(
-      row: JdbcRow,
+      row: JdbcMutableRow,
       columnIndex: Int
-      ): Unit = {
+    ): Unit = {
       row.updateCharacterStream(columnIndex, value)
     }
 
     override def set(
       preparedStatement: PreparedStatement,
       parameterIndex: Int
-      ): Unit = {
+    ): Unit = {
       preparedStatement.setCharacterStream(parameterIndex, value)
     }
   }
 }
 
 trait InputStreamParameter {
-  self: JdbcParameterValue with JdbcRow =>
+  self: JdbcParameterValue with JdbcRow with JdbcMutableRow with JdbcRowImplicits =>
 
   implicit class QInputStreamReader(override val value: InputStream) extends JdbcParameterValue[InputStream] {
     override def asJDBCObject: AnyRef = value
 
     override def update(
-      row: JdbcRow,
+      row: JdbcMutableRow,
       columnIndex: Int
-      ): Unit = {
+    ): Unit = {
       row.updateBinaryStream(columnIndex, value)
     }
 
     override def set(
       preparedStatement: PreparedStatement,
       parameterIndex: Int
-      ): Unit = {
+    ): Unit = {
       preparedStatement.setBinaryStream(parameterIndex, value)
     }
   }
 }
 
 trait UUIDParameter {
-  self: JdbcParameterValue with JdbcRow =>
+  self: JdbcParameterValue with JdbcRow with JdbcMutableRow with JdbcRowImplicits =>
 
   implicit class QUUID(override val value: UUID) extends JdbcParameterValue[AnyRef] {
     override def asJDBCObject: AnyRef = value
 
-    override def set(preparedStatement: PreparedStatement, parameterIndex: Int): Unit = {
+    override def set(
+      preparedStatement: PreparedStatement,
+      parameterIndex: Int
+    ): Unit = {
       preparedStatement.setObject(parameterIndex, value)
     }
 
-    override def update(row: JdbcRow, columnIndex: Int): Unit = {
+    override def update(
+      row: JdbcMutableRow,
+      columnIndex: Int
+    ): Unit = {
       row.updateObject(columnIndex, value)
     }
   }
 }
 
 trait AnyRefParameter {
-  self: JdbcParameterValue with JdbcRow =>
+  self: JdbcParameterValue with JdbcRow with JdbcMutableRow with JdbcRowImplicits =>
+
   implicit class QAnyRef(override val value: AnyRef) extends JdbcParameterValue[AnyRef] {
     override def asJDBCObject: AnyRef = value
 
-    override def set(preparedStatement: PreparedStatement, parameterIndex: Int): Unit = {
+    override def set(
+      preparedStatement: PreparedStatement,
+      parameterIndex: Int
+    ): Unit = {
       preparedStatement.setObject(parameterIndex, asJDBCObject)
     }
 
-    override def update(row: JdbcRow, columnIndex: Int): Unit = {
+    override def update(
+      row: JdbcMutableRow,
+      columnIndex: Int
+    ): Unit = {
       row.updateObject(columnIndex, value)
     }
   }

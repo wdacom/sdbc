@@ -12,11 +12,12 @@ abstract class DBMS
   with Select
   with SelectForUpdate
   with Batch
-  with Getter
+  with JdbcGetter
   with JdbcRow
+  with JdbcMutableRow
   with GetterImplicits
   with ReadSelectUpdate
-  with ParameterValue {
+  with JdbcParameterValue {
   self =>
 
   /**

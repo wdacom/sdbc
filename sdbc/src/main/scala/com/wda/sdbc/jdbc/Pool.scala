@@ -1,13 +1,23 @@
 package com.wda.sdbc.jdbc
 
 import com.typesafe.config.Config
+import com.wda.sdbc.base.Closable
 import com.wda.sdbc.config
 import com.zaxxer.hikari.{HikariConfig, HikariDataSource}
 
-trait Pool {
+import com.wda.sdbc.base
+
+trait Pool extends base.Pool[HikariDataSource, java.sql.Connection] {
   self: DBMS =>
 
-  case class Pool(configuration: HikariConfig) {
+  implicit val closableConnection: Closable[java.sql.Connection] =
+    new Closable[java.sql.Connection] {
+      override def close(connection: UnderlyingConnection): Unit = {
+        connection.close()
+      }
+    }
+
+  case class JdbcPool(configuration: HikariConfig) {
 
     if (DBMS.of(configuration).getClass != self.getClass) {
       throw new IllegalArgumentException("HikariConfig is for the wrong DBMS.")
@@ -22,22 +32,22 @@ trait Pool {
 
     implicit val dbms: DBMS = self
 
-    def getConnection(): Connection = {
+    def getConnection(): UnderlyingConnection = {
       val connection = underlying.getConnection()
       initializeConnection(connection)
-      Connection(connection)
+      connection
     }
 
-    def withConnection[T](f: Connection => T): T = {
+    def withConnection[T](f: UnderlyingConnection => T): T = {
       val connection = getConnection()
       try {
         f(connection)
       } finally {
-        connection.closeQuietly()
+        isConnection.closeQuietly(connection)
       }
     }
 
-    def withTransaction[T](f: Connection => T): T = {
+    def withTransaction[T](f: UnderlyingConnection => T): T = {
       val connection = getConnection()
       connection.setAutoCommit(false)
       try {
@@ -45,21 +55,21 @@ trait Pool {
         connection.commit()
         result
       } finally {
-        connection.closeQuietly()
+        isConnection.closeQuietly(connection)
       }
     }
 
   }
 
-  object Pool {
+  object JdbcPool {
     import config._
 
-    def apply(config: Config): Pool = {
-      Pool(config.toHikariConfig)
+    def apply(config: Config): JdbcPool = {
+      JdbcPool(config.toHikariConfig)
     }
   }
 
-  implicit def PoolToHikariDataSource(pool: Pool): HikariDataSource = {
+  implicit def PoolToHikariDataSource(pool: JdbcPool): HikariDataSource = {
     pool.underlying
   }
 

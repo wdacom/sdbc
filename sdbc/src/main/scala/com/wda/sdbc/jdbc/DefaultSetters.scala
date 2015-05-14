@@ -1,7 +1,5 @@
 package com.wda.sdbc.jdbc
 
-import com.wda.sdbc.base.Row
-
 trait DefaultSetters
   extends BooleanParameter
   with ByteParameter
@@ -19,7 +17,7 @@ trait DefaultSetters
   with ReaderParameter
   with InputStreamParameter
   with UUIDParameter {
-  self: JdbcParameterValue with Row =>
+  self: JdbcParameterValue with JdbcRow with JdbcMutableRow =>
 
 }
 
@@ -29,6 +27,6 @@ trait Java8DefaultSetters
   with LocalDateParameter
   with LocalTimeParameter
   with LocalDateTimeParameter {
-  self: JdbcParameterValue with Row =>
+  self: JdbcParameterValue with JdbcRow with JdbcMutableRow =>
 
 }

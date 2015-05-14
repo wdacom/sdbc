@@ -1,21 +1,19 @@
 package com.wda.sdbc.jdbc
 
 import java.io.{Reader, InputStream}
-import java.sql.{ResultSet, Time, Date, Timestamp}
+import java.sql.{Time, Date, Timestamp}
 import java.time.{LocalTime, LocalDate, Instant, LocalDateTime}
 import java.util.UUID
 
 import com.wda.sdbc.base
 
-trait JdbcGetter extends base.Getter[ResultSet] {
+trait JdbcGetter extends base.Getter[java.sql.ResultSet] {
   self: JdbcRow =>
 
-  trait JdbcGetter[+T] extends Getter[JdbcRow, T] {}
+  trait Parser[+T] extends Getter[T] {
 
-  trait Parser[WrappedRow <: {def getString(columnIndex : Int) : String}, R <: Row, +T] extends Getter[Row, T] {
-
-    override def apply(row: Row, columnIndex: Int): Option[T] = {
-      Option(row.underlying.getString(columnIndex)).map(parse)
+    override def apply(row: UnderlyingRow, columnIndex: Int): Option[T] = {
+      Option(row.getString(columnIndex)).map(parse)
     }
 
     def parse(asString: String): T
@@ -26,13 +24,14 @@ trait JdbcGetter extends base.Getter[ResultSet] {
 trait LongGetter {
   self: JdbcGetter with JdbcRow =>
 
-  implicit val LongGetter = new JdbcGetter[Long] {
+  implicit val LongGetter = new Getter[Long] {
 
-    override def apply(row: JdbcRow, columnIndex: Int): Option[Long] = {
-      val i = RowToWrappedRow[java.sql.ResultSet](row).getLong(columnIndex)
+    override def apply(row: UnderlyingRow, columnIndex: Int): Option[Long] = {
+      val i = row.getLong(columnIndex)
       if (row.wasNull()) None
       else Some(i)
     }
+
   }
 
 }
@@ -40,9 +39,9 @@ trait LongGetter {
 trait IntGetter {
   self: JdbcGetter with JdbcRow =>
 
-  implicit val IntGetter = new JdbcGetter[Int] {
+  implicit val IntGetter = new Getter[Int] {
     override def apply(
-      row: JdbcRow,
+      row: UnderlyingRow,
       columnIndex: Int
     ): Option[Int] = {
       val i = row.getInt(columnIndex)
@@ -56,9 +55,9 @@ trait IntGetter {
 trait ShortGetter {
   self: JdbcGetter with JdbcRow with JdbcRow =>
 
-  implicit val ShortGetter = new JdbcGetter[Short] {
+  implicit val ShortGetter = new Getter[Short] {
     override def apply(
-      row: JdbcRow,
+      row: UnderlyingRow,
       columnIndex: Int
     ): Option[Short] = {
       val i = row.getShort(columnIndex)
@@ -72,9 +71,9 @@ trait ShortGetter {
 trait ByteGetter {
   self: JdbcGetter with JdbcRow with JdbcRow =>
 
-  implicit val ByteGetter = new JdbcGetter[Byte] {
+  implicit val ByteGetter = new Getter[Byte] {
     override def apply(
-      row: JdbcRow,
+      row: UnderlyingRow,
       columnIndex: Int
     ): Option[Byte] = {
       val i = row.getByte(columnIndex)
@@ -87,9 +86,9 @@ trait ByteGetter {
 trait BytesGetter {
   self: JdbcGetter with JdbcRow with JdbcRow =>
 
-  implicit val BytesGetter = new JdbcGetter[Array[Byte]] {
+  implicit val BytesGetter = new Getter[Array[Byte]] {
     override def apply(
-      row: JdbcRow,
+      row: UnderlyingRow,
       columnIndex: Int
     ): Option[Array[Byte]] = {
       Option(row.getBytes(columnIndex))
@@ -101,9 +100,9 @@ trait BytesGetter {
 trait FloatGetter {
   self: JdbcGetter with JdbcRow with JdbcRow =>
 
-  implicit val FloatGetter = new JdbcGetter[Float] {
+  implicit val FloatGetter = new Getter[Float] {
     override def apply(
-      row: JdbcRow,
+      row: UnderlyingRow,
       columnIndex: Int
     ): Option[Float] = {
       val i = row.getFloat(columnIndex)
@@ -116,9 +115,9 @@ trait FloatGetter {
 trait DoubleGetter {
   self: JdbcGetter with JdbcRow with JdbcRow =>
 
-  implicit val DoubleGetter = new JdbcGetter[Double] {
+  implicit val DoubleGetter = new Getter[Double] {
     override def apply(
-      row: JdbcRow,
+      row: UnderlyingRow,
       columnIndex: Int
     ): Option[Double] = {
       val i = row.getDouble(columnIndex)
@@ -131,9 +130,9 @@ trait DoubleGetter {
 trait JavaBigDecimalGetter {
   self: JdbcGetter with JdbcRow with JdbcRow =>
 
-  implicit val JavaBigDecimalGetter = new JdbcGetter[java.math.BigDecimal] {
+  implicit val JavaBigDecimalGetter = new Getter[java.math.BigDecimal] {
     override def apply(
-      row: JdbcRow,
+      row: UnderlyingRow,
       columnIndex: Int
     ): Option[java.math.BigDecimal] = {
       Option(row.getBigDecimal(columnIndex))
@@ -145,9 +144,9 @@ trait JavaBigDecimalGetter {
 trait ScalaBigDecimalGetter {
   self: JdbcGetter with JdbcRow with JdbcRow with JavaBigDecimalGetter =>
 
-  implicit val ScalaBigDecimalGetter = new JdbcGetter[BigDecimal] {
+  implicit val ScalaBigDecimalGetter = new Getter[BigDecimal] {
     override def apply(
-      row: JdbcRow,
+      row: UnderlyingRow,
       columnIndex: Int
     ): Option[BigDecimal] = {
       JavaBigDecimalGetter(
@@ -161,9 +160,9 @@ trait ScalaBigDecimalGetter {
 trait TimestampGetter {
   self: JdbcGetter with JdbcRow with JdbcRow =>
 
-  implicit val TimestampGetter = new JdbcGetter[Timestamp] {
+  implicit val TimestampGetter = new Getter[Timestamp] {
     override def apply(
-      row: JdbcRow,
+      row: UnderlyingRow,
       columnIndex: Int
     ): Option[Timestamp] = {
       Option(row.getTimestamp(columnIndex))
@@ -174,9 +173,9 @@ trait TimestampGetter {
 trait DateGetter {
   self: JdbcGetter with JdbcRow with JdbcRow =>
 
-  implicit val DateGetter = new JdbcGetter[Date] {
+  implicit val DateGetter = new Getter[Date] {
     override def apply(
-      row: JdbcRow,
+      row: UnderlyingRow,
       columnIndex: Int
     ): Option[Date] = {
       Option(row.underlying.getDate(columnIndex))
@@ -187,9 +186,9 @@ trait DateGetter {
 trait TimeGetter {
   self: JdbcGetter with JdbcRow with JdbcRow =>
 
-  implicit val TimeGetter = new JdbcGetter[Time] {
+  implicit val TimeGetter = new Getter[Time] {
     override def apply(
-      row: JdbcRow,
+      row: UnderlyingRow,
       columnIndex: Int
     ): Option[Time] = {
       Option(row.getTime(columnIndex))
@@ -201,9 +200,9 @@ trait TimeGetter {
 trait LocalDateTimeGetter {
   self: JdbcGetter with JdbcRow with JdbcRow =>
 
-  implicit val LocalDateTimeGetter = new JdbcGetter[LocalDateTime] {
+  implicit val LocalDateTimeGetter = new Getter[LocalDateTime] {
     override def apply(
-      row: JdbcRow,
+      row: UnderlyingRow,
       columnIndex: Int
     ): Option[LocalDateTime] = {
       Option(row.getTimestamp(columnIndex)).map(_.toLocalDateTime)
@@ -214,9 +213,9 @@ trait LocalDateTimeGetter {
 trait InstantGetter {
   self: JdbcGetter with JdbcRow with JdbcRow =>
 
-  implicit val InstantGetter = new JdbcGetter[Instant] {
+  implicit val InstantGetter = new Getter[Instant] {
     override def apply(
-      row: JdbcRow,
+      row: UnderlyingRow,
       columnIndex: Int
     ): Option[Instant] = {
       Option(row.getTimestamp(columnIndex)).map(_.toInstant)
@@ -227,9 +226,9 @@ trait InstantGetter {
 trait LocalDateGetter {
   self: JdbcGetter with JdbcRow with JdbcRow =>
 
-  implicit val LocalDateGetter = new JdbcGetter[LocalDate] {
+  implicit val LocalDateGetter = new Getter[LocalDate] {
     override def apply(
-      row: JdbcRow,
+      row: UnderlyingRow,
       columnIndex: Int
     ): Option[LocalDate] = {
       Option(row.getDate(columnIndex)).map(_.toLocalDate)
@@ -240,9 +239,9 @@ trait LocalDateGetter {
 trait LocalTimeGetter {
   self: JdbcGetter with JdbcRow with JdbcRow =>
 
-  implicit val LocalTimeGetter = new JdbcGetter[LocalTime] {
+  implicit val LocalTimeGetter = new Getter[LocalTime] {
     override def apply(
-      row: JdbcRow,
+      row: UnderlyingRow,
       columnIndex: Int
     ): Option[LocalTime] = {
       Option(row.getTime(columnIndex)).map(_.toLocalTime)
@@ -253,9 +252,9 @@ trait LocalTimeGetter {
 trait BooleanGetter {
   self: JdbcGetter with JdbcRow with JdbcRow =>
 
-  implicit val BooleanGetter = new JdbcGetter[Boolean] {
+  implicit val BooleanGetter = new Getter[Boolean] {
     override def apply(
-      row: JdbcRow,
+      row: UnderlyingRow,
       columnIndex: Int
     ): Option[Boolean] = {
       val i = row.getBoolean(columnIndex)
@@ -268,7 +267,12 @@ trait BooleanGetter {
 trait StringGetter {
   self: JdbcGetter with JdbcRow with JdbcRow =>
 
-  implicit val StringGetter = new Parser[java.sql.ResultSet, JdbcRow, String] {
+  implicit val StringGetter = new Parser[String] {
+
+    override def apply(row: UnderlyingRow, columnIndex: Int): Option[String] = {
+      Option(row.getString(columnIndex))
+    }
+
     override def parse(asString: String): String = asString
   }
 }
@@ -276,9 +280,9 @@ trait StringGetter {
 trait UUIDGetter {
   self: JdbcGetter with JdbcRow with JdbcRow =>
 
-  implicit val UUIDGetter = new JdbcGetter[UUID] {
+  implicit val UUIDGetter = new Getter[UUID] {
     override def apply(
-      row: JdbcRow,
+      row: UnderlyingRow,
       columnIndex: Int
     ): Option[UUID] = {
       Option(row.getObject(columnIndex)).
@@ -290,9 +294,9 @@ trait UUIDGetter {
 trait InputStreamGetter {
   self: JdbcGetter with JdbcRow with JdbcRow =>
 
-  implicit val InputStreamGetter = new JdbcGetter[InputStream] {
+  implicit val InputStreamGetter = new Getter[InputStream] {
     override def apply(
-      row: JdbcRow,
+      row: UnderlyingRow,
       columnIndex: Int
     ): Option[InputStream] = {
       Option(row.getBinaryStream(columnIndex))
@@ -304,9 +308,9 @@ trait InputStreamGetter {
 trait ReaderGetter {
   self: JdbcGetter with JdbcRow with JdbcRow =>
 
-  implicit val ReaderGetter = new JdbcGetter[Reader] {
+  implicit val ReaderGetter = new Getter[Reader] {
     override def apply(
-      row: JdbcRow,
+      row: UnderlyingRow,
       columnIndex: Int
     ): Option[Reader] = {
       Option(row.getCharacterStream(columnIndex))
@@ -317,8 +321,8 @@ trait ReaderGetter {
 trait AnyRefGetter {
   self: JdbcGetter with JdbcRow with JdbcRow =>
 
-  val AnyRefGetter = new JdbcGetter[AnyRef] {
-    override def apply(row: JdbcRow, columnIndex: Int): Option[AnyRef] = {
+  val AnyRefGetter = new Getter[AnyRef] {
+    override def apply(row: UnderlyingRow, columnIndex: Int): Option[AnyRef] = {
       Option(row.getObject(columnIndex))
     }
   }

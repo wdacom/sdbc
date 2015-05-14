@@ -5,24 +5,20 @@ import java.sql.{Array => _, _}
 import java.time._
 import java.util.UUID
 
-trait Getter {
-  self: Row =>
+import scala.annotation.unspecialized
 
-  trait Getter[+T] extends Function[UnderlyingRow, Option[T]] {
+trait Getter[UnderlyingRow, +T] {
 
-    override def apply(row: UnderlyingRow): Option[T] = {
-      implicit val getter = this
-      isRow.option(row, 1)
-    }
-
-    def apply(row: UnderlyingRow, columnName: String): Option[T] = {
-      val columnIndex = isRow.columnIndex(row, columnName)
-      implicit val getter = this
-      isRow.option(row, columnIndex)
-    }
-
-    def apply(row: UnderlyingRow, columnIndex: Int): Option[T]
-
+  def apply(row: UnderlyingRow)(implicit isRow: Row[UnderlyingRow]): Option[T] = {
+    apply(row, 1)
   }
+
+  def apply(row: UnderlyingRow, columnName: String)(implicit isRow: Row[UnderlyingRow]): Option[T] = {
+    val columnIndex = isRow.columnIndex(row, columnName)
+    implicit val getter = this
+    isRow.option(row, columnIndex)
+  }
+
+  def apply(row: UnderlyingRow, columnIndex: Int): Option[T]
 
 }

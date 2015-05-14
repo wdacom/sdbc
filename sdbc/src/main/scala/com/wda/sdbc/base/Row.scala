@@ -1,61 +1,52 @@
 package com.wda.sdbc.base
 
-trait Row {
-  self: ParameterValue with Getter =>
+trait Row[UnderlyingRow] {
 
-  type UnderlyingRow
+  def columnIndex(row: UnderlyingRow, columnName: String): Int
 
-  val isRow: Row
+  def apply[V](row: UnderlyingRow)(implicit getter: Getter[UnderlyingRow, V]): V = {
+    single[V](row)
+  }
 
-  trait Row {
+  def apply[V](row: UnderlyingRow, columnName: String)(implicit getter: Getter[UnderlyingRow, V]): V = {
+    single[V](row, columnName)
+  }
 
-    def columnIndex(row: UnderlyingRow, columnName: String): Int
+  def apply[V](row: UnderlyingRow, columnIndex: Int)(implicit getter: Getter[UnderlyingRow, V]): V = {
+    single[V](row, columnIndex)
+  }
 
-    def apply[V](row: UnderlyingRow)(implicit getter: Getter[V]): V = {
-      single[V](row)
-    }
+  def single[V](row: UnderlyingRow)(implicit getter: Getter[UnderlyingRow, V]): V = {
+    getter(row).get
+  }
 
-    def apply[V](row: UnderlyingRow, columnName: String)(implicit getter: Getter[V]): V = {
-      single[V](row, columnName)
-    }
+  def single[V](row: UnderlyingRow, columnName: String)(implicit getter: Getter[UnderlyingRow, V]): V = {
+    getter(row, columnName).get
+  }
 
-    def apply[V](row: UnderlyingRow, columnIndex: Int)(implicit getter: Getter[V]): V = {
-      single[V](row, columnIndex)
-    }
+  def single[V](row: UnderlyingRow, columnIndex: Int)(implicit getter: Getter[UnderlyingRow, V]): V = {
+    getter(row, columnIndex).get
+  }
 
-    def single[V](row: UnderlyingRow)(implicit getter: Getter[V]): V = {
-      getter(row).get
-    }
+  def option[V](row: UnderlyingRow)(implicit getter: Getter[UnderlyingRow, V]): Option[V] = {
+    getter(row)
+  }
 
-    def single[V](row: UnderlyingRow, columnName: String)(implicit getter: Getter[V]): V = {
-      getter(row, columnName).get
-    }
+  def option[V](row: UnderlyingRow)(columnName: String)(implicit getter: Getter[UnderlyingRow, V]): Option[V] = {
+    getter(row, columnName)
+  }
 
-    def single[V](row: UnderlyingRow, columnIndex: Int)(implicit getter: Getter[V]): V = {
-      getter(row, columnIndex).get
-    }
+  def option[V](row: UnderlyingRow, columnIndex: Int)(implicit getter: Getter[UnderlyingRow, V]): Option[V] = {
+    getter(row, columnIndex)
+  }
 
-    def option[V](row: UnderlyingRow)(implicit getter: Getter[V]): Option[V] = {
-      getter(row)
-    }
+  def unapply[V](converter: PartialFunction[Row[UnderlyingRow], V]): Option[V] = {
+    if (converter.isDefinedAt(this)) Some(converter(this))
+    else None
+  }
 
-    def option[V](row: UnderlyingRow)(columnName: String)(implicit getter: Getter[V]): Option[V] = {
-      getter(row, columnName)
-    }
-
-    def option[V](row: UnderlyingRow, columnIndex: Int)(implicit getter: Getter[V]): Option[V] = {
-      getter(row, columnIndex)
-    }
-
-    def unapply[V](converter: PartialFunction[Row, V]): Option[V] = {
-      if (converter.isDefinedAt(this)) Some(converter(this))
-      else None
-    }
-
-    def unapplySeq[V](converters: PartialFunction[Row, V]*): Option[V] = {
-      converters.find(_.isDefinedAt(this)).map(_(this))
-    }
-
+  def unapplySeq[V](converters: PartialFunction[Row[UnderlyingRow], V]*): Option[V] = {
+    converters.find(_.isDefinedAt(this)).map(_(this))
   }
 
 }
