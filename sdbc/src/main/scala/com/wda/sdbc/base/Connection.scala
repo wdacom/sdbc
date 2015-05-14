@@ -1,106 +1,93 @@
 package com.wda.sdbc.base
 
-import com.wda.sdbc.DBMS
-
 import scala.collection.immutable.Seq
 
-trait Connection {
-  self: DBMS =>
+trait Connection[UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow] extends Closable[Connection[UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow]] {
+  self: Select[UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow] =>
 
-  implicit class Connection(val underlying: java.sql.Connection) {
+  def prepare(connection: UnderlyingConnection, queryText: String): PreparedStatement
 
-    if (DBMS.of(underlying).getClass != self.getClass) {
-      throw new IllegalArgumentException("Connection is for the wrong DBMS.")
-    }
-
-    implicit val dbms: DBMS = self
-
-    def closeQuietly() = {
-      util.Try(underlying.close())
-    }
-
-    def iteratorForUpdate(
-      queryText: String,
-      parameterValues: (String, Option[ParameterValue[_]])*
-    ): Iterator[MutableRow] = {
-      SelectForUpdate(queryText).on(
-        parameterValues: _*
-      ).iterator()(this)
-    }
-
-    def iterator[T](
-      queryText: String,
-      parameterValues: (String, Option[ParameterValue[_]])*
-    )(implicit converter: Row => T
-    ): Iterator[T] = {
-      Select[T](queryText).on(
-        parameterValues: _*
-      ).iterator()(this)
-    }
-
-    def seq[T](
-      queryText: String,
-      parameterValues: (String, Option[ParameterValue[_]])*
-    )(
-      implicit converter: Row => T
-    ): Seq[T] = {
-      Select[T](queryText).on(
-        parameterValues: _*
-      ).seq()(this)
-    }
-
-    def option[T](
-      queryText: String,
-      parameterValues: (String, Option[ParameterValue[_]])*
-    )(
-      implicit converter: Row => T
-    ): Option[T] = {
-      Select[T](queryText).on(
-        parameterValues: _*
-      ).option()(this)
-    }
-
-    def single[T](
-      queryText: String,
-      parameterValues: (String, Option[ParameterValue[_]])*
-    )(
-      implicit converter: Row => T
-    ): T = {
-      Select[T](queryText).on(
-        parameterValues: _*
-      ).single()(this)
-    }
-
-    def update(
-      queryText: String,
-      parameterValues: (String, Option[ParameterValue[_]])*
-    ): Int = {
-      Update(queryText).on(
-        parameterValues: _*
-      ).update()(this)
-    }
-
-    def largeUpdate(
-      queryText: String,
-      parameterValues: (String, Option[ParameterValue[_]])*
-    ): Long = {
-      Update(queryText).on(
-        parameterValues: _*
-      ).largeUpdate()(this)
-    }
-
-    def execute(
-      queryText: String,
-      parameterValues: (String, Option[ParameterValue[_]])*
-    ): Unit = {
-      Update(queryText).on(
-        parameterValues: _*
-      ).execute()(this)
-    }
+  def iterator[T](
+    queryText: String,
+    parameterValues: (String, Option[ParameterValue[_, PreparedStatement]])*
+  )(implicit connection: UnderlyingConnection,
+    converter: Row[UnderlyingRow] => T
+  ): Iterator[T] = {
+    implicit val isConnection = this
+    Select[T](queryText).on(
+      parameterValues: _*
+    ).iterator()
   }
 
-  implicit def ConnectionToJDBCConnection(connection: Connection): java.sql.Connection = {
-    connection.underlying
+  def seq[T](
+    queryText: String,
+    parameterValues: (String, Option[ParameterValue[_, PreparedStatement]])*
+  )(implicit connection: UnderlyingConnection,
+    converter: Row[UnderlyingRow] => T
+  ): Seq[T] = {
+    implicit val isConnection = this
+    Select[T](queryText).on(
+      parameterValues: _*
+    ).seq()
   }
 
+  def option[T](
+    queryText: String,
+    parameterValues: (String, Option[ParameterValue[_, PreparedStatement]])*
+  )(implicit connection: UnderlyingConnection,
+    converter: Row[UnderlyingRow] => T
+  ): Option[T] = {
+    implicit val isConnection = this
+    Select[T](queryText).on(
+      parameterValues: _*
+    ).option()
+  }
+
+  def single[T](
+    queryText: String,
+    parameterValues: (String, Option[ParameterValue[_, PreparedStatement]])*
+  )(implicit connection: UnderlyingConnection,
+    converter: Row[UnderlyingRow] => T
+  ): T = {
+    implicit val isConnection = this
+    Select[T](queryText).on(
+      parameterValues: _*
+    ).single()
+  }
+
+  def update(
+    queryText: String,
+    parameterValues: (String, Option[ParameterValue[_, PreparedStatement]])*
+  )(implicit connection: UnderlyingConnection
+  ): Int = {
+    implicit val isConnection = this
+    Update(queryText).on(
+      parameterValues: _*
+    ).update()
+  }
+
+  def largeUpdate(
+    queryText: String,
+    parameterValues: (String, Option[ParameterValue[_, PreparedStatement]])*
+  )(implicit connection: UnderlyingConnection,
+    isConnection: Connection
+  ): Long = {
+    implicit val isConnection = this
+    Update(queryText).on(
+      parameterValues: _*
+    ).largeUpdate()
+  }
+
+  def execute(
+    queryText: String,
+    parameterValues: (String, Option[ParameterValue[_, PreparedStatement]])*
+  )(implicit connection: UnderlyingConnection
+  ): Unit = {
+    implicit val isConnection = this
+    Update(queryText).on(
+      parameterValues: _*
+    ).execute()
+  }
+
+  def execute(preparedStatement: PreparedStatement): Unit
 }

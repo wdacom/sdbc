@@ -1,12 +1,13 @@
 package com.wda.sdbc.base
 
+import com.wda.sdbc.jdbc.DefaultSetters
 import org.scalatest._
 
 class DefaultSettersSpec
   extends FunSuite
   with Row
   with Getter
-  with ParameterValue
+  with JdbcParameterValue
   with DefaultSetters {
 
   test("implicit Int conversion works") {

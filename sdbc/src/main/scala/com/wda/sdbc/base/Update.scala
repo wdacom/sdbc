@@ -1,42 +1,46 @@
 package com.wda.sdbc.base
 
-trait Update {
-  self: Connection with ParameterValue with AbstractQuery =>
+protected trait Updateable[PreparedStatement] {
+  def executeUpdate(statement: PreparedStatement): Int
 
-  case class Update private[sdbc] (
+  def executeLargeUpdate(statement: PreparedStatement): Long
+}
+
+case class Update[UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow] private[sdbc] (
+  statement: CompiledStatement,
+  override val parameterValues: Map[String, Option[ParameterValue[_, PreparedStatement]]]
+)(implicit isUpdatable: Updateable[PreparedStatement],
+  override val isConnection: Connection[UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow],
+  override val closePreparedStatement: Closable[PreparedStatement]
+) extends AbstractQuery[Update[UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow], UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow] {
+
+  override protected def subclassConstructor(
     statement: CompiledStatement,
-    override val parameterValues: Map[String, Option[ParameterValue[_]]]
-  ) extends AbstractQuery[Update] {
-
-    override protected def subclassConstructor(
-      statement: CompiledStatement,
-      parameterValues: Map[String, Option[ParameterValue[_]]]
-    ): Update = {
-      Update(statement, parameterValues)
-    }
-
-    def update()(implicit connection: Connection): Int = {
-      logger.debug(s"""Executing an update using "${statement.originalQueryText}" with parameters $parameterValues.""")
-      withPreparedStatement(_.executeUpdate())(connection)
-    }
-
-    def largeUpdate()(implicit connection: Connection): Long = {
-      logger.debug(s"""Executing a large update using "${statement.originalQueryText}" with parameters $parameterValues.""")
-      withPreparedStatement(_.executeLargeUpdate())(connection)
-    }
-
+    parameterValues: Map[String, Option[ParameterValue[_, PreparedStatement]]]
+  ): Update[UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow] = {
+    Update(statement, parameterValues)
   }
 
-  object Update {
+  def update()(implicit connection: UnderlyingConnection): Int = {
+    logger.debug(s"""Executing an update using "${statement.originalQueryText}" with parameters $parameterValues.""")
+    withPreparedStatement(statement => isUpdatable.executeUpdate(statement))
+  }
 
-    def apply(
-      queryText: String,
-      hasParameters: Boolean = true
-    ): Update = {
-      val statement = CompiledStatement(queryText, hasParameters)
-      Update(statement, Map.empty[String, Option[ParameterValue[_]]])
-    }
+  def largeUpdate()(implicit connection: UnderlyingConnection): Long = {
+    logger.debug(s"""Executing a large update using "${statement.originalQueryText}" with parameters $parameterValues.""")
+    withPreparedStatement(statement => isUpdatable.executeLargeUpdate(statement))
+  }
 
+}
+
+object Update {
+
+  def apply[UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow](
+    queryText: String,
+    hasParameters: Boolean = true
+  ): Update[UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow] = {
+    val statement = CompiledStatement(queryText, hasParameters)
+    Update[UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow](statement, Map.empty[String, Option[ParameterValue[_, PreparedStatement]]])
   }
 
 }

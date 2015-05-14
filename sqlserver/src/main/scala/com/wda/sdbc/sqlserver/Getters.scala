@@ -6,6 +6,7 @@ import java.time.{OffsetDateTime, Instant}
 import java.util.UUID
 
 import com.wda.sdbc.base._
+import com.wda.sdbc.jdbc.Java8DefaultGetters
 
 import scala.xml.{XML, Node}
 
@@ -13,7 +14,7 @@ trait Getters extends Java8DefaultGetters {
   self: Row with Getter with HierarchyId with HasJava8DateTimeFormatter =>
 
   override implicit val UUIDGetter: Getter[UUID] = new Getter[UUID] {
-    override def apply(row: Row, columnIndex: Int): Option[UUID] = {
+    override def apply(row: JdbcRow, columnIndex: Int): Option[UUID] = {
       Option(row.getString(columnIndex)).map(UUID.fromString)
     }
   }
@@ -24,12 +25,12 @@ trait Getters extends Java8DefaultGetters {
     }
   }
 
-  implicit def NullableHierarchyIdSingleton(row: Row): Option[HierarchyId] = HierarchyIdGetter(row, 1)
+  implicit def NullableHierarchyIdSingleton(row: JdbcRow): Option[HierarchyId] = HierarchyIdGetter(row, 1)
 
-  implicit def HierarchyIdSingleton(row: Row): HierarchyId = NullableHierarchyIdSingleton(row).get
+  implicit def HierarchyIdSingleton(row: JdbcRow): HierarchyId = NullableHierarchyIdSingleton(row).get
 
   implicit val XMLGetter: Getter[Node] = new Getter[Node] {
-    override def apply(row: Row, columnIndex: Int): Option[Node] = {
+    override def apply(row: JdbcRow, columnIndex: Int): Option[Node] = {
       for {
         clob <- Option(row.getClob(columnIndex))
       } yield {
@@ -43,15 +44,15 @@ trait Getters extends Java8DefaultGetters {
     }
   }
 
-  implicit def NullableXMLSingleton(row: Row): Option[Node] = XMLGetter(row, 1)
+  implicit def NullableXMLSingleton(row: JdbcRow): Option[Node] = XMLGetter(row, 1)
 
-  implicit def XMLSingleton(row: Row): Node = NullableXMLSingleton(row).get
+  implicit def XMLSingleton(row: JdbcRow): Node = NullableXMLSingleton(row).get
 
   /**
    * The JTDS driver fails to parse timestamps, so when it fails, use our own parser.
    */
   override implicit val InstantGetter = new Getter[Instant] {
-    override def apply(row: Row, columnIndex: Int): Option[Instant] = {
+    override def apply(row: JdbcRow, columnIndex: Int): Option[Instant] = {
       try {
         Option(row.underlying.getTimestamp(columnIndex)).map(_.toInstant())
       } catch {

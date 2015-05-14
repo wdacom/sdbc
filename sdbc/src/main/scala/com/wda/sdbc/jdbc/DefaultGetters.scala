@@ -1,4 +1,4 @@
-package com.wda.sdbc.base
+package com.wda.sdbc.jdbc
 
 trait DefaultGetters
   extends AnyRefGetter
@@ -19,7 +19,7 @@ trait DefaultGetters
   with TimeGetter
   with TimestampGetter
   with UUIDGetter {
-  self: Row with Getter =>
+  self: JdbcRow with JdbcGetter =>
 
 }
 
@@ -29,6 +29,6 @@ trait Java8DefaultGetters
   with LocalDateGetter
   with LocalDateTimeGetter
   with LocalTimeGetter {
-  self: Row with Getter =>
+  self: JdbcRow with JdbcGetter =>
 
 }

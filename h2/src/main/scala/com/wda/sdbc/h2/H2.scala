@@ -2,9 +2,8 @@ package com.wda.sdbc.h2
 
 import java.nio.file.Path
 import java.sql.DriverManager
-
-import com.wda.sdbc.DBMS
-import com.wda.sdbc.base.{Java8DefaultGetters, DefaultSetters}
+import com.wda.sdbc.base.DefaultSetters
+import com.wda.sdbc.jdbc.{DBMS, DefaultSetters, Java8DefaultGetters}
 
 abstract class H2
   extends DBMS

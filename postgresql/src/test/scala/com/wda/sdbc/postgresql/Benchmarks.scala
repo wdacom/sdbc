@@ -238,7 +238,7 @@ class Benchmarks
 
   object TestTable {
 
-    implicit def apply(row: Row): TestTable = {
+    implicit def apply(row: JdbcRow): TestTable = {
       val id = row[Long]("id")
       val str1 = row[String]("str1")
       val uuid = row[UUID]("uuid")

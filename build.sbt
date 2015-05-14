@@ -1,5 +1,7 @@
 lazy val sdbc = project.in(file("sdbc"))
 
+//lazy val cassandra = project.in(file("cassandra")).dependsOn(sdbc % "test->test;compile->compile")
+
 lazy val h2 = project.in(file("h2")).dependsOn(sdbc % "test->test;compile->compile")
 
 lazy val postgresql = project.in(file("postgresql")).dependsOn(sdbc % "test->test;compile->compile")
