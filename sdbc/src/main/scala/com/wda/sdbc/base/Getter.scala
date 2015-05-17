@@ -14,9 +14,10 @@ trait Getter[UnderlyingRow, +T] {
   }
 
   def apply(row: UnderlyingRow, columnName: String)(implicit isRow: Row[UnderlyingRow]): Option[T] = {
-    val columnIndex = isRow.columnIndex(row, columnName)
-    implicit val getter = this
-    isRow.option(row, columnIndex)
+    isRow.findColumnIndex(row, columnName).flatMap { columnIndex =>
+      implicit val getter = this
+      isRow.option[T](row, columnIndex)
+    }
   }
 
   def apply(row: UnderlyingRow, columnIndex: Int)(implicit isRow: Row[UnderlyingRow]): Option[T]

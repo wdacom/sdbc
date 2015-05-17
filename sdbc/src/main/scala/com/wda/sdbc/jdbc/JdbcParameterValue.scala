@@ -1,8 +1,8 @@
 package com.wda.sdbc.jdbc
 
 import java.io.{InputStream, Reader}
-import java.sql.{Time, Date, Timestamp, PreparedStatement}
-import java.util.UUID
+import java.sql._
+import java.util.{NoSuchElementException, UUID}
 
 import com.wda.sdbc.base
 
@@ -18,18 +18,23 @@ abstract class JdbcParameterValue[+T] extends base.ParameterValue[T, PreparedSta
   ): Unit
 
   def update(
-    row: JdbcMutableRow,
+    row: ResultSet,
     columnIndex: Int
   ): Unit
 
   def update(
-    row: JdbcMutableRow,
+    row: ResultSet,
     columnName: String
-  ): Unit = {
-    update(
-      row,
-      row.columnIndexes(columnName)
-    )
+  )(implicit jdbcRow: JdbcMutableRow): Unit = {
+    jdbcRow.findColumnIndex(row, columnName) match {
+      case None =>
+        throw new NoSuchElementException(columnName)
+      case Some(columnIndex) =>
+        jd(
+          row,
+          columnIndex
+        )
+    }
   }
 }
 
@@ -534,9 +539,8 @@ trait LocalTimeParameter {
   implicit def LocalTimeToParameterValue(x: java.time.LocalTime): JdbcParameterValue[Time] = Time.valueOf(x)
 
 }
-
 trait LocalDateTimeParameter {
-  self: TimestampParameter =>
+  self: JdbcParameterValue with TimestampParameter =>
 
   implicit def LocalDateTimeToParameterValue(x: java.time.LocalDateTime): JdbcParameterValue[Timestamp] = Timestamp.valueOf(x)
 

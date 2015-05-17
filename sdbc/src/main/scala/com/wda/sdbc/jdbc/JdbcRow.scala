@@ -8,7 +8,7 @@ import com.wda.sdbc.base
 
 trait IsJdbcRow extends base.Row[ResultSet] {
 
-  override def columnIndex(row: ResultSet, columnName: String): Option[Int] = {
+  override def findColumnIndex(row: ResultSet, columnName: String): Option[Int] = {
     0.until(row.getMetaData.getColumnCount).find { index =>
       val columnNameAtIndex = row.getMetaData.getColumnName(index)
       columnName == columnNameAtIndex

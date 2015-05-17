@@ -2,7 +2,7 @@ package com.wda.sdbc.base
 
 trait Row[UnderlyingRow] {
 
-  def columnIndex(row: UnderlyingRow, columnName: String): Int
+  def findColumnIndex(row: UnderlyingRow, columnName: String): Option[Int]
 
   def apply[V](row: UnderlyingRow)(implicit isRow: Row[UnderlyingRow], getter: Getter[UnderlyingRow, V]): V = {
     single[V](row)

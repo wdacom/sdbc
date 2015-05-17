@@ -16,7 +16,7 @@ trait SelectForUpdate[UnderlyingConnection, PreparedStatement, MutableResultSet,
   case class SelectForUpdate private[sdbc](
     statement: CompiledStatement,
     override val parameterValues: Map[String, Option[ParameterValue[_, PreparedStatement]]]
-  ) extends AbstractQuery[SelectForUpdate, UnderlyingConnection, PreparedStatement, MutableResultSet, UnderlyingMutableRow] {
+  ) extends Query[SelectForUpdate, UnderlyingConnection, PreparedStatement, MutableResultSet, UnderlyingMutableRow] {
 
     override def isConnection: Connection[UnderlyingConnection, PreparedStatement, MutableResultSet, UnderlyingMutableRow] =
       outer.isConnection

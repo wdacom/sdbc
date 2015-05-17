@@ -1,24 +1,51 @@
 package com.wda.sdbc.jdbc
 
+import java.sql._
+
 import com.wda.CaseInsensitiveOrdering
-import com.wda.sdbc.base._
+import com.wda.sdbc.base
 import com.zaxxer.hikari.HikariConfig
 
 abstract class DBMS
   extends Pool
   with JdbcConnection
-  with AbstractQuery
-  with Update
-  with Select
-  with SelectForUpdate
-  with Batch
+  with base.Select[Connection, PreparedStatement, ResultSet, ResultSet]
+  with base.SelectForUpdate[Connection, PreparedStatement, ResultSet, ResultSet]
   with JdbcGetter
-  with JdbcRow
-  with JdbcMutableRow
-  with GetterImplicits
-  with ReadSelectUpdate
-  with JdbcParameterValue {
+  with base.GetterImplicits[ResultSet] {
   self =>
+
+  type UnderlyingConnection = Connection
+
+  type UnderlyingResultSet = ResultSet
+
+  type UnderlyingRow = ResultSet
+
+  type UnderlyingPreparedStatement = PreparedStatement
+
+  type Query = base.Query[Query, UnderlyingConnection, UnderlyingPreparedStatement, UnderlyingResultSet, UnderlyingRow]
+
+  type Update = base.Update[Connection, PreparedStatement, ResultSet, ResultSet]
+
+  val Update = base.Update
+
+  type Batch = base.Batch[Connection, PreparedStatement, ResultSet, ResultSet]
+
+  val Batch = base.Batch
+
+  type Row = base.Row[UnderlyingRow]
+
+  implicit val isRow: Row = new Row {
+    override def findColumnIndex(row: UnderlyingRow, columnName: String): Option[Int] = {
+      val meta = row.getMetaData
+      for (columnIndex <- 0.until(meta.getColumnCount)) {
+        if (meta.getColumnName(columnIndex) == columnName) {
+          return Some(columnIndex)
+        }
+      }
+      None
+    }
+  }
 
   /**
    * Class name for the DataSource class.
@@ -41,8 +68,6 @@ abstract class DBMS
    * If the JDBC driver supports the .isValid() method.
    */
   def supportsIsValid: Boolean
-
-  def Identifier: Identifier
 
   /**
    * Perform any connection initialization that should be done when a connection

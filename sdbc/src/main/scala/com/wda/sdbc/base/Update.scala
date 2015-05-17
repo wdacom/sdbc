@@ -12,7 +12,7 @@ case class Update[UnderlyingConnection, PreparedStatement, UnderlyingResultSet, 
 )(implicit isUpdatable: Updateable[PreparedStatement],
   override val isConnection: Connection[UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow],
   override val closePreparedStatement: Closable[PreparedStatement]
-) extends AbstractQuery[Update[UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow], UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow] {
+) extends Query[Update[UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow], UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow] {
 
   override protected def subclassConstructor(
     statement: CompiledStatement,

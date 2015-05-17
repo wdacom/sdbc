@@ -18,7 +18,7 @@ import com.wda.Logging
  * \$`hello there`
  * \$_i_am_busy
  */
-trait AbstractQuery[Self <: AbstractQuery[Self, UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow], UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow]
+trait Query[Self <: Query[Self, UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow], UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow]
   extends Logging {
   abstractQuery =>
 

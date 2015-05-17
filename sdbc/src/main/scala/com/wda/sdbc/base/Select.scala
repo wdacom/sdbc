@@ -3,7 +3,7 @@ package com.wda.sdbc.base
 import scala.collection.immutable.Seq
 
 trait Select[UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow] {
-    outer =>
+  outer =>
 
   def executeQuery(statement: PreparedStatement)(implicit connection: UnderlyingConnection): UnderlyingResultSet
 
@@ -22,7 +22,7 @@ trait Select[UnderlyingConnection, PreparedStatement, UnderlyingResultSet, Under
     statement: CompiledStatement,
     override val parameterValues: Map[String, Option[ParameterValue[_, PreparedStatement]]]
   )(implicit converter: Row[UnderlyingRow] => T
-  ) extends AbstractQuery[Select[T], UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow] {
+  ) extends Query[Select[T], UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow] {
 
     override def closePreparedStatement: Closable[PreparedStatement] =
       outer.closePreparedStatement
