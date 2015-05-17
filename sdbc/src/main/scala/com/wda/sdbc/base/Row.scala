@@ -4,39 +4,39 @@ trait Row[UnderlyingRow] {
 
   def columnIndex(row: UnderlyingRow, columnName: String): Int
 
-  def apply[V](row: UnderlyingRow)(implicit getter: Getter[UnderlyingRow, V]): V = {
+  def apply[V](row: UnderlyingRow)(implicit isRow: Row[UnderlyingRow], getter: Getter[UnderlyingRow, V]): V = {
     single[V](row)
   }
 
-  def apply[V](row: UnderlyingRow, columnName: String)(implicit getter: Getter[UnderlyingRow, V]): V = {
+  def apply[V](row: UnderlyingRow, columnName: String)(implicit isRow: Row[UnderlyingRow], getter: Getter[UnderlyingRow, V]): V = {
     single[V](row, columnName)
   }
 
-  def apply[V](row: UnderlyingRow, columnIndex: Int)(implicit getter: Getter[UnderlyingRow, V]): V = {
+  def apply[V](row: UnderlyingRow, columnIndex: Int)(implicit isRow: Row[UnderlyingRow], getter: Getter[UnderlyingRow, V]): V = {
     single[V](row, columnIndex)
   }
 
-  def single[V](row: UnderlyingRow)(implicit getter: Getter[UnderlyingRow, V]): V = {
+  def single[V](row: UnderlyingRow)(implicit isRow: Row[UnderlyingRow], getter: Getter[UnderlyingRow, V]): V = {
     getter(row).get
   }
 
-  def single[V](row: UnderlyingRow, columnName: String)(implicit getter: Getter[UnderlyingRow, V]): V = {
+  def single[V](row: UnderlyingRow, columnName: String)(implicit isRow: Row[UnderlyingRow], getter: Getter[UnderlyingRow, V]): V = {
     getter(row, columnName).get
   }
 
-  def single[V](row: UnderlyingRow, columnIndex: Int)(implicit getter: Getter[UnderlyingRow, V]): V = {
+  def single[V](row: UnderlyingRow, columnIndex: Int)(implicit isRow: Row[UnderlyingRow], getter: Getter[UnderlyingRow, V]): V = {
     getter(row, columnIndex).get
   }
 
-  def option[V](row: UnderlyingRow)(implicit getter: Getter[UnderlyingRow, V]): Option[V] = {
+  def option[V](row: UnderlyingRow)(implicit isRow: Row[UnderlyingRow], getter: Getter[UnderlyingRow, V]): Option[V] = {
     getter(row)
   }
 
-  def option[V](row: UnderlyingRow)(columnName: String)(implicit getter: Getter[UnderlyingRow, V]): Option[V] = {
+  def option[V](row: UnderlyingRow)(columnName: String)(implicit isRow: Row[UnderlyingRow], getter: Getter[UnderlyingRow, V]): Option[V] = {
     getter(row, columnName)
   }
 
-  def option[V](row: UnderlyingRow, columnIndex: Int)(implicit getter: Getter[UnderlyingRow, V]): Option[V] = {
+  def option[V](row: UnderlyingRow, columnIndex: Int)(implicit isRow: Row[UnderlyingRow], getter: Getter[UnderlyingRow, V]): Option[V] = {
     getter(row, columnIndex)
   }
 

@@ -12,7 +12,11 @@ trait ReadSelect[UnderlyingConnection, PreparedStatement, UnderlyingResultSet, U
 trait ReadUpdate[UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow] {
   self: com.wda.Resources =>
 
-  def readUpdate(name: String, hasParameters: Boolean = true): Update[UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow] = {
+  def readUpdate(name: String, hasParameters: Boolean = true)(
+    implicit isUpdatable: Updateable[PreparedStatement],
+    isConnection: Connection[UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow],
+    closableStatement: Closable[PreparedStatement]
+  ): Update[UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow] = {
     val queryText = readResource("queries", name + ".sql")
     Update(queryText, hasParameters)
   }
@@ -30,7 +34,7 @@ trait ReadSelectForUpdate[UnderlyingConnection, PreparedStatement, MutableResult
 trait ReadBatch {
   self: com.wda.Resources =>
 
-  def readBatch(name: String, hasParameters: Boolean = true): Batch = {
+  def readBatch[UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow](name: String, hasParameters: Boolean = true)(implicit isBatch: BatchMethods[UnderlyingConnection, PreparedStatement], isConnection: Connection[UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow]): Batch[UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow] = {
     val queryText = readResource("queries", name + ".sql")
     Batch(queryText, hasParameters)
   }

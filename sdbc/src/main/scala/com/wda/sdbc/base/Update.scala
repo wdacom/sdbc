@@ -38,6 +38,9 @@ object Update {
   def apply[UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow](
     queryText: String,
     hasParameters: Boolean = true
+  )(implicit isUpdatable: Updateable[PreparedStatement],
+    isConnection: Connection[UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow],
+    closableStatement: Closable[PreparedStatement]
   ): Update[UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow] = {
     val statement = CompiledStatement(queryText, hasParameters)
     Update[UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow](statement, Map.empty[String, Option[ParameterValue[_, PreparedStatement]]])

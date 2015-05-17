@@ -5,9 +5,9 @@ trait SelectForUpdate[UnderlyingConnection, PreparedStatement, MutableResultSet,
 
   def prepare(queryText: String)(implicit connection: UnderlyingConnection): PreparedStatement
 
-  def executeQuery(statement: PreparedStatement)(implicit connection: Connection): MutableResultSet
+  def executeQuery(statement: PreparedStatement)(implicit connection: UnderlyingConnection): MutableResultSet
 
-  protected implicit def MutableResultSetToMutableRowIterator(result: MutableResultSet): Iterator[MutableRow]
+  protected implicit def MutableResultSetToMutableRowIterator(result: MutableResultSet): Iterator[UnderlyingMutableRow]
 
   def closePreparedStatement: Closable[PreparedStatement]
 
@@ -31,7 +31,7 @@ trait SelectForUpdate[UnderlyingConnection, PreparedStatement, MutableResultSet,
       SelectForUpdate(statement, parameterValues)
     }
 
-    def iterator()(implicit connection: UnderlyingConnection): Iterator[MutableRow] = {
+    def iterator()(implicit connection: UnderlyingConnection): Iterator[UnderlyingMutableRow] = {
       logger.debug( s"""Retrieving an iterator of updatable rows using "${statement.originalQueryText}" with parameters $parameterValues.""")
       executeQuery(prepare(queryText))
     }

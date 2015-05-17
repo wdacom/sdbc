@@ -58,10 +58,12 @@ trait Connection[UnderlyingConnection, PreparedStatement, UnderlyingResultSet, U
   def update(
     queryText: String,
     parameterValues: (String, Option[ParameterValue[_, PreparedStatement]])*
-  )(implicit connection: UnderlyingConnection
+  )(implicit connection: UnderlyingConnection,
+    isUpdatable: Updateable[PreparedStatement],
+    closableStatement: Closable[PreparedStatement]
   ): Int = {
     implicit val isConnection = this
-    Update(queryText).on(
+    Update[UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow](queryText).on(
       parameterValues: _*
     ).update()
   }
@@ -70,21 +72,25 @@ trait Connection[UnderlyingConnection, PreparedStatement, UnderlyingResultSet, U
     queryText: String,
     parameterValues: (String, Option[ParameterValue[_, PreparedStatement]])*
   )(implicit connection: UnderlyingConnection,
-    isConnection: Connection
+    isConnection: Connection[UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow],
+    isUpdatable: Updateable[PreparedStatement],
+    closableStatement: Closable[PreparedStatement]
   ): Long = {
     implicit val isConnection = this
-    Update(queryText).on(
+    Update[UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow](queryText).on(
       parameterValues: _*
-    ).largeUpdate()
+    ).update()
   }
 
   def execute(
     queryText: String,
     parameterValues: (String, Option[ParameterValue[_, PreparedStatement]])*
-  )(implicit connection: UnderlyingConnection
+  )(implicit connection: UnderlyingConnection,
+    isUpdatable: Updateable[PreparedStatement],
+    closableStatement: Closable[PreparedStatement]
   ): Unit = {
     implicit val isConnection = this
-    Update(queryText).on(
+    Update[UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow](queryText).on(
       parameterValues: _*
     ).execute()
   }
