@@ -18,22 +18,30 @@ import com.wda.Logging
  * \$`hello there`
  * \$_i_am_busy
  */
-trait Query[Self <: Query[Self, UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow], UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow]
+trait Query[Self <: Query[Self, UnderlyingConnection, UnderlyingQuery, UnderlyingResultSet, UnderlyingRow], UnderlyingConnection, UnderlyingQuery, UnderlyingResultSet, UnderlyingRow]
   extends Logging {
   abstractQuery =>
 
-  def closePreparedStatement: Closable[PreparedStatement]
+  def closeUnderlyingQuery: Closable[UnderlyingQuery]
 
-  def isConnection: Connection[UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow]
+  def isConnection: QueryMethods[UnderlyingConnection, UnderlyingQuery, UnderlyingResultSet, UnderlyingRow]
 
-  protected def statement: CompiledStatement
-
-  def parameterValues: Map[String, Option[ParameterValue[_, PreparedStatement]]]
 
   protected def subclassConstructor(
     statement: CompiledStatement,
-    parameterValues: Map[String, Option[ParameterValue[_, PreparedStatement]]]
+    parameterValues: Map[String, Option[ParameterValue[_, UnderlyingQuery]]]
   ): Self
+
+
+}
+
+trait StringQuery[Self <: Query[Self, UnderlyingConnection, UnderlyingQuery, UnderlyingResultSet, UnderlyingRow], UnderlyingConnection, UnderlyingQuery, UnderlyingResultSet, UnderlyingRow]
+  extends Query[Self, UnderlyingConnection, UnderlyingQuery, UnderlyingResultSet, UnderlyingRow] {
+  abstractQuery =>
+
+  protected def statement: CompiledStatement
+
+  def parameterValues: Map[String, Option[ParameterValue[_, UnderlyingQuery]]]
 
   /**
    * The query text with name parameters replaced with positional parameters.
@@ -46,9 +54,9 @@ trait Query[Self <: Query[Self, UnderlyingConnection, PreparedStatement, Underly
   def parameterPositions: Map[String, Set[Int]] = statement.parameterPositions
 
   private def setParameter(
-    parameterValues: Map[String, Option[ParameterValue[_, PreparedStatement]]],
-    nameValuePair: (String, Option[ParameterValue[_, PreparedStatement]])
-  ): Map[String, Option[ParameterValue[_, PreparedStatement]]] = {
+    parameterValues: Map[String, Option[ParameterValue[_, UnderlyingQuery]]],
+    nameValuePair: (String, Option[ParameterValue[_, UnderlyingQuery]])
+  ): Map[String, Option[ParameterValue[_, UnderlyingQuery]]] = {
     if (parameterPositions.contains(nameValuePair._1)) {
       parameterValues + nameValuePair
     } else {
@@ -56,12 +64,12 @@ trait Query[Self <: Query[Self, UnderlyingConnection, PreparedStatement, Underly
     }
   }
 
-  def on(parameterValues: (String, Option[ParameterValue[_, PreparedStatement]])*): Self = {
+  def on(parameterValues: (String, Option[ParameterValue[_, UnderlyingQuery]])*): Self = {
     val newValues = setParameters(parameterValues: _*)
     subclassConstructor(statement, newValues)
   }
 
-  protected def setParameters(nameValuePairs: (String, Option[ParameterValue[_, PreparedStatement]])*): Map[String, Option[ParameterValue[_, PreparedStatement]]] = {
+  protected def setParameters(nameValuePairs: (String, Option[ParameterValue[_, UnderlyingQuery]])*): Map[String, Option[ParameterValue[_, UnderlyingQuery]]] = {
     nameValuePairs.foldLeft(parameterValues)(setParameter)
   }
 
@@ -73,8 +81,8 @@ trait Query[Self <: Query[Self, UnderlyingConnection, PreparedStatement, Underly
    * @tparam T
    * @return
    */
-  protected def withPreparedStatement[T](
-    f: PreparedStatement => T
+  protected def withUnderlyingQuery[T](
+    f: UnderlyingQuery => T
   )(
     implicit connection: UnderlyingConnection
   ): T = {
@@ -83,7 +91,7 @@ trait Query[Self <: Query[Self, UnderlyingConnection, PreparedStatement, Underly
       f(statement)
     } finally {
       //Close the result set, but don't throw any errors if it's already closed.
-      closePreparedStatement.closeQuietly(statement)
+      closeUnderlyingQuery.closeQuietly(statement)
     }
   }
 
@@ -91,7 +99,7 @@ trait Query[Self <: Query[Self, UnderlyingConnection, PreparedStatement, Underly
     implicit connection: UnderlyingConnection
   ): Unit = {
     logger.debug( s"""Executing the query "$originalQueryText" with parameters $parameterValues.""")
-    withPreparedStatement[Unit](statement => isConnection.execute(statement))
+    withUnderlyingQuery[Unit](statement => isConnection.execute(statement))
   }
-
+  
 }

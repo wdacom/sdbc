@@ -1,16 +1,14 @@
 package com.wda.sdbc.base
 
 protected trait Updateable[PreparedStatement] {
-  def executeUpdate(statement: PreparedStatement): Int
-
-  def executeLargeUpdate(statement: PreparedStatement): Long
+  def executeUpdate(statement: PreparedStatement): Long
 }
 
 case class Update[UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow] private[sdbc] (
   statement: CompiledStatement,
   override val parameterValues: Map[String, Option[ParameterValue[_, PreparedStatement]]]
 )(implicit isUpdatable: Updateable[PreparedStatement],
-  override val isConnection: Connection[UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow],
+  override val isConnection: QueryMethods[UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow],
   override val closePreparedStatement: Closable[PreparedStatement]
 ) extends Query[Update[UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow], UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow] {
 
@@ -39,7 +37,7 @@ object Update {
     queryText: String,
     hasParameters: Boolean = true
   )(implicit isUpdatable: Updateable[PreparedStatement],
-    isConnection: Connection[UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow],
+    isConnection: QueryMethods[UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow],
     closableStatement: Closable[PreparedStatement]
   ): Update[UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow] = {
     val statement = CompiledStatement(queryText, hasParameters)

@@ -8,7 +8,7 @@ import com.zaxxer.hikari.HikariConfig
 
 abstract class DBMS
   extends Pool
-  with JdbcConnection
+  with JdbcQueryMethods
   with base.Select[Connection, PreparedStatement, ResultSet, ResultSet]
   with base.SelectForUpdate[Connection, PreparedStatement, ResultSet, ResultSet]
   with JdbcGetter

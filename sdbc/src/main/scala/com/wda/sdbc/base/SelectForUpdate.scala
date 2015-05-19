@@ -11,14 +11,14 @@ trait SelectForUpdate[UnderlyingConnection, PreparedStatement, MutableResultSet,
 
   def closePreparedStatement: Closable[PreparedStatement]
 
-  def isConnection: Connection[UnderlyingConnection, PreparedStatement, MutableResultSet, UnderlyingMutableRow]
+  def isConnection: QueryMethods[UnderlyingConnection, PreparedStatement, MutableResultSet, UnderlyingMutableRow]
 
   case class SelectForUpdate private[sdbc](
     statement: CompiledStatement,
     override val parameterValues: Map[String, Option[ParameterValue[_, PreparedStatement]]]
   ) extends Query[SelectForUpdate, UnderlyingConnection, PreparedStatement, MutableResultSet, UnderlyingMutableRow] {
 
-    override def isConnection: Connection[UnderlyingConnection, PreparedStatement, MutableResultSet, UnderlyingMutableRow] =
+    override def isConnection: QueryMethods[UnderlyingConnection, PreparedStatement, MutableResultSet, UnderlyingMutableRow] =
       outer.isConnection
 
     override def closePreparedStatement: Closable[PreparedStatement] =

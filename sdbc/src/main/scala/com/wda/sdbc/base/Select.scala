@@ -2,16 +2,12 @@ package com.wda.sdbc.base
 
 import scala.collection.immutable.Seq
 
-trait Select[UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow] {
+trait Select[UnderlyingConnection, UnderlyingQuery, UnderlyingResultSet, UnderlyingRow] {
   outer =>
 
-  def executeQuery(statement: PreparedStatement)(implicit connection: UnderlyingConnection): UnderlyingResultSet
+  def executeQuery(query: UnderlyingQuery)(implicit connection: UnderlyingConnection): UnderlyingResultSet
 
-  implicit def UnderlyingResultSetToRowIterator(resultSet: UnderlyingResultSet): Iterator[Row[UnderlyingRow]]
-
-  def closePreparedStatement: Closable[PreparedStatement]
-
-  def isConnection: Connection[UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow]
+  def isConnection: QueryMethods[UnderlyingConnection, UnderlyingQuery, UnderlyingResultSet, UnderlyingRow]
 
   /*
   This design for Select is so that it only takes one type parameter.
@@ -20,19 +16,16 @@ trait Select[UnderlyingConnection, PreparedStatement, UnderlyingResultSet, Under
    */
   case class Select[T] private[sdbc] (
     statement: CompiledStatement,
-    override val parameterValues: Map[String, Option[ParameterValue[_, PreparedStatement]]]
+    override val parameterValues: Map[String, Option[ParameterValue[_, UnderlyingQuery]]]
   )(implicit converter: Row[UnderlyingRow] => T
-  ) extends Query[Select[T], UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow] {
+  ) extends StringQuery[Select[T], UnderlyingConnection, UnderlyingQuery, UnderlyingResultSet, UnderlyingRow] {
 
-    override def closePreparedStatement: Closable[PreparedStatement] =
-      outer.closePreparedStatement
-
-    override def isConnection: Connection[UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow] =
+    override def isConnection: QueryMethods[UnderlyingConnection, UnderlyingQuery, UnderlyingResultSet, UnderlyingRow] =
       outer.isConnection
 
     override protected def subclassConstructor(
       statement: CompiledStatement,
-      parameterValues: Map[String, Option[ParameterValue[_, PreparedStatement]]]
+      parameterValues: Map[String, Option[ParameterValue[_, UnderlyingQuery]]]
     ): Select[T] = {
       Select[T](statement, parameterValues)
     }
@@ -67,7 +60,7 @@ trait Select[UnderlyingConnection, PreparedStatement, UnderlyingResultSet, Under
     )(implicit converter: Row[UnderlyingRow] => T
     ): Select[T] = {
       val statement = CompiledStatement(queryText, hasParameters)
-      Select[T](statement, Map.empty[String, Option[ParameterValue[_, PreparedStatement]]])
+      Select[T](statement, Map.empty[String, Option[ParameterValue[_]]])
     }
 
   }

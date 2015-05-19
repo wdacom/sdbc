@@ -1,23 +1,23 @@
 package com.wda.sdbc.base
 
-abstract class ParameterValue[+T, PreparedStatement] {
+abstract class ParameterValue[+T, UnderlyingQuery] {
 
   val value: T
 
   def asJDBCObject: AnyRef
 
   def set(
-    preparedStatement: PreparedStatement,
+    query: UnderlyingQuery,
     parameterIndex: Int
   ): Unit
 }
 
 trait ParameterValueImplicits {
-  implicit def ToOptionParameterValue[T, PreparedStatement](v: T)(implicit conversion: T => ParameterValue[_, PreparedStatement]): Option[ParameterValue[_, PreparedStatement]] = {
+  implicit def ToOptionParameterValue[T, UnderlyingQuery](v: T)(implicit conversion: T => ParameterValue[_, UnderlyingQuery]): Option[ParameterValue[_, UnderlyingQuery]] = {
     Some(conversion(v))
   }
 
-  implicit def OptionToOptionParameterValue[T, PreparedStatement](v: Option[T])(implicit conversion: T => ParameterValue[_, PreparedStatement]): Option[ParameterValue[_, PreparedStatement]] = {
+  implicit def OptionToOptionParameterValue[T, UnderlyingQuery](v: Option[T])(implicit conversion: T => ParameterValue[_, UnderlyingQuery]): Option[ParameterValue[_, UnderlyingQuery]] = {
     v.map(conversion)
   }
 }

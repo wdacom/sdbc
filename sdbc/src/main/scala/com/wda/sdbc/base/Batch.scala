@@ -5,38 +5,38 @@ import java.sql.SQLException
 import com.wda.Logging
 import scala.collection.immutable.Seq
 
-protected trait BatchMethods[UnderlyingConnection, PreparedStatement] {
+protected trait BatchMethods[UnderlyingConnection, UnderlyingQuery] {
 
-  def setNull(statement: PreparedStatement, parameterIndex: Int): Unit
+  def setNull(statement: UnderlyingQuery, parameterIndex: Int): Unit
 
-  def addBatch(statement: PreparedStatement): Unit
+  def addBatch(statement: UnderlyingQuery): Unit
 
-  def executeBatch(statement: PreparedStatement)(implicit connection: UnderlyingConnection): Seq[Int]
-
-  def executeLargeBatch(statement: PreparedStatement)(implicit connection: UnderlyingConnection): Seq[Long]
+  def executeBatch(statement: UnderlyingQuery)(implicit connection: UnderlyingConnection): Seq[Long]
 
   def isClosableConnection: Closable[UnderlyingConnection]
 
-  def isClosableStatement: Closable[PreparedStatement]
+  def isClosableStatement: Closable[UnderlyingQuery]
 
 }
 
-case class Batch[UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow] private(
+case class Batch[UnderlyingConnection, Execute, Select, Update, UnderlyingResultSet, UnderlyingRow] private(
   statement: CompiledStatement,
-  parameterValues: Map[String, Option[ParameterValue[_, PreparedStatement]]],
-  batches: Seq[Map[String, Option[ParameterValue[_, PreparedStatement]]]]
-)(implicit isBatch: BatchMethods[UnderlyingConnection, PreparedStatement],
-  isConnection: Connection[UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow]
+  parameterValues: Map[String, Option[ParameterValue[_, UnderlyingQuery]]],
+  batches: Seq[Map[String, Option[ParameterValue[_, UnderlyingQuery]]]]
+)(implicit isBatch: BatchMethods[UnderlyingConnection, UnderlyingQuery],
+  isQuery: QueryMethods[[UnderlyingConnection, Execute, Select, Update, UnderlyingResultSet, UnderlyingRow]]
 ) extends Logging {
 
   def queryText = statement.queryText
 
+  def originalQueryText = statement.originalQueryText
+
   def parameterPositions = statement.parameterPositions
 
   private def setParameter(
-    parameterValues: Map[String, Option[ParameterValue[_, PreparedStatement]]],
-    nameValuePair: (String, Option[ParameterValue[_, PreparedStatement]])
-  ): Map[String, Option[ParameterValue[_, PreparedStatement]]] = {
+    parameterValues: Map[String, Option[ParameterValue[_, UnderlyingQuery]]],
+    nameValuePair: (String, Option[ParameterValue[_, UnderlyingQuery]])
+  ): Map[String, Option[ParameterValue[_, UnderlyingQuery]]] = {
     if (statement.parameterPositions.contains(nameValuePair._1)) {
       parameterValues + nameValuePair
     } else {
@@ -44,7 +44,7 @@ case class Batch[UnderlyingConnection, PreparedStatement, UnderlyingResultSet, U
     }
   }
 
-  private def setParameters(nameValuePairs: (String, Option[ParameterValue[_, PreparedStatement]])*): Map[String, Option[ParameterValue[_, PreparedStatement]]] = {
+  private def setParameters(nameValuePairs: (String, Option[ParameterValue[_, UnderlyingQuery]])*): Map[String, Option[ParameterValue[_, UnderlyingQuery]]] = {
     nameValuePairs.foldLeft(parameterValues)(setParameter)
   }
 
@@ -53,7 +53,7 @@ case class Batch[UnderlyingConnection, PreparedStatement, UnderlyingResultSet, U
    * @param partialBatch
    * @return
    */
-  def on(partialBatch: (String, Option[ParameterValue[_, PreparedStatement]])*): Batch[UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow] = {
+  def on(partialBatch: (String, Option[ParameterValue[_, UnderlyingQuery]])*): Batch[UnderlyingConnection, UnderlyingQuery, UnderlyingResultSet, UnderlyingRow] = {
     val newValues = setParameters(partialBatch: _*)
     Batch(statement, newValues, batches)
   }
@@ -63,13 +63,15 @@ case class Batch[UnderlyingConnection, PreparedStatement, UnderlyingResultSet, U
    * @param batch
    * @return
    */
-  def addBatch(batch: (String, Option[ParameterValue[_, PreparedStatement]])*): Batch[UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow] = {
+  def addBatch(batch: (String, Option[ParameterValue[_, UnderlyingQuery]])*): Batch[UnderlyingConnection, UnderlyingQuery, UnderlyingResultSet, UnderlyingRow] = {
     val newValues = setParameters(batch: _*)
     Batch(statement, Map.empty, batches :+ newValues)
   }
 
-  def prepare()(implicit connection: UnderlyingConnection): PreparedStatement = {
-    val prepared = isConnection.prepare(connection, queryText)
+  def prepare()(implicit connection: UnderlyingConnection,
+    queryMethods: ParameterizedQueryMethods[UnderlyingConnection, UnderlyingQuery, UnderlyingResultSet, UnderlyingRow]
+  ): UnderlyingQuery = {
+   val compiled = queryMethods.compile(connection, statement.queryText)
 
     for (batch <- batches) {
       for ((parameterName, parameterIndexes) <- statement.parameterPositions) {
@@ -79,36 +81,37 @@ case class Batch[UnderlyingConnection, PreparedStatement, UnderlyingResultSet, U
         )
         for (parameterIndex <- parameterIndexes) {
           parameterValue match {
-            case None => isBatch.setNull(prepared, parameterIndex)
+            case None => isBatch.setNull(compiled, parameterIndex)
             case Some(sqlValue) =>
-              sqlValue.set(prepared, parameterIndex)
+              sqlValue.set(compiled, parameterIndex)
           }
         }
       }
-      isBatch.addBatch(prepared)
+      isBatch.addBatch(compiled)
     }
-    prepared
+
+    compiled
   }
 
-  def withPreparedStatement[U](f: PreparedStatement => U)(implicit connection: UnderlyingConnection): U = {
-    val statement = isConnection.prepare(connection, queryText)
+  def withPreparedStatement[U](
+    f: UnderlyingQuery => U
+  )(implicit connection: UnderlyingConnection,
+    queryMethods: ParameterizedQueryMethods[UnderlyingConnection, UnderlyingQuery, UnderlyingResultSet, UnderlyingRow]
+  ): U = {
+    val compiled = queryMethods.compile(connection, statement.queryText)
     try {
-      f(statement)
+      f(compiled)
     } finally {
       //Close the result set, but don't throw any errors if it's already closed.
-      isBatch.isClosableStatement.closeQuietly(statement)
+      isBatch.isClosableStatement.closeQuietly(compiled)
     }
   }
 
-  def batch()(implicit connection: UnderlyingConnection): Seq[Int] = {
+  def batch()(implicit connection: UnderlyingConnection): Seq[Long] = {
     logger.debug( s"""Executing a batch using "${statement.originalQueryText}".""")
-    withPreparedStatement[Seq[Int]](isBatch.executeBatch)
+    withPreparedStatement[Seq[Long]](isBatch.executeBatch)
   }
 
-  def largeBatch()(implicit connection: UnderlyingConnection): Seq[Long] = {
-    logger.debug( s"""Executing a large batch using "${statement.originalQueryText}".""")
-    withPreparedStatement[Seq[Long]](isBatch.executeLargeBatch)
-  }
 }
 
 object Batch {
@@ -116,9 +119,8 @@ object Batch {
     query: String,
     hasParameters: Boolean = true
   )(implicit isBatch: BatchMethods[UnderlyingConnection, PreparedStatement],
-    isConnection: Connection[UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow]
-  )
-  : Batch[UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow] = {
+    isConnection: QueryMethods[UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow]
+  ): Batch[UnderlyingConnection, PreparedStatement, UnderlyingResultSet, UnderlyingRow] = {
     val statement = CompiledStatement(query, hasParameters)
     new Batch(
       statement,
