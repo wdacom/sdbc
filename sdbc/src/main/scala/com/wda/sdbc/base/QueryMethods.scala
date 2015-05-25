@@ -1,8 +1,12 @@
 package com.wda.sdbc.base
 
+import com.wda.Logging
+
 import scala.collection.immutable.Seq
 
-trait QueryMethods[UnderlyingConnection, Execute, Select, Update, UnderlyingResultSet, UnderlyingRow] extends Closable[UnderlyingConnection] {
+trait QueryMethods[UnderlyingConnection, UnderlyingQuery, Execute, Select[], Update, UnderlyingResultSet, UnderlyingRow]
+  extends Closable[UnderlyingQuery]
+  with Logging {
 
   def execute(
     connection: UnderlyingConnection,

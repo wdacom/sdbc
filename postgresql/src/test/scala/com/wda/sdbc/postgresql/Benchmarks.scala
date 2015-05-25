@@ -88,7 +88,7 @@ class Benchmarks
 
     connection.commit()
 
-    assert(insertedRowCount.sum[Int] == values.size)
+    assertResult(values.size)(insertedRowCount.sum[Int])
   }
 
   test("time JDBC batch insert") {implicit connection =>

@@ -4,8 +4,6 @@ abstract class ParameterValue[+T, UnderlyingQuery] {
 
   val value: T
 
-  def asJDBCObject: AnyRef
-
   def set(
     query: UnderlyingQuery,
     parameterIndex: Int

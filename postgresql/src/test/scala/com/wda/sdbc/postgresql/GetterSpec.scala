@@ -16,7 +16,7 @@ class GetterSpec
   extends PostgreSqlSuite {
 
   override protected def beforeAll(): Unit = {
-    pgBeforeAll()
+    super.beforeAll()
     createLTree()
   }
 
