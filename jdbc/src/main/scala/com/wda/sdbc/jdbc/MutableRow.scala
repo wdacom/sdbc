@@ -10,6 +10,10 @@ class MutableRow private[jdbc] (underlying: ResultSet)
     updater.update(this, columnIndex, x)
   }
 
+  def update[T](columnLabel: String, x: T)(implicit updater: Updater[T]): Unit = {
+    updater.update(this, columnLabel, x)
+  }
+
   def updateArray(columnIndex: Int, x: JdbcArray): Unit = underlying.updateArray(columnIndex: Int, x)
 
   def updateArray(columnLabel: String, x: JdbcArray): Unit = underlying.updateArray(columnLabel: String, x)

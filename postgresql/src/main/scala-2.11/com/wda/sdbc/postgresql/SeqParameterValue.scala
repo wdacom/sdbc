@@ -5,13 +5,13 @@ import java.sql.{Time, Date, PreparedStatement}
 import java.time.{Duration, OffsetTime, OffsetDateTime, LocalDateTime}
 import java.util.UUID
 
-import com.wda.sdbc.base.{JdbcParameterValue, Row}
+import com.wda.sdbc.jdbc._
 import org.json4s._
 
 import scala.reflect.runtime.universe._
 
 trait SeqParameterValue {
-  self: Row with JdbcParameterValue =>
+  self =>
 
   def typeName[T](implicit tag: TypeTag[T]): String = {
     typeName(tag.tpe)
@@ -60,7 +60,7 @@ trait SeqParameterValue {
     }
   }
 
-  case class QArray[T](
+  case class QArray[+T](
     override val value: Seq[Option[ParameterValue[T]]]
   )(implicit t: TypeTag[T]
   ) extends ParameterValue[Seq[Option[ParameterValue[T]]]] {
@@ -70,18 +70,29 @@ trait SeqParameterValue {
      * @return
      */
     def asJava: Array[AnyRef] = {
-      value.map(_.map(v => v.asJDBCObject).orNull).toArray
+      value.map(_.map(v => QArray.box(v.value)).orNull).toArray
     }
-
-    override def asJDBCObject: AnyRef = asJava
 
     override def set(preparedStatement: PreparedStatement, parameterIndex: Int): Unit = {
       val array = preparedStatement.getConnection.createArrayOf(typeName[T], asJava)
       preparedStatement.setArray(parameterIndex, array)
     }
 
-    override def update(row: JdbcRow, columnIndex: Int): Unit = {
-      throw new NotImplementedError("Creating a JDBC array requires access to the Connection object, which Row doesn't have a pointer to.")
+  }
+
+  object QArray {
+    def box(v: Any): AnyRef = {
+      v match {
+        case a: AnyRef => a
+        case b: Boolean => Boolean.box(b)
+        case b: Byte => Byte.box(b)
+        case c: Char => Char.box(c)
+        case s: Short => Short.box(s)
+        case i: Int => Int.box(i)
+        case l: Long => Long.box(l)
+        case f: Float => Float.box(f)
+        case d: Double => Double.box(d)
+      }
     }
   }
 

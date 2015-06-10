@@ -1,9 +1,14 @@
 package com.wda.sdbc.base
 
-abstract class Update[UnderlyingConnection] {
+import com.wda.Logging
 
-  def update()(implicit updatable: Updatable[UnderlyingConnection], connection: UnderlyingConnection): Long = {
-    updatable.update()
+abstract class Update[UnderlyingConnection] extends Batch[UnderlyingConnection] {
+  self: Logging =>
+
+  def update()(implicit connection: UnderlyingConnection): Long
+
+  override def iterator()(implicit connection: UnderlyingConnection): Iterator[Long] = {
+    Iterator(update())
   }
 
 }

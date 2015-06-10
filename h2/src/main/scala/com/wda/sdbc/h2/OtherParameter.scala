@@ -2,7 +2,7 @@ package com.wda.sdbc.h2
 
 import java.sql.PreparedStatement
 
-import com.wda.sdbc.base.{Getter, JdbcParameterValue, Row}
+import com.wda.sdbc.jdbc._
 
 /**
  * Serialized forces the user to tell the H2 client to send the parameter
@@ -10,29 +10,14 @@ import com.wda.sdbc.base.{Getter, JdbcParameterValue, Row}
  * to ParameterValue.
  */
 trait OtherParameter {
-  self: JdbcParameterValue with Getter with Row =>
 
   case class Other(
-    value: Serializable
+    value: AnyRef with java.io.Serializable
   )
 
-  implicit class QOther[T <: Serializable](
+  case class QOther(
     override val value: Other
   ) extends ParameterValue[Other] {
-
-    override def asJDBCObject: AnyRef = {
-      new AbstractMethodError("Serializable objects are not necessarily JDBC objects.")
-    }
-
-    override def update(
-      row: JdbcRow,
-      columnIndex: Int
-    ): Unit = {
-      row.updateObject(
-        columnIndex,
-        value.value
-      )
-    }
 
     override def set(
       preparedStatement: PreparedStatement,
@@ -46,10 +31,28 @@ trait OtherParameter {
 
   }
 
+  implicit def OtherToParameterValue(x: Other): ParameterValue[Other] = {
+    new ParameterValue[Other] {
+      override val value: Other = x
+
+      override def set(statement: PreparedStatement, parameterIndex: Int): Unit = {
+        statement.setObject(parameterIndex, value.value)
+      }
+    }
+  }
+
+  implicit val OtherUpdater: Updater[Other] =
+    new Updater[Other] {
+      override def update(row: MutableRow, columnIndex: Int, x: Other): Unit = {
+        row.updateObject(columnIndex, x.value)
+      }
+    }
+
   implicit val OtherGetter: Getter[Other] =
     new Getter[Other] {
-      override def apply(row: JdbcRow, columnIndex: Int): Option[Other] = {
-        Option(row.getObject(columnIndex)).map(o => Other(o.asInstanceOf[Serializable]))
+
+      override def apply(row: Row): (Index) => Option[Other] = { index =>
+        Option(row.getObject(index(row))).map(o => Other(o.asInstanceOf[AnyRef with java.io.Serializable]))
       }
     }
 

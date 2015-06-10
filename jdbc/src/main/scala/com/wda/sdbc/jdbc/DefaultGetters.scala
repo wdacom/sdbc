@@ -18,15 +18,17 @@ trait DefaultGetters
   with StringGetter
   with TimeGetter
   with TimestampGetter
-  with UUIDGetter {
-
-}
+  with UUIDGetter
 
 trait Java8DefaultGetters
   extends DefaultGetters
   with InstantGetter
   with LocalDateGetter
   with LocalDateTimeGetter
-  with LocalTimeGetter {
+  with LocalTimeGetter
+  with OffsetDateTimeGetter
+  with OffsetTimeGetter {
+  self: HasOffsetDateTimeFormatter with HasOffsetTimeFormatter =>
 
 }
+

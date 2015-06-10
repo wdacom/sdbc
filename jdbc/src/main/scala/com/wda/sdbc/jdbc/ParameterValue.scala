@@ -2,11 +2,24 @@ package com.wda.sdbc.jdbc
 
 import java.io.{InputStream, Reader}
 import java.sql.{Array => _, _}
+import java.time.{OffsetTime, OffsetDateTime}
 import java.util.UUID
+
+trait OptionParameter {
+
+  implicit def ParameterValueToOptionParameterValue[T](value: T)(implicit toParam: T => ParameterValue[_]): Option[ParameterValue[_]] = {
+    Some(toParam(value))
+  }
+
+  implicit def OptionToOptionparameterValue[T](value: Option[T])(implicit toParam: T => ParameterValue[_]): Option[ParameterValue[_]] = {
+    value.map(toParam)
+  }
+
+}
 
 trait LongParameter {
 
-  implicit class QLong(override val value: Long) extends ParameterValue[Long] {
+  case class QLong(value: Long) extends ParameterValue[Long] {
 
     override def set(
       preparedStatement: PreparedStatement,
@@ -19,13 +32,15 @@ trait LongParameter {
     }
   }
 
-  implicit def BoxedLongToParameterValue(x: java.lang.Long): ParameterValue[Long] = Long.unbox(x)
+  implicit def LongToParameterValue(x: Long): ParameterValue[Long] = QLong(x)
+
+  implicit def BigDecimalToParameterValue(x: java.lang.Long): ParameterValue[Long] = Long.unbox(x)
 
 }
 
 trait IntParameter {
 
-  implicit class QInt(override val value: Int) extends ParameterValue[Int] {
+  case class QInt(value: Int) extends ParameterValue[Int] {
 
     override def set(
       preparedStatement: PreparedStatement,
@@ -38,13 +53,15 @@ trait IntParameter {
     }
   }
 
+  implicit def IntToParameterValue(x: Int): ParameterValue[Int] = QInt(x)
+  
   implicit def BoxedIntToParameterValue(x: java.lang.Integer): ParameterValue[Int] = Int.unbox(x)
 
 }
 
 trait ShortParameter {
 
-  implicit class QShort(override val value: Short) extends ParameterValue[Short] {
+  case class QShort(value: Short) extends ParameterValue[Short] {
 
     override def set(
       statement: PreparedStatement,
@@ -57,13 +74,15 @@ trait ShortParameter {
     }
   }
 
+  implicit def ShortToParameterValue(x: Short): ParameterValue[Short] = QShort(x)
+  
   implicit def BoxedShortToParameterValue(x: java.lang.Short): ParameterValue[Short] = Short.unbox(x)
 
 }
 
 trait ByteParameter {
 
-  implicit class QByte(override val value: Byte) extends ParameterValue[Byte] {
+  case class QByte(value: Byte) extends ParameterValue[Byte] {
 
     override def set(
       preparedStatement: PreparedStatement,
@@ -75,14 +94,16 @@ trait ByteParameter {
       )
     }
   }
-
+  
+  implicit def ByteToParameterValue(x: Byte): ParameterValue[Byte] = QByte(x)
+  
   implicit def BoxedByteToParameterValue(x: java.lang.Byte): ParameterValue[Byte] = Byte.unbox(x)
 
 }
 
 trait BytesParameter {
 
-  implicit class QBytes(override val value: Array[Byte]) extends ParameterValue[Array[Byte]] {
+  case class QBytes(value: Array[Byte]) extends ParameterValue[Array[Byte]] {
 
     override def set(
       preparedStatement: PreparedStatement,
@@ -95,11 +116,13 @@ trait BytesParameter {
     }
   }
 
+  implicit def BytesToParameterValue(x: Array[Byte]): ParameterValue[Array[Byte]] = QBytes(x)
+  
 }
 
 trait FloatParameter {
 
-  implicit class QFloat(override val value: Float) extends ParameterValue[Float] {
+  case class QFloat(value: Float) extends ParameterValue[Float] {
 
     override def set(
       preparedStatement: PreparedStatement,
@@ -112,13 +135,15 @@ trait FloatParameter {
     }
   }
 
+  implicit def FloatToParameterValue(x: Float): ParameterValue[Float] = QFloat(x)
+
   implicit def BoxedFloatToParameterValue(x: java.lang.Float): ParameterValue[Float] = Float.unbox(x)
 
 }
 
 trait DoubleParameter {
 
-  implicit class QDouble(override val value: Double) extends ParameterValue[Double] {
+  case class QDouble(value: Double) extends ParameterValue[Double] {
 
     override def set(
       preparedStatement: PreparedStatement,
@@ -129,16 +154,18 @@ trait DoubleParameter {
         value
       )
     }
-
+  
   }
 
+  implicit def DoubleToParameterValue(x: Double): ParameterValue[Double] = QDouble(x)
+  
   implicit def BoxedDoubleToParameterValue(x: java.lang.Double): ParameterValue[Double] = Double.unbox(x)
 
 }
 
 trait DecimalParameter {
 
-  implicit class QDecimal(override val value: java.math.BigDecimal) extends ParameterValue[java.math.BigDecimal] {
+  case class QDecimal(value: java.math.BigDecimal) extends ParameterValue[java.math.BigDecimal] {
 
     override def set(
       preparedStatement: PreparedStatement,
@@ -152,13 +179,15 @@ trait DecimalParameter {
 
   }
 
+  implicit def DecimalToParameterValue(x: java.math.BigDecimal): ParameterValue[java.math.BigDecimal] = QDecimal(x)
+  
   implicit def DecimalToParameterValue(x: scala.BigDecimal): ParameterValue[java.math.BigDecimal] = x.underlying
 
 }
 
 trait TimestampParameter {
 
-  implicit class QTimestamp(override val value: Timestamp) extends ParameterValue[Timestamp] {
+  case class QTimestamp(value: Timestamp) extends ParameterValue[Timestamp] {
 
     override def set(
       preparedStatement: PreparedStatement,
@@ -172,11 +201,13 @@ trait TimestampParameter {
 
   }
 
+  implicit def TimestampToParameterValue(x: Timestamp): ParameterValue[Timestamp] = QTimestamp(x)
+
 }
 
 trait DateParameter {
 
-  implicit class QDate(override val value: Date) extends ParameterValue[Date] {
+  case class QDate(value: Date) extends ParameterValue[Date] {
     override def set(
       preparedStatement: PreparedStatement,
       parameterIndex: Int
@@ -188,11 +219,13 @@ trait DateParameter {
     }
   }
 
+  implicit def DateToParameterValue(x: Date): ParameterValue[Date] = QDate(x)
+  
 }
 
 trait TimeParameter {
 
-  implicit class QTime(override val value: Time) extends ParameterValue[Time] {
+  case class QTime(value: Time) extends ParameterValue[Time] {
 
     override def set(
       preparedStatement: PreparedStatement,
@@ -205,11 +238,13 @@ trait TimeParameter {
     }
   }
 
+  implicit def TimeToParameterValue(x: Time): ParameterValue[Time] = QTime(x)
+  
 }
 
 trait BooleanParameter {
 
-  implicit class QBoolean(override val value: Boolean) extends ParameterValue[Boolean] {
+  case class QBoolean(value: Boolean) extends ParameterValue[Boolean] {
 
     override def set(
       preparedStatement: PreparedStatement,
@@ -222,13 +257,15 @@ trait BooleanParameter {
     }
   }
 
+  implicit def BooleanToParameterValue(x: Boolean): ParameterValue[Boolean] = QBoolean(x)
+  
   implicit def BoxedBooleanToParameterValue(x: java.lang.Boolean): ParameterValue[Boolean] = Boolean.unbox(x)
 
 }
 
 trait StringParameter {
 
-  implicit class QString(override val value: String) extends ParameterValue[String] {
+  case class QString(value: String) extends ParameterValue[String] {
 
     override def set(
       preparedStatement: PreparedStatement,
@@ -240,31 +277,38 @@ trait StringParameter {
       )
     }
   }
+
+  implicit def StringToParameterValue(x: String): ParameterValue[String] = QString(x)
+  
 }
 
 trait ReaderParameter {
 
-  implicit class QReader(override val value: Reader) extends ParameterValue[Reader] {
+  case class QReader(value: Reader) extends ParameterValue[Reader] {
     override def set(query: PreparedStatement, parameterIndex: Int): Unit = {
       query.setCharacterStream(parameterIndex, value)
     }
   }
 
+  implicit def ReaderToParameterValue(x: Reader): ParameterValue[Reader] = QReader(x)
+
 }
 
 trait InputStreamParameter {
 
-  implicit class QInputStreamReader(override val value: InputStream) extends ParameterValue[InputStream] {
+  case class QInputStream(value: InputStream) extends ParameterValue[InputStream] {
     override def set(query: PreparedStatement, parameterIndex: Int): Unit = {
       query.setBinaryStream(parameterIndex, value)
     }
   }
 
+  implicit def InputStreamToParameterValue(x: InputStream): ParameterValue[InputStream] = QInputStream(x)
+
 }
 
 trait UUIDParameter {
 
-  implicit class QUUID(override val value: UUID) extends ParameterValue[AnyRef] {
+  case class QUUID(value: UUID) extends ParameterValue[UUID] {
 
     override def set(
       preparedStatement: PreparedStatement,
@@ -273,11 +317,14 @@ trait UUIDParameter {
       preparedStatement.setObject(parameterIndex, value)
     }
   }
+
+  implicit def UUIDToParameterValue(x: UUID): ParameterValue[UUID] = QUUID(x)
+  
 }
 
 trait AnyRefParameter {
 
-  implicit class QAnyRef(override val value: AnyRef) extends ParameterValue[AnyRef] {
+  case class QAnyRef(value: AnyRef) extends ParameterValue[AnyRef] {
 
     override def set(
       preparedStatement: PreparedStatement,
@@ -287,6 +334,8 @@ trait AnyRefParameter {
     }
   }
 
+  implicit def AnyRefToParameterValue(x: AnyRef): ParameterValue[AnyRef] = QAnyRef(x)
+  
 }
 
 trait InstantParameter {
@@ -314,4 +363,34 @@ trait LocalDateTimeParameter {
 
   implicit def LocalDateTimeToParameterValue(x: java.time.LocalDateTime): ParameterValue[Timestamp] = Timestamp.valueOf(x)
 
+}
+
+trait OffsetDateTimeParameter {
+  self: HasOffsetDateTimeFormatter =>
+
+  case class QOffsetDateTime(value: OffsetDateTime) extends ParameterValue[OffsetDateTime] {
+
+    override def set(preparedStatement: PreparedStatement, parameterIndex: Int): Unit = {
+      preparedStatement.setString(parameterIndex, offsetDateTimeFormatter.format(value))
+    }
+
+  }
+
+  implicit def OffsetDateTimeToParameterValue(x: OffsetDateTime): ParameterValue[OffsetDateTime] = QOffsetDateTime(x)
+  
+}
+
+trait OffsetTimeParameter {
+  self: HasOffsetTimeFormatter =>
+
+  case class QOffsetTime(override val value: java.time.OffsetTime) extends ParameterValue[OffsetTime] {
+
+    override def set(preparedStatement: PreparedStatement, parameterIndex: Int): Unit = {
+      preparedStatement.setString(parameterIndex, offsetTimeFormatter.format(value))
+    }
+
+  }
+
+  implicit def OffsetTimeToParameterValue(x: OffsetTime): ParameterValue[OffsetTime] = QOffsetTime(x)
+  
 }

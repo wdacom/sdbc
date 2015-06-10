@@ -10,7 +10,7 @@ class RichResultSetSpec
   with BeforeAndAfterEach {
 
   test("seq() works on a single result") {implicit connection =>
-    val results = Select[Int]("SELECT 1").seq()
+    val results = Select[Int]("SELECT 1").iterator().toSeq
     assertResult(Seq(1))(results)
   }
 
@@ -23,11 +23,11 @@ class RichResultSetSpec
         batch.addBatch("x" -> r)
     }
 
-    val insertions = batch.batch()
+    val insertions = batch.iterator
 
-    assertResult(randoms.size)(insertions.sum[Int])
+    assertResult(randoms.size)(insertions.sum)
 
-    val results = Select[Int]("SELECT x FROM tbl").seq()
+    val results = Select[Int]("SELECT x FROM tbl").iterator().toSeq
 
     assertResult(randoms)(results)
   }
@@ -42,13 +42,13 @@ class RichResultSetSpec
         batch.addBatch("x" -> r)
     }
 
-    batch.batch()
+    batch.execute()
 
     for(row <- connection.iteratorForUpdate("SELECT * FROM tbl")) {
-      row("x") = row[Int]("x") + 1
+      row("x") = row[Int]("x").map(_ + 1)
     }
 
-    val afterBatch = connection.seq[Int]("SELECT x FROM tbl ORDER BY x ASC")
+    val afterBatch = connection.iterator[Int]("SELECT x FROM tbl ORDER BY x ASC").toSeq
 
     for ((afterUpdate, original) <- afterBatch.zip(randoms)) {
       assertResult(original + 1)(afterUpdate)

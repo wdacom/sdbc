@@ -4,7 +4,7 @@ package sqlserver
 import java.sql.PreparedStatement
 import java.util.UUID
 
-import com.wda.sdbc.base._
+import com.wda.sdbc.jdbc._
 
 import scala.xml.Node
 
@@ -28,49 +28,39 @@ trait Setters
   with InstantParameter
   with LocalDateParameter
   with LocalTimeParameter
-  with LocalDateTimeParameter{
-  self: JdbcParameterValue with Row with HierarchyId =>
+  with LocalDateTimeParameter
+  with OffsetDateTimeParameter
+  with OffsetTimeParameter {
+  self: HasOffsetDateTimeFormatter with HasOffsetTimeFormatter with HierarchyId =>
 
-  implicit class QUUID(override val value: UUID) extends ParameterValue[UUID] {
-    override def asJDBCObject: AnyRef = value.toString
-
-    override def update(row: JdbcRow, columnIndex: Int): Unit = {
-      row.updateString(columnIndex, value.toString)
-    }
-
-    override def set(preparedStatement: PreparedStatement, parameterIndex: Int): Unit = {
-      preparedStatement.setString(parameterIndex, value.toString)
+  case class QUUID(value: UUID) extends ParameterValue[UUID] {
+    override def set(statement: PreparedStatement, parameterIndex: Int): Unit = {
+      statement.setString(parameterIndex, value.toString)
     }
   }
 
-  implicit class QHierarchyId(override val value: HierarchyId) extends ParameterValue[HierarchyId] {
-    override def asJDBCObject: AnyRef = value.toString
+  implicit def UUIDToParameterValue(x: UUID): ParameterValue[UUID] = {
+    QUUID(x)
+  }
 
-    override def set(preparedStatement: PreparedStatement, parameterIndex: Int): Unit = {
-      preparedStatement.setString(parameterIndex, value.toString)
+  case class QHierarchyId(value: HierarchyId) extends ParameterValue[HierarchyId] {
+    override def set(statement: PreparedStatement, parameterIndex: Int): Unit = {
+      statement.setString(parameterIndex, value.toString)
     }
+  }
 
-    override def update(
-      row: JdbcRow,
-      columnIndex: Int
-    ): Unit = {
-      row.updateString(columnIndex, value.toString)
-    }
+  implicit def HierarchyIdToParameterValue(x: HierarchyId): ParameterValue[HierarchyId] = {
+    QHierarchyId(x)
   }
 
   implicit class QXML(override val value: Node) extends ParameterValue[Node] {
-    override def asJDBCObject: AnyRef = value.toString
-
     override def set(preparedStatement: PreparedStatement, parameterIndex: Int): Unit = {
       preparedStatement.setString(parameterIndex, value.toString)
     }
+  }
 
-    override def update(
-      row: JdbcRow,
-      columnIndex: Int
-    ): Unit = {
-      row.updateString(columnIndex, value.toString)
-    }
+  implicit def XMLToParameterValue(x: Node): ParameterValue[Node] = {
+    QXML(x)
   }
 
 }

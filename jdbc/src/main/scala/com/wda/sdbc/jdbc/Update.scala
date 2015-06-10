@@ -1,6 +1,6 @@
 package com.wda.sdbc.jdbc
 
-import java.sql.{PreparedStatement, Connection}
+import java.sql.Connection
 
 import com.wda.Logging
 import com.wda.sdbc.base
@@ -9,17 +9,31 @@ import com.wda.sdbc.base.CompiledStatement
 case class Update private (
   statement: CompiledStatement,
   parameterValues: Map[String, Option[ParameterValue[_]]]
-)
-  extends base.Updatable[Connection]
+) extends base.Update[Connection]
   with ParameterizedQuery[Update]
   with Logging {
 
   override def update()(implicit connection: Connection): Long = {
     logger.debug(s"""Executing update "$originalQueryText" with parameter values $parameterValues.""")
-    val prepared = connection.prepareStatement(queryText)
+    val prepared = prepare(
+      queryText = queryText,
+      parameterValues = parameterValues,
+      parameterPositions = parameterPositions
+    )
+
     val result = prepared.executeLargeUpdate()
-    util.Try(prepared.close())
+    prepared.close()
     result
+  }
+
+  override def execute()(implicit connection: Connection): Unit = {
+    logger.debug(s"""Executing update "$originalQueryText" with parameter values $parameterValues.""")
+    val prepared = prepare(
+      queryText = queryText,
+      parameterValues = parameterValues,
+      parameterPositions = parameterPositions
+    )
+    prepared.execute()
   }
 
   override def subclassConstructor(
@@ -31,10 +45,9 @@ case class Update private (
 }
 
 object Update {
-  def apply[T](
+  def apply(
     queryText: String,
     hasParameters: Boolean = true
-  )(implicit converter: Row => T
   ): Update = {
     Update(
       statement = CompiledStatement(queryText, hasParameters),

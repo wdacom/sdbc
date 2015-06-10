@@ -1,13 +1,13 @@
 package com.wda.sdbc.jdbc
 
+import com.wda.sdbc.base.ParameterValueImplicits
 import org.scalatest._
 
 class DefaultSettersSpec
   extends FunSuite
-  with Row
-  with Getter
-  with ParameterValue
-  with DefaultSetters {
+  with DefaultSetters
+  with ParameterValueImplicits
+  with StringGetter {
 
   test("implicit Int conversion works") {
     assertCompiles("val _: Option[ParameterValue[_]] = 3")
@@ -19,6 +19,10 @@ class DefaultSettersSpec
 
   test("implicit scala.BigDecimal conversion works") {
     assertCompiles("val _: Option[ParameterValue[_]] = BigDecimal(1)")
+  }
+
+  test("Row#get works") {
+    assertCompiles("val row: Row = ???; val _ = row[String](???)")
   }
 
 }

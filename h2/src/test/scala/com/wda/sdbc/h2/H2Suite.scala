@@ -1,6 +1,7 @@
 package com.wda.sdbc.h2
 
 import com.wda.sdbc.H2._
+import com.wda.sdbc.jdbc.Getter
 import org.scalatest._
 
 abstract class H2Suite
@@ -8,7 +9,7 @@ abstract class H2Suite
 
   def testSelect[T](query: String, expectedValue: Option[T])(implicit getter: Getter[T]): Unit = {
     test(query) { implicit connection =>
-      val result = Select[Option[T]](query).single()
+      val result = Select[T](query).get()
       (expectedValue, result) match {
         case (Some(expectedArray: Array[_]), Some(resultArray: Array[_])) =>
           assert(expectedArray.sameElements(resultArray))

@@ -2,24 +2,24 @@ package com.wda.sdbc
 package postgresql
 
 import java.net.InetAddress
-import java.sql.SQLDataException
+import java.sql.{SQLException, SQLDataException}
 import java.time.Duration
+import java.util
 import java.util.UUID
 
-import com.wda.sdbc.base._
-import com.wda.sdbc.jdbc.Java8DefaultGetters
+import com.wda.sdbc.jdbc._
 import org.json4s._
 import org.json4s.jackson.JsonMethods
 import org.postgresql.util.PGInterval
 
-import scala.xml.{XML, Node}
+import scala.xml.{XML, Elem}
 
-trait Getters extends Java8DefaultGetters {
-  self: Row with IntervalImplicits with Getter =>
+trait Getters extends Java8DefaultGetters with IntervalImplicits {
+  self: HasOffsetDateTimeFormatter with HasOffsetTimeFormatter =>
 
   implicit val LTreeGetter = new Getter[LTree] {
-    override def apply(row: JdbcRow, columnIndex: Int): Option[LTree] = {
-      Option(row.getObject(columnIndex)) collect {
+    override def apply(row: Row): Index => Option[LTree] = { ix =>
+      Option(row.getObject(ix(row))).map {
         case l: LTree => l
         case _ => throw new SQLDataException("column does not contain an LTree value")
       }
@@ -27,8 +27,8 @@ trait Getters extends Java8DefaultGetters {
   }
 
   implicit val PGIntervalGetter = new Getter[PGInterval] {
-    override def apply(row: JdbcRow, columnIndex: Int): Option[PGInterval] = {
-      Option(row.getObject(columnIndex)).collect {
+    override def apply(row: Row): Index => Option[PGInterval] = { ix =>
+      Option(row.getObject(ix(row))).map {
         case pgInterval: PGInterval => pgInterval
         case _ => throw new SQLDataException("column does not contain a PGInterval")
       }
@@ -36,18 +36,20 @@ trait Getters extends Java8DefaultGetters {
   }
 
   implicit val DurationGetter = new Getter[Duration] {
-    override def apply(row: JdbcRow, columnIndex: Int): Option[Duration] = {
-      row.option[PGInterval](columnIndex).map {
+    override def apply(row: Row): Index => Option[Duration] = { ix =>
+      Option(row.getObject(ix(row))).map {
         case pgInterval: PGInterval =>
           val asDuration: Duration = pgInterval
           asDuration
+        case _ =>
+          throw new SQLException("column does not contain a PGInterval")
       }
     }
   }
 
-  implicit val InetAddressGetter = new Getter[InetAddress] {
-    override def apply(row: JdbcRow, columnIndex: Int): Option[InetAddress] = {
-      row.option[String](columnIndex).map(InetAddress.getByName)
+  implicit val InetAddressGetter = new Parser[InetAddress] {
+    override def parse(asString: String): InetAddress = {
+      InetAddress.getByName(asString)
     }
   }
 
@@ -58,18 +60,34 @@ trait Getters extends Java8DefaultGetters {
   }
 
   override implicit val UUIDGetter: Getter[UUID] = new Getter[UUID] {
-    override def apply(row: JdbcRow, columnIndex: Int): Option[UUID] = {
-      Option(row.getObject(columnIndex)).collect {
+    override def apply(row: Row): Index =>  Option[UUID] = { ix =>
+      Option(row.getObject(ix(row))).map {
         case uuid: UUID => uuid
         case _ => throw new SQLDataException("column does not contain a UUID")
       }
     }
   }
 
-  implicit val XMLGetter: Getter[Node] = new Parser[Node] {
+  implicit val XMLGetter: Getter[Elem] = new Parser[Elem] {
     //PostgreSQL's ResultSet#getSQLXML just uses getString.
-    override def parse(asString: String): Node = {
+    override def parse(asString: String): Elem = {
       XML.loadString(asString)
+    }
+  }
+
+  implicit val MapGetter: Getter[Map[String, String]] = new Getter[Map[String, String]] {
+    override def apply(row: Row): (Index) => Option[Map[String, String]] = { ix =>
+      Option(row.getObject(ix(row))).map {
+        case m: java.util.Map[_, _] =>
+          import scala.collection.convert.decorateAsScala._
+          val values =
+            for (entry <- m.entrySet().asScala) yield {
+              entry.getKey.asInstanceOf[String] -> entry.getValue.asInstanceOf[String]
+            }
+          Map(values.toSeq: _*)
+        case _ =>
+          throw new SQLException("column does not contain an hstore")
+      }
     }
   }
 

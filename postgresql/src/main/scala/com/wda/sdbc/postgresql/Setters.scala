@@ -4,86 +4,64 @@ package postgresql
 import java.net.InetAddress
 import java.sql.PreparedStatement
 
-import com.wda.sdbc.base.{Row, JdbcParameterValue}
-import com.wda.sdbc.jdbc.Java8DefaultSetters
+import com.wda.sdbc.jdbc.{ParameterValue, Java8DefaultSetters}
 import org.json4s._
 import org.json4s.jackson.JsonMethods
 import org.postgresql.util.PGInterval
 
-import scala.xml.Node
+import scala.xml.Elem
 
 trait Setters
   extends Java8DefaultSetters {
-  self: JdbcParameterValue with Row =>
+  self: HasOffsetDateTimeFormatter with HasOffsetTimeFormatter =>
 
-  implicit class QInetAddress(override val value: InetAddress) extends ParameterValue[InetAddress] {
-    override def asJDBCObject: AnyRef = value.getHostAddress
+  case class QInetAddress(value: InetAddress) extends ParameterValue[InetAddress] {
 
     override def set(preparedStatement: PreparedStatement, parameterIndex: Int): Unit = {
       preparedStatement.setString(parameterIndex, value.getHostAddress)
     }
 
-    override def update(
-      row: JdbcRow,
-      columnIndex: Int
-    ): Unit = {
-      row.updateObject(columnIndex, asJDBCObject)
-    }
   }
 
-  implicit class QPGInterval(override val value: PGInterval) extends ParameterValue[PGInterval] {
-    type T = PGInterval
+  def InetAddressToParameterValue(x: InetAddress): ParameterValue[InetAddress] = {
+    QInetAddress(x)
+  }
 
-    override def asJDBCObject: AnyRef = value
-
+  case class QPGInterval(value: PGInterval) extends ParameterValue[PGInterval] {
     override def set(preparedStatement: PreparedStatement, parameterIndex: Int): Unit = {
-      preparedStatement.setObject(parameterIndex, asJDBCObject)
-    }
-
-    override def update(
-      row: JdbcRow,
-      columnIndex: Int
-    ): Unit = {
-      row.updateObject(columnIndex, asJDBCObject)
+      preparedStatement.setObject(parameterIndex, value)
     }
   }
 
-  implicit class QJSON(override val value: JValue)(implicit formats: Formats) extends ParameterValue[JValue] {
-    type T = JValue
+  def PGIntervalToParameterValue(x: PGInterval): ParameterValue[PGInterval] = {
+    QPGInterval(x)
+  }
 
-    override def asJDBCObject: AnyRef = JsonMethods.compact(JsonMethods.render(value))
+  case class QJSON(value: JValue)(implicit formats: Formats) extends ParameterValue[JValue] {
 
     override def set(preparedStatement: PreparedStatement, parameterIndex: Int): Unit = {
       preparedStatement.setString(parameterIndex, JsonMethods.compact(JsonMethods.render(value)))
     }
 
-    override def update(
-      row: JdbcRow,
-      columnIndex: Int
-    ): Unit = {
-      row.updateString(columnIndex, JsonMethods.compact(JsonMethods.render(value)))
-    }
   }
 
-  implicit class QLTree(override val value: LTree) extends ParameterValue[LTree] {
-    type T = LTree
+  def JSONToParameterValue(x: JValue)(implicit formats: Formats): ParameterValue[JValue] = {
+    QJSON(x)
+  }
 
-    override def asJDBCObject: AnyRef = value
+  case class QLTree(value: LTree) extends ParameterValue[LTree] {
 
     override def set(preparedStatement: PreparedStatement, parameterIndex: Int): Unit = {
-      preparedStatement.setObject(parameterIndex, asJDBCObject)
+      preparedStatement.setObject(parameterIndex, value)
     }
 
-    override def update(
-      row: JdbcRow,
-      columnIndex: Int
-    ): Unit = {
-      row.updateObject(columnIndex, asJDBCObject)
-    }
   }
 
-  implicit class QXML(override val value: Node) extends ParameterValue[Node] {
-    override def asJDBCObject: AnyRef = value.toString
+  def LTreeToParameterValue(x: LTree): ParameterValue[LTree] = {
+    QLTree(x)
+  }
+
+  case class QXML(value: Elem) extends ParameterValue[Elem] {
 
     override def set(preparedStatement: PreparedStatement, parameterIndex: Int): Unit = {
       val sqlxml = preparedStatement.getConnection.createSQLXML()
@@ -91,12 +69,10 @@ trait Setters
       preparedStatement.setSQLXML(parameterIndex, sqlxml)
     }
 
-    override def update(
-      row: JdbcRow,
-      columnIndex: Int
-    ): Unit = {
-      row.updateString(columnIndex, value.toString)
-    }
+  }
+
+  def XMLToParameterValue(x: Elem): ParameterValue[Elem] = {
+    QXML(x)
   }
 
 }

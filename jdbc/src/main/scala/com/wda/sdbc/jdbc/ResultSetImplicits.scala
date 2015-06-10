@@ -1,12 +1,11 @@
 package com.wda.sdbc.jdbc
 
+import java.io.Closeable
 import java.sql.ResultSet
 
 trait ResultSetImplicits {
 
   implicit class ResultSetToRowIterator(underlying: ResultSet) {
-
-    def dbms = DBMS.of(underlying)
 
     /**
      * Get an iterator over the result set.
@@ -15,16 +14,20 @@ trait ResultSetImplicits {
      * If you want another iterator, execute the select statement again.
      * @return
      */
-    def iterator(): Iterator[Row] = {
+    def iterator(): Iterator[Row] with Closeable = {
 
-      new Iterator[Row] {
+      new Iterator[Row] with Closeable {
 
         val row = new Row(underlying)
-        
+
+        override def close(): Unit = {
+          underlying.close()
+        }
+
         override def hasNext: Boolean = {
           val result = underlying.next()
           if (!result) {
-            underlying.close()
+            close()
           }
           result
         }
@@ -44,16 +47,24 @@ trait ResultSetImplicits {
      * If you want another iterator, execute the select statement again.
      * @return
      */
-    def mutableIterator(): Iterator[MutableRow] = {
+    def mutableIterator(): Iterator[MutableRow] with Closeable = {
 
-      new Iterator[MutableRow] {
+      if ((underlying.getConcurrency & ResultSet.CONCUR_UPDATABLE) == 0) {
+        throw new IllegalStateException("The ResultSet's concurrency is not CONCUR_UPDATABLE.")
+      }
+
+      new Iterator[MutableRow] with Closeable {
 
         val row = new MutableRow(underlying)
+
+        override def close(): Unit = {
+          underlying.close()
+        }
 
         override def hasNext: Boolean = {
           val result = underlying.next()
           if (!result) {
-            underlying.close()
+            close()
           }
           result
         }

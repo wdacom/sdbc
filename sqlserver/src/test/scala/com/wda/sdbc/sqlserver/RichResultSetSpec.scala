@@ -11,7 +11,7 @@ class RichResultSetSpec
   with BeforeAndAfterEach {
 
   test("seq() works on a single result") {implicit connection =>
-    val results = Select[Int]("SELECT CAST(1 AS int)").seq()
+    val results = Select[Int]("SELECT CAST(1 AS int)").iterator().toSeq
     assert(results == Seq(1))
   }
 
@@ -24,11 +24,11 @@ class RichResultSetSpec
         batch.addBatch("x" -> r)
     }
 
-    val insertions = batch.batch()
+    val insertions = batch.iterator()
 
-    assert(insertions.sum[Int] == randoms.size)
+    assert(insertions.sum == randoms.size)
 
-    val results = Select[Int]("SELECT x FROM tbl").seq()
+    val results = Select[Int]("SELECT x FROM tbl").iterator().toSeq
     assert(results == randoms)
   }
 
@@ -42,13 +42,13 @@ class RichResultSetSpec
         batch.addBatch("x" -> r)
     }
 
-    batch.batch()
+    batch.iterator()
 
-    for(row <- connection.iteratorForUpdate("SELECT x FROM tbl")) {
-      row("x") = row[Int]("x") + 1
+    for (row <- connection.iteratorForUpdate("SELECT x FROM tbl")) {
+      row("x") = row[Int]("x").map(_ + 1)
     }
 
-    assert(connection.seq[Int]("SELECT x FROM tbl ORDER BY x ASC").zip(randoms).forall{case (incremented, original) => incremented == original + 1})
+    assert(connection.iterator[Int]("SELECT x FROM tbl ORDER BY x ASC").zip(randoms.iterator).forall{case (incremented, original) => incremented == original + 1})
   }
 
   override protected def afterEach(): Unit = {

@@ -7,7 +7,7 @@ import org.apache.commons.lang3.time.StopWatch
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
 
-import PostgreSql._
+import com.wda.sdbc.PostgreSql._
 
 class Benchmarks
   extends PostgreSqlSuite
@@ -67,14 +67,14 @@ class Benchmarks
 
   override protected def beforeEach(): Unit = {
     withPg {implicit connection =>
-      TestTable.create.execute()
+      TestTable.create.update()
       connection.commit()
     }
   }
 
   override protected def afterEach(): Unit = {
     withPg {implicit connection =>
-      TestTable.drop.execute()
+      TestTable.drop.update()
       connection.commit()
     }
   }
@@ -112,7 +112,7 @@ class Benchmarks
   }
 
   test("test JDBC select") {implicit connection =>
-    values.foldLeft(TestTable.batchInsert){case (b, v) => v.addToBatch(b)}.batch()
+    values.foldLeft(TestTable.batchInsert){case (b, v) => v.addToBatch(b)}.iterator()
 
     val selectedRows = Array.ofDim[TestTable](rowCount)
 
@@ -136,7 +136,7 @@ class Benchmarks
   }
 
   test("time JDBC select") {implicit connection =>
-    values.foldLeft(TestTable.batchInsert){case (b, v) => v.addToBatch(b)}.batch()
+    values.foldLeft(TestTable.batchInsert){case (b, v) => v.addToBatch(b)}.execute()
 
     connection.commit()
 
@@ -161,7 +161,7 @@ class Benchmarks
   test("time com.wda.sql batch insert") {implicit connection =>
 
     val insertDuration = averageTime(repetitions) {
-      values.foldLeft(TestTable.batchInsert){case (b, v) => v.addToBatch(b)}.batch()
+      values.foldLeft(TestTable.batchInsert){case (b, v) => v.addToBatch(b)}.execute()
       connection.commit()
     }{
       TestTable.truncate.execute()
@@ -176,22 +176,22 @@ class Benchmarks
 
     val batch = values.foldLeft(TestTable.batchInsert){case (b, v) => v.addToBatch(b)}
 
-    val insertedRows = batch.batch()
+    val insertedRows = batch.iterator()
 
     connection.commit()
 
-    assert(insertedRows.sum[Int] == values.size)
+    assert(insertedRows.sum == values.size)
 
   }
 
   test("time com.wda.sql select") {implicit connection =>
 
-    values.foldLeft(TestTable.batchInsert){case (b, v) => v.addToBatch(b)}.batch()
+    values.foldLeft(TestTable.batchInsert){case (b, v) => v.addToBatch(b)}.iterator()
 
     connection.commit()
 
     val selectDuration = averageTime(repetitions) {
-      TestTable.select.seq()
+      TestTable.select.iterator()
     }(() => ())
 
     println(s"com.wda.sql select took $selectDuration ms.")
@@ -200,11 +200,11 @@ class Benchmarks
 
   test("test com.wda.sql select") {implicit connection =>
 
-    values.foldLeft(TestTable.batchInsert){case (b, v) => v.addToBatch(b)}.batch()
+    values.foldLeft(TestTable.batchInsert){case (b, v) => v.addToBatch(b)}.iterator()
 
     connection.commit()
 
-    val selectedRows = TestTable.select.seq()
+    val selectedRows = TestTable.select.iterator().toSeq
 
     for ((TestTable(_, str1, uuid, str2), TestTable(_, str1_, uuid_, str2_)) <- values.zip(selectedRows)) {
       assert(str1 == str1_)
@@ -238,11 +238,11 @@ class Benchmarks
 
   object TestTable {
 
-    implicit def apply(row: JdbcRow): TestTable = {
-      val id = row[Long]("id")
-      val str1 = row[String]("str1")
-      val uuid = row[UUID]("uuid")
-      val str2 = row[String]("str2")
+    implicit def apply(row: Row): TestTable = {
+      val id = row[Long]("id").get
+      val str1 = row[String]("str1").get
+      val uuid = row[UUID]("uuid").get
+      val str2 = row[String]("str2").get
 
       TestTable(id, str1, uuid, str2)
     }

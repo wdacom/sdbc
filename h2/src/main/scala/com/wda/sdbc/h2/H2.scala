@@ -2,13 +2,13 @@ package com.wda.sdbc.h2
 
 import java.nio.file.Path
 import java.sql.DriverManager
-import com.wda.sdbc.base.DefaultSetters
-import com.wda.sdbc.jdbc.{DBMS, DefaultSetters, Java8DefaultGetters}
+import com.wda.sdbc.jdbc.{DefaultUpdaters, DefaultGetters, DBMS, DefaultSetters}
 
 abstract class H2
   extends DBMS
-  with Java8DefaultGetters
+  with DefaultGetters
   with DefaultSetters
+  with DefaultUpdaters
   with OtherParameter {
   /**
    * Class name for the DataSource class.
@@ -34,8 +34,6 @@ abstract class H2
    */
   override def supportsIsValid: Boolean = true
 
-  override def Identifier: Identifier = new Identifier
-
   /**
    * The result of getMetaData.getDatabaseProductName
    */
@@ -46,7 +44,7 @@ abstract class H2
     try {
       f(connection)
     } finally {
-      connection.closeQuietly()
+      connection.close()
     }
   }
 
@@ -56,7 +54,7 @@ abstract class H2
     try {
       f(connection)
     } finally {
-      connection.closeQuietly()
+      connection.close()
     }
   }
 }

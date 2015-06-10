@@ -3,9 +3,12 @@ package com.wda.sdbc.postgresql
 import java.time.{Instant, OffsetDateTime}
 
 import com.typesafe.config.{ConfigFactory, Config}
-import com.wda.sdbc.PostgreSql._
+import com.wda.sdbc.jdbc.{Getter, Select}
 import com.wda.sdbc.config.{PgTestingConfig, TestingConfig}
 import org.scalatest._
+import java.sql.Connection
+
+import com.wda.sdbc.PostgreSql._
 
 abstract class PostgreSqlSuite
   extends fixture.FunSuite
@@ -20,7 +23,7 @@ abstract class PostgreSqlSuite
 
   def testSelect[T](query: String, expectedValue: Option[T])(implicit getter: Getter[T]): Unit = {
     test(query) { implicit connection =>
-      val result = Select[Option[T]](query).single()
+      val result = Select[T](query).get()
       (expectedValue, result) match {
         case (Some(expectedArray: Array[Byte]), Some(resultArray: Array[Byte])) =>
           assert(expectedArray.sameElements(resultArray))

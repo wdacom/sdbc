@@ -9,7 +9,7 @@ import com.zaxxer.hikari.pool.HikariPool
 
 import scala.collection.convert.wrapAsScala._
 
-object HikariCP {
+trait HikariImplicits {
 
   implicit class ConfigOps(config: Config) {
 
@@ -73,7 +73,7 @@ object HikariCP {
     }
   }
 
-  val hikariOtherProperties =
+  private val hikariOtherProperties =
     Set(
       "dataSourceClassName",
       "jdbcUrl",
@@ -104,7 +104,7 @@ object HikariCP {
       "threadFactory"
     )
 
-  val hikariDurationProperties =
+  private val hikariDurationProperties =
     Set(
       "connectionTimeout",
       "validationTimeout",

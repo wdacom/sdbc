@@ -15,9 +15,9 @@ class OtherSpec
       "obj" -> Other(original)
     ).execute()
 
-    val Other(result) = Select[Other]("SELECT obj FROM tbl").single()
+    val result = Select[Other]("SELECT obj FROM tbl").get()
 
-    assertResult(original)(result)
+    assertResult(Some(original).map(_.value))(result)
 
   }
 

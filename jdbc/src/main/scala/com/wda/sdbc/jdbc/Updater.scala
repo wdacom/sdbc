@@ -2,7 +2,7 @@ package com.wda.sdbc.jdbc
 
 import java.sql.{Time, Date, Timestamp}
 import java.io.{InputStream, Reader}
-import java.time.{LocalTime, LocalDate, Instant, LocalDateTime}
+import java.time._
 import java.util.UUID
 
 trait Updater[T] {
@@ -10,7 +10,7 @@ trait Updater[T] {
   def update(row: MutableRow, columnIndex: Int, x: T): Unit
 
   def update(row: MutableRow, columnLabel: String, x: T): Unit = {
-    val columnIndex = row.columnIndexes(columnLabel)
+    val columnIndex = row.findColumn(columnLabel)
     update(row, columnIndex, x)
   }
 
@@ -140,6 +140,24 @@ trait LocalTimeUpdater {
   implicit val LocalTimeUpdater = new Updater[LocalTime] {
     override def update(row: MutableRow, columnIndex: Int, x: LocalTime): Unit = {
       row.updateTime(columnIndex, Time.valueOf(x))
+    }
+  }
+}
+
+trait OffsetDateTimeUpdater {
+  self: HasOffsetDateTimeFormatter =>
+  implicit val OffsetDateTimeUpdater = new Updater[OffsetDateTime] {
+    override def update(row: MutableRow, columnIndex: Int, x: OffsetDateTime): Unit = {
+      row.updateString(columnIndex, offsetDateTimeFormatter.format(x))
+    }
+  }
+}
+
+trait OffsetTimeUpdater {
+  self: HasOffsetTimeFormatter =>
+  implicit val OffsetTimeUpdater = new Updater[OffsetTime] {
+    override def update(row: MutableRow, columnIndex: Int, x: OffsetTime): Unit = {
+      row.updateString(columnIndex, offsetTimeFormatter.format(x))
     }
   }
 }

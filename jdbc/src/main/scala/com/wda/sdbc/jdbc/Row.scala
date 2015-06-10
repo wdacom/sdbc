@@ -1,62 +1,41 @@
 package com.wda.sdbc.jdbc
 
-import java.io.{Reader, InputStream}
+import java.io.{Closeable, Reader, InputStream}
 import java.math.BigDecimal
 import java.net.URL
 import java.sql.{Array => JdbcArray, _}
 import java.util
 import java.util.Calendar
-import com.wda.sdbc.base
 
-class Row private[jdbc] (override protected val underlying: ResultSet)
-  extends base.Row[ResultSet, Int] {
+/**
+ * A class which wraps the read-only parts of a JDBC `ResultSet`.
+ *
+ * For an updatable version, see `SelectForUpdate`.
+ * @param underlying
+ */
+class Row private[jdbc] (
+  protected[jdbc] val underlying: ResultSet
+) extends Closeable
+  with Wrapper {
 
-  val columnIndexes: Map[String, Int] = {
-    val rowMeta = underlying.getMetaData
-    0.until(rowMeta.getColumnCount).map { index =>
-      val columnNameAtIndex = underlying.getMetaData.getColumnName(index)
-      columnNameAtIndex -> index
-    }.toMap
-  }
-
-  def unwrap[T](iface: Class[T]): T = {
-    if (getClass == iface) {
+  override def unwrap[T](iface: Class[T]): T = {
+    if (iface.isInstance(this)) {
       this.asInstanceOf[T]
-    } else if (underlying.getClass == iface) {
+    } else if (iface.isInstance(underlying)) {
       underlying.asInstanceOf[T]
     } else {
       underlying.unwrap[T](iface)
     }
   }
 
-  def isWrapperFor(iface: Class[_]) = {
-    getClass == iface ||
-      underlying.getClass == iface ||
+  override def isWrapperFor(iface: Class[_]) = {
+    iface.isInstance(this) ||
+      iface.isInstance(underlying) ||
       underlying.isWrapperFor(iface: Class[_])
   }
 
-  def apply[T]()(implicit getter: Getter[T]): T = {
-    get().get
-  }
-
-  def apply[T](columnIndex: Int)(implicit getter: Getter[T]): T = {
-    get(columnIndex).get
-  }
-
-  def apply[T](columnLabel: String)(implicit getter: Getter[T]): T = {
-    get(columnLabel).get
-  }
-
-  def get[T]()(implicit getter: Getter[T]): Option[T] = {
-    get(1)
-  }
-
-  def get[T](columnIndex: Int)(implicit getter: Getter[T]): Option[T] = {
-    getter(this, columnIndex)
-  }
-
-  def get[T](columnLabel: String)(implicit getter: Getter[T]): Option[T] = {
-    getter(this, columnLabel)
+  def apply[T](columnIndex: Index)(implicit getter: Getter[T]): Option[T] = {
+    getter(this)(columnIndex)
   }
 
   def getType: Int = underlying.getType()
@@ -228,4 +207,5 @@ class Row private[jdbc] (override protected val underlying: ResultSet)
   def getString(columnIndex: Int): String = underlying.getString(columnIndex: Int)
 
   def getString(columnLabel: String): String = underlying.getString(columnLabel: String)
+
 }

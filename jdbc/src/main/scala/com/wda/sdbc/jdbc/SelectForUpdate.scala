@@ -9,7 +9,7 @@ import com.wda.sdbc.base.CompiledStatement
 case class SelectForUpdate private (
   statement: CompiledStatement,
   parameterValues: Map[String, Option[ParameterValue[_]]]
-) extends base.Selectable[MutableRow, Connection]
+) extends base.Select[MutableRow, Connection]
   with ParameterizedQuery[SelectForUpdate]
   with ResultSetImplicits
   with Logging {
@@ -18,6 +18,12 @@ case class SelectForUpdate private (
     logger.debug(s"""Retrieving an iterator of updatable rows using "$originalQueryText" with parameters $parameterValues.""")
     val preparedStatement = connection.prepareStatement(queryText, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE)
     preparedStatement.executeQuery().mutableIterator()
+  }
+
+  override def execute()(implicit connection: Connection): Unit = {
+    logger.debug(s"""Executing an update using "$originalQueryText" with parameters $parameterValues.""")
+    val preparedStatement = prepare(queryText, parameterValues, parameterPositions)
+    preparedStatement.execute()
   }
 
   override def subclassConstructor(

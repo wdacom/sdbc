@@ -3,9 +3,11 @@ package com.wda.sdbc.sqlserver
 import java.time.{Instant, OffsetDateTime}
 
 import com.typesafe.config.{ConfigFactory, Config}
-import com.wda.sdbc.SqlServer._
+import com.wda.sdbc.jdbc.Getter
 import com.wda.sdbc.config.{SqlTestingConfig, TestingConfig}
 import org.scalatest._
+
+import com.wda.sdbc.SqlServer._
 
 abstract class SqlServerSuite
   extends fixture.FunSuite
@@ -20,7 +22,7 @@ abstract class SqlServerSuite
 
   def testSelect[T](query: String, expectedValue: Option[T])(implicit getter: Getter[T]): Unit = {
     test(query) { implicit connection =>
-      val result = Select[Option[T]](query).single()
+      val result = Select[Option[T]](query).get().get
       (expectedValue, result) match {
         case (Some(expectedArray: Array[Byte]), Some(resultArray: Array[Byte])) =>
           assert(expectedArray.sameElements(resultArray))

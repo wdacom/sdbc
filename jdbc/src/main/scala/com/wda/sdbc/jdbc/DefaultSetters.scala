@@ -25,6 +25,9 @@ trait Java8DefaultSetters
   with InstantParameter
   with LocalDateParameter
   with LocalTimeParameter
-  with LocalDateTimeParameter {
+  with LocalDateTimeParameter
+  with OffsetDateTimeParameter
+  with OffsetTimeParameter {
+  self: HasOffsetDateTimeFormatter with HasOffsetTimeFormatter =>
 
 }

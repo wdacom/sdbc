@@ -1,13 +1,71 @@
-package com.wda.sdbc.jdbc
+package com.wda.sdbc
+package jdbc
 
-import java.sql.Connection
-
-import com.wda.{Closable, CaseInsensitiveOrdering}
-import com.zaxxer.hikari.HikariConfig
+import com.wda.CaseInsensitiveOrdering
+import com.zaxxer.hikari.{HikariDataSource, HikariConfig}
 
 abstract class DBMS
-  extends Pool
-  with Java8DefaultGetters {
+  extends IndexImplicits
+  with HikariImplicits
+  with OptionParameter
+  with GetterImplicits
+  with UpdaterImplicits {
+
+  type Row = jdbc.Row
+
+  type MutableRow = jdbc.MutableRow
+
+  type Select[T] = jdbc.Select[T]
+
+  val Select = jdbc.Select
+
+  type Update = jdbc.Update
+
+  val Update = jdbc.Update
+
+  type Batch = jdbc.Batch
+
+  val Batch = jdbc.Batch
+
+  type Connection = java.sql.Connection
+
+  type Pool = jdbc.Pool
+
+  val Pool = jdbc.Pool
+
+  implicit def PoolToHikariPool(pool: Pool): HikariDataSource = {
+    pool.underlying
+  }
+
+  implicit class ConnectionMethods(connection: Connection) {
+    def iterator[T](
+      queryText: String,
+      parameters: (String, Option[ParameterValue[_]])*
+    )(implicit converter: Row => T): Iterator[T] = {
+      Select[T](queryText).on(parameters: _*).iterator()(connection)
+    }
+
+    def iteratorForUpdate(
+      queryText: String,
+      parameters: (String, Option[ParameterValue[_]])*
+    ): Iterator[MutableRow] = {
+      SelectForUpdate(queryText).on(parameters: _*).iterator()(connection)
+    }
+
+    def update(
+      queryText: String,
+      parameterValues: (String, Option[ParameterValue[_]])*
+    ): Long = {
+      Update(queryText).on(parameterValues: _*).update()(connection)
+    }
+
+    def execute(
+      queryText: String,
+      parameterValues: (String, Option[ParameterValue[_]])*
+    ): Unit = {
+      Update(queryText).on(parameterValues: _*).execute()(connection)
+    }
+  }
 
   /**
    * Class name for the DataSource class.
@@ -41,11 +99,6 @@ abstract class DBMS
   def initializeConnection(connection: java.sql.Connection): Unit = {
 
   }
-
-  implicit val closableConnection: com.wda.Closable[Connection] =
-    new Closable[Connection] {
-      def close(connection: Connection): Unit = connection.close()
-    }
 
   DBMS.register(this)
 

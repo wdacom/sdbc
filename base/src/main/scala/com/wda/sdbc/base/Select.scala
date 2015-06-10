@@ -1,21 +1,12 @@
 package com.wda.sdbc.base
 
-abstract class Select[Connection] {
+import com.wda.Logging
 
-  def iterator[T]()(implicit selectable: Selectable[T, Connection], connection: Connection): Iterator[T] = {
-    selectable.iterator()
-  }
+abstract class Select[T, Connection] {
+  self: Logging =>
 
-  def seq[T]()(implicit selectable: Selectable[T, Connection], connection: Connection): Seq[T] = {
-    iterator[T]().toVector
-  }
+  def iterator()(implicit connection: Connection): Iterator[T]
 
-  def option[T]()(implicit selectable: Selectable[T, Connection], connection: Connection): Option[T] = {
-    iterator[T]().toStream.headOption
-  }
-
-  def single[T]()(implicit selectable: Selectable[T, Connection], connection: Connection): T = {
-    option[T]().get
-  }
+  def execute()(implicit connection: Connection): Unit
 
 }
