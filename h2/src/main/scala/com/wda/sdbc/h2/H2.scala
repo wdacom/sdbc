@@ -2,14 +2,14 @@ package com.wda.sdbc.h2
 
 import java.nio.file.Path
 import java.sql.DriverManager
-import com.wda.sdbc.jdbc.{DefaultUpdaters, DefaultGetters, DBMS, DefaultSetters}
+import com.wda.sdbc.jdbc.DBMS
 
 abstract class H2
   extends DBMS
-  with DefaultGetters
-  with DefaultSetters
-  with DefaultUpdaters
-  with OtherParameter {
+  with Getters
+  with Setters
+  with Updaters
+  with SerializedParameter {
   /**
    * Class name for the DataSource class.
    */

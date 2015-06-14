@@ -9,7 +9,7 @@ abstract class H2Suite
 
   def testSelect[T](query: String, expectedValue: Option[T])(implicit getter: Getter[T]): Unit = {
     test(query) { implicit connection =>
-      val result = Select[T](query).get()
+      val result = Select[Option[T]](query).get().flatten
       (expectedValue, result) match {
         case (Some(expectedArray: Array[_]), Some(resultArray: Array[_])) =>
           assert(expectedArray.sameElements(resultArray))

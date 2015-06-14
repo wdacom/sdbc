@@ -50,7 +50,7 @@ case class Select[T] private (
   }
 
   /**
-   * Gets the first value from the result set, if one exists.
+   * Gets the first row from the result set, if one exists.
    * @param connection
    * @return
    */

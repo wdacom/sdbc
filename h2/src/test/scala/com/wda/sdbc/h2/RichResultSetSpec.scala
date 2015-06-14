@@ -42,10 +42,11 @@ class RichResultSetSpec
         batch.addBatch("x" -> r)
     }
 
-    batch.execute()
+    batch.iterator()
 
     for(row <- connection.iteratorForUpdate("SELECT * FROM tbl")) {
       row("x") = row[Int]("x").map(_ + 1)
+      row.updateRow()
     }
 
     val afterBatch = connection.iterator[Int]("SELECT x FROM tbl ORDER BY x ASC").toSeq

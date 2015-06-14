@@ -11,7 +11,7 @@ trait OptionParameter {
     Some(toParam(value))
   }
 
-  implicit def OptionToOptionparameterValue[T](value: Option[T])(implicit toParam: T => ParameterValue[_]): Option[ParameterValue[_]] = {
+  implicit def OptionToOptionParameterValue[T](value: Option[T])(implicit toParam: T => ParameterValue[_]): Option[ParameterValue[_]] = {
     value.map(toParam)
   }
 

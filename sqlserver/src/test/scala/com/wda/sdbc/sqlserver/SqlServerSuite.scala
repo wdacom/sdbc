@@ -22,7 +22,7 @@ abstract class SqlServerSuite
 
   def testSelect[T](query: String, expectedValue: Option[T])(implicit getter: Getter[T]): Unit = {
     test(query) { implicit connection =>
-      val result = Select[Option[T]](query).get().get
+      val result = Select[Option[T]](query).get().flatten
       (expectedValue, result) match {
         case (Some(expectedArray: Array[Byte]), Some(resultArray: Array[Byte])) =>
           assert(expectedArray.sameElements(resultArray))
