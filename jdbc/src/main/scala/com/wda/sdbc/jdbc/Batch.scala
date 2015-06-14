@@ -38,8 +38,8 @@ case class Batch private (
               parameter.set(prepared, index)
             }
         }
-        prepared.addBatch()
       }
+      prepared.addBatch()
     }
     prepared
   }
@@ -60,13 +60,13 @@ case class Batch private (
   override def execute()(implicit connection: Connection): Unit = {
     logger.debug(s"""Executing batch "$originalQueryText".""")
     val prepared = prepare()
-    prepared.execute()
-//    try {
-//      prepared.executeLargeBatch()
-//    } catch {
-//      case e: UnsupportedOperationException =>
-//        prepared.executeBatch()
-//    }
+    try {
+      prepared.executeLargeBatch()
+    }
+    catch {
+      case e: UnsupportedOperationException =>
+        prepared.executeBatch()
+    }
     prepared.close()
   }
 
