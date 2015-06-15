@@ -71,6 +71,7 @@ class RichResultSpec
 
     for(row <- connection.iteratorForUpdate("SELECT * FROM tbl")) {
       row("x") = row[Int]("x").map(_ + 1)
+      row.updateRow()
     }
 
     val incrementedFromDb = connection.iterator[Int]("SELECT x FROM tbl ORDER BY x ASC").toSeq

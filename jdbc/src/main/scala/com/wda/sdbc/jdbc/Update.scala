@@ -21,7 +21,7 @@ case class Update private (
       parameterPositions = parameterPositions
     )
 
-    val result = prepared.executeLargeUpdate()
+    val result = prepared.executeUpdate()
     prepared.close()
     result
   }

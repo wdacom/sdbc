@@ -42,13 +42,18 @@ class RichResultSetSpec
         batch.addBatch("x" -> r)
     }
 
-    batch.iterator()
+    batch.execute()
 
     for (row <- connection.iteratorForUpdate("SELECT x FROM tbl")) {
       row("x") = row[Int]("x").map(_ + 1)
+      row.updateRow()
     }
 
-    assert(connection.iterator[Int]("SELECT x FROM tbl ORDER BY x ASC").zip(randoms.iterator).forall{case (incremented, original) => incremented == original + 1})
+    val afterUpdate = connection.iterator[Int]("SELECT x FROM tbl ORDER BY x ASC").toSeq
+
+    for ((afterUpdate, original) <- afterUpdate.zip(randoms)) {
+      assertResult(original + 1)(afterUpdate)
+    }
   }
 
   override protected def afterEach(): Unit = {

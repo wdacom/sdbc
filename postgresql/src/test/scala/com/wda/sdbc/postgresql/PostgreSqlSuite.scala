@@ -23,7 +23,7 @@ abstract class PostgreSqlSuite
 
   def testSelect[T](query: String, expectedValue: Option[T])(implicit getter: Getter[T]): Unit = {
     test(query) { implicit connection =>
-      val result = Select[Option[T]](query).get().flatten
+      val result = Select[Option[T]](query).get().get
       (expectedValue, result) match {
         case (Some(expectedArray: Array[Byte]), Some(resultArray: Array[Byte])) =>
           assert(expectedArray.sameElements(resultArray))

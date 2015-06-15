@@ -82,7 +82,7 @@ class Benchmarks
   test("test JDBC batch insert") {implicit connection =>
     val p = connection.prepareStatement(TestTable.insertJdbc)
 
-    for (v <- values) v.addToBatch(p)
+    for (v <- values) v.addBatch(p)
 
     val insertedRowCount = p.executeBatch()
 
@@ -97,7 +97,7 @@ class Benchmarks
 
       val p = connection.prepareStatement(TestTable.insertJdbc)
 
-      for (v <- values) v.addToBatch(p)
+      for (v <- values) v.addBatch(p)
 
       p.executeBatch()
 
@@ -112,7 +112,9 @@ class Benchmarks
   }
 
   test("test JDBC select") {implicit connection =>
-    values.foldLeft(TestTable.batchInsert){case (b, v) => v.addToBatch(b)}.iterator()
+    val batch = values.foldLeft(TestTable.batchInsert){case (b, v) => v.addBatch(b)}
+
+    batch.execute()
 
     val selectedRows = Array.ofDim[TestTable](rowCount)
 
@@ -136,7 +138,7 @@ class Benchmarks
   }
 
   test("time JDBC select") {implicit connection =>
-    values.foldLeft(TestTable.batchInsert){case (b, v) => v.addToBatch(b)}.execute()
+    values.foldLeft(TestTable.batchInsert){case (b, v) => v.addBatch(b)}.execute()
 
     connection.commit()
 
@@ -161,7 +163,7 @@ class Benchmarks
   test("time com.wda.sql batch insert") {implicit connection =>
 
     val insertDuration = averageTime(repetitions) {
-      values.foldLeft(TestTable.batchInsert){case (b, v) => v.addToBatch(b)}.execute()
+      values.foldLeft(TestTable.batchInsert){case (b, v) => v.addBatch(b)}.execute()
       connection.commit()
     }{
       TestTable.truncate.execute()
@@ -174,19 +176,19 @@ class Benchmarks
 
   test("test com.wda.batch insert") {implicit connection =>
 
-    val batch = values.foldLeft(TestTable.batchInsert){case (b, v) => v.addToBatch(b)}
+    val batch = values.foldLeft(TestTable.batchInsert){case (b, v) => v.addBatch(b)}
 
     val insertedRows = batch.iterator()
 
     connection.commit()
 
-    assert(insertedRows.sum == values.size)
+    assert(insertedRows.sum == values.size.toLong)
 
   }
 
   test("time com.wda.sql select") {implicit connection =>
 
-    values.foldLeft(TestTable.batchInsert){case (b, v) => v.addToBatch(b)}.iterator()
+    values.foldLeft(TestTable.batchInsert){case (b, v) => v.addBatch(b)}.iterator()
 
     connection.commit()
 
@@ -200,7 +202,7 @@ class Benchmarks
 
   test("test com.wda.sql select") {implicit connection =>
 
-    values.foldLeft(TestTable.batchInsert){case (b, v) => v.addToBatch(b)}.iterator()
+    values.foldLeft(TestTable.batchInsert){case (b, v) => v.addBatch(b)}.iterator()
 
     connection.commit()
 
@@ -220,7 +222,7 @@ class Benchmarks
     uuid: UUID,
     str2: String
   ) {
-    def addToBatch(b: Batch): Batch = {
+    def addBatch(b: Batch): Batch = {
       b.addBatch(
         "str1" -> str1,
         "uuid" -> uuid,
@@ -228,7 +230,7 @@ class Benchmarks
       )
     }
 
-    def addToBatch(p: PreparedStatement): Unit = {
+    def addBatch(p: PreparedStatement): Unit = {
       p.setString(1, str1)
       p.setObject(2, uuid)
       p.setString(3, str2)
