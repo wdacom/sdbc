@@ -16,22 +16,44 @@ Include an implementation of the [SLF4J](http://slf4j.org/) logging interface, t
 
 Packages exist on Maven Central for Scala 2.10 and 2.11. The Scala 2.10 builds for PostgreSQL do not include support for arrays.
 
-### H2
+### Java 8
+
+#### H2
 
 ```scala
 "com.wda.sdbc" %% "h2" % "0.9"
 ```
 
-### PostgreSql
+#### PostgreSql
 
 ```scala
 "com.wda.sdbc" %% "postgresql" % "0.9"
 ```
 
-### SQL Server
+#### SQL Server
 
 ```scala
 "com.wda.sdbc" %% "sqlserver" % "0.9"
+```
+
+### Java 7
+
+#### H2
+
+```scala
+"com.wda.sdbc" %% "h2-java7" % "0.9"
+```
+
+#### PostgreSql
+
+```scala
+"com.wda.sdbc" %% "postgresql-java7" % "0.9"
+```
+
+#### SQL Server
+
+```scala
+"com.wda.sdbc" %% "sqlserver-java7" % "0.9"
 ```
 
 ## License
@@ -76,13 +98,13 @@ import com.wda.sdbc.PostgreSql._
 case class MyRow(
 	id: Int,
 	createdTime: Instant,
-	message: String
+	message: Option[String]
 )
 
 implicit def RowToMyRow(row: Row): MyRow = {
     val id = row[Int]("id")
     val createdTime = row[Instant]("created_time")
-    val message = row[String]("message")
+    val message = row.option[String]("message")
 
     MyRow(
         id,
@@ -226,11 +248,12 @@ val result = pool.withConnection { implicit connection =>
 
 ### 0.9
 
-* Only Hikari configuration parameters are sent to the HikariConfig constructor
+* Only Hikari configuration parameters are sent to the HikariConfig constructor.
+* Added support for Java 7.
 
 ### 0.8
 
-* XML getters and setters use Node instead of Elem
+* XML getters and setters use Node instead of Elem.
 
 ### 0.7
 
@@ -240,4 +263,4 @@ val result = pool.withConnection { implicit connection =>
 
 * Add support for H2.
 * Test packages have better support for building and destroying test catalogs.
-* Some method names were shortened: executeBatch() to batch(), executeUpdate() to update()
+* Some method names were shortened: executeBatch() to batch(), executeUpdate() to update().
