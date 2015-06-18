@@ -2,7 +2,6 @@ package com.wda.sdbc.postgresql
 
 import java.net.InetAddress
 import java.sql.{Time, Date, PreparedStatement}
-import java.time.{Duration, OffsetTime, OffsetDateTime, LocalDateTime}
 import java.util.UUID
 
 import com.wda.sdbc.base.{ParameterValue, Row}
@@ -36,14 +35,8 @@ trait SeqParameterValue {
       case t if t =:= typeOf[java.lang.Double] => "float8"
       case t if t =:= typeOf[BigDecimal] => "numeric"
       case t if t =:= typeOf[java.math.BigDecimal] => "numeric"
-      case t if t =:= typeOf[LocalDateTime] => "timestamp"
-      case t if t =:= typeOf[OffsetDateTime] => "timestamptz"
       case t if t =:= typeOf[Date] => "date"
       case t if t =:= typeOf[Time] => "time"
-      case t if t =:= typeOf[java.time.LocalDate] => "date"
-      case t if t =:= typeOf[java.time.LocalTime] => "time"
-      case t if t =:= typeOf[OffsetTime] => "timetz"
-      case t if t =:= typeOf[Duration] => "interval"
       case t if t =:= typeOf[Boolean] => "boolean"
       case t if t =:= typeOf[java.lang.Boolean] => "boolean"
       case t if t =:= typeOf[String] => "text"

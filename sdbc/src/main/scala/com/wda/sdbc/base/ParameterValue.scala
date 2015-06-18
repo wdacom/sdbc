@@ -514,30 +514,3 @@ trait AnyRefParameter {
   }
 
 }
-
-trait InstantParameter {
-  self: ParameterValue with TimestampParameter =>
-
-  implicit def InstantToParameterValue(x: java.time.Instant): ParameterValue[Timestamp] = Timestamp.from(x)
-
-}
-
-trait LocalDateParameter {
-  self: ParameterValue with DateParameter =>
-
-  implicit def LocalDateToParameterValue(x: java.time.LocalDate): ParameterValue[Date] = Date.valueOf(x)
-
-}
-
-trait LocalTimeParameter {
-  self: ParameterValue with TimeParameter =>
-
-  implicit def LocalTimeToParameterValue(x: java.time.LocalTime): ParameterValue[Time] = Time.valueOf(x)
-
-}
-trait LocalDateTimeParameter {
-  self: ParameterValue with TimestampParameter =>
-
-  implicit def LocalDateTimeToParameterValue(x: java.time.LocalDateTime): ParameterValue[Timestamp] = Timestamp.valueOf(x)
-
-}

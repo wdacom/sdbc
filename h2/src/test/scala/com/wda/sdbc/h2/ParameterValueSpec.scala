@@ -1,7 +1,6 @@
 package com.wda.sdbc.h2
 
 import java.sql.{Timestamp, Time, Date}
-import java.time._
 import java.util.UUID
 
 import scalaz.Scalaz._
@@ -40,20 +39,6 @@ class ParameterValueSpec
   testSelect[Time]("SELECT CAST('03:04:05' AS time) --as JDBC Time", Time.valueOf("03:04:05").some)
 
   testSelect[Timestamp]("SELECT CAST('2014-12-29 01:02:03.5' AS datetime)", Timestamp.valueOf("2014-12-29 01:02:03.5").some)
-
-  testSelect[LocalDateTime]("SELECT CAST('2014-12-29 01:02:03.5' AS datetime) --as Java 8 LocalDateTime)", LocalDateTime.parse("2014-12-29T01:02:03.5").some)
-
-  {
-    //Convert the time being tested into UTC time
-    //using the current time zone's offset at the time
-    //that we're testing.
-    //We can't use the current offset, because of, for example,
-    //daylight savings.
-    val localTime = LocalDateTime.parse("2014-12-29T01:02:03.5")
-    val offset = ZoneId.systemDefault().getRules.getOffset(localTime)
-    val expectedTime = localTime.toInstant(offset)
-    testSelect[Instant]("SELECT CAST('2014-12-29 01:02:03.5' AS datetime) --as Java 8 Instant", expectedTime.some)
-  }
 
   testSelect[UUID](s"SELECT CAST('$uuid' AS uuid)", uuid.some)
 

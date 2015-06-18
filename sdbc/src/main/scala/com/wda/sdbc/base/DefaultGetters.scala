@@ -22,13 +22,3 @@ trait DefaultGetters
   self: Row with Getter =>
 
 }
-
-trait Java8DefaultGetters
-  extends DefaultGetters
-  with InstantGetter
-  with LocalDateGetter
-  with LocalDateTimeGetter
-  with LocalTimeGetter {
-  self: Row with Getter =>
-
-}

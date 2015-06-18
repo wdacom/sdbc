@@ -20,13 +20,3 @@ trait DefaultSetters
   self: ParameterValue with Row =>
 
 }
-
-trait Java8DefaultSetters
-  extends DefaultSetters
-  with InstantParameter
-  with LocalDateParameter
-  with LocalTimeParameter
-  with LocalDateTimeParameter {
-  self: ParameterValue with Row =>
-
-}

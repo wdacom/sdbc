@@ -3,7 +3,6 @@ package com.wda.sdbc.sqlserver
 import com.wda.sdbc.SqlServer._
 
 import java.sql.{Date, Time, Timestamp}
-import java.time._
 import java.util.UUID
 
 import org.scalatest.BeforeAndAfterAll
@@ -48,27 +47,7 @@ class GetterSpec
 
   testSelect[Time]("SELECT CAST('03:04:05' AS time) --as JDBC Time", Time.valueOf("03:04:05").some)
 
-  testSelect[LocalTime]("SELECT CAST('03:04:05' AS time) --as Java 8 LocalTime", LocalTime.parse("03:04:05").some)
-
   testSelect[Timestamp]("SELECT CAST('2014-12-29 01:02:03.5' AS datetime)", Timestamp.valueOf("2014-12-29 01:02:03.5").some)
-
-  testSelect[LocalDateTime]("SELECT CAST('2014-12-29 01:02:03.5' AS datetime) --as Java 8 LocalDateTime)", LocalDateTime.parse("2014-12-29T01:02:03.5").some)
-
-  {
-    //Convert the time being tested into UTC time
-    //using the current time zone's offset at the time
-    //that we're testing.
-    //We can't use the current offset, because of, for example,
-    //daylight savings.
-    val localTime = LocalDateTime.parse("2014-12-29T01:02:03.5")
-    val offset = ZoneId.systemDefault().getRules.getOffset(localTime)
-    val expectedTime = localTime.toInstant(offset)
-    testSelect[Instant]("SELECT CAST('2014-12-29 01:02:03.5' AS datetime) --as Java 8 Instant", expectedTime.some)
-  }
-
-  testSelect[OffsetDateTime]("SELECT CAST('2014-12-29 01:02:03.5 -4:00' AS datetimeoffset) --as Java 8 OffsetDateTime", OffsetDateTime.parse("2014-12-29T01:02:03.5-04:00").some)
-
-  testSelect[Instant]("SELECT CAST('2014-12-29 01:02:03.5 -4:00' AS datetimeoffset) --as Java 8 Instant", Instant.parse("2014-12-29T05:02:03.5Z").some)
 
   testSelect[com.wda.sdbc.SqlServer.HierarchyId]("SELECT CAST('/1/2/3/' AS hierarchyid).ToString()", HierarchyId(1, 2, 3).some)
 

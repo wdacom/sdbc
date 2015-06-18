@@ -20,11 +20,6 @@ trait Update {
       withPreparedStatement(_.executeUpdate())(connection)
     }
 
-    def largeUpdate()(implicit connection: Connection): Long = {
-      logger.debug(s"""Executing a large update using "${statement.originalQueryText}" with parameters $parameterValues.""")
-      withPreparedStatement(_.executeLargeUpdate())(connection)
-    }
-
   }
 
   object Update {

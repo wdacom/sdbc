@@ -80,15 +80,6 @@ trait Connection {
       ).update()(this)
     }
 
-    def largeUpdate(
-      queryText: String,
-      parameterValues: (String, Option[ParameterValue[_]])*
-    ): Long = {
-      Update(queryText).on(
-        parameterValues: _*
-      ).largeUpdate()(this)
-    }
-
     def execute(
       queryText: String,
       parameterValues: (String, Option[ParameterValue[_]])*

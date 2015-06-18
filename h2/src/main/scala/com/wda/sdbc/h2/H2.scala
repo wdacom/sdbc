@@ -4,11 +4,11 @@ import java.nio.file.Path
 import java.sql.DriverManager
 
 import com.wda.sdbc.DBMS
-import com.wda.sdbc.base.{Java8DefaultGetters, DefaultSetters}
+import com.wda.sdbc.base.{DefaultGetters, DefaultSetters}
 
 abstract class H2
   extends DBMS
-  with Java8DefaultGetters
+  with DefaultGetters
   with DefaultSetters
   with OtherParameter {
   /**

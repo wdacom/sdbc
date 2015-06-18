@@ -2,7 +2,6 @@ package com.wda.sdbc.base
 
 import java.io.{InputStream, Reader}
 import java.sql.{Array => _, _}
-import java.time._
 import java.util.UUID
 
 trait Getter {
@@ -207,58 +206,6 @@ trait TimeGetter {
     }
   }
 
-}
-
-trait LocalDateTimeGetter {
-  self: Getter with Row =>
-
-  implicit val LocalDateTimeGetter = new Getter[LocalDateTime] {
-    override def apply(
-      row: Row,
-      columnIndex: Int
-    ): Option[LocalDateTime] = {
-      Option(row.getTimestamp(columnIndex)).map(_.toLocalDateTime)
-    }
-  }
-}
-
-trait InstantGetter {
-  self: Getter with Row =>
-
-  implicit val InstantGetter = new Getter[Instant] {
-    override def apply(
-      row: Row,
-      columnIndex: Int
-    ): Option[Instant] = {
-      Option(row.getTimestamp(columnIndex)).map(_.toInstant)
-    }
-  }
-}
-
-trait LocalDateGetter {
-  self: Getter with Row =>
-
-  implicit val LocalDateGetter = new Getter[LocalDate] {
-    override def apply(
-      row: Row,
-      columnIndex: Int
-    ): Option[LocalDate] = {
-      Option(row.getDate(columnIndex)).map(_.toLocalDate)
-    }
-  }
-}
-
-trait LocalTimeGetter {
-  self: Getter with Row =>
-
-  implicit val LocalTimeGetter = new Getter[LocalTime] {
-    override def apply(
-      row: Row,
-      columnIndex: Int
-    ): Option[LocalTime] = {
-      Option(row.getTime(columnIndex)).map(_.toLocalTime)
-    }
-  }
 }
 
 trait BooleanGetter {

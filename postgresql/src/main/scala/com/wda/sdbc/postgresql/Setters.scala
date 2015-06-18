@@ -4,7 +4,7 @@ package postgresql
 import java.net.InetAddress
 import java.sql.PreparedStatement
 
-import com.wda.sdbc.base.{Java8DefaultSetters, Row, ParameterValue}
+import com.wda.sdbc.base.{DefaultSetters, Row, ParameterValue}
 import org.json4s._
 import org.json4s.jackson.JsonMethods
 import org.postgresql.util.PGInterval
@@ -12,7 +12,7 @@ import org.postgresql.util.PGInterval
 import scala.xml.Node
 
 trait Setters
-  extends Java8DefaultSetters {
+  extends DefaultSetters {
   self: ParameterValue with Row =>
 
   implicit class QInetAddress(override val value: InetAddress) extends ParameterValue[InetAddress] {

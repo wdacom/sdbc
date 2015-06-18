@@ -3,7 +3,6 @@ package postgresql
 
 import java.net.InetAddress
 import java.sql.SQLDataException
-import java.time.Duration
 import java.util.UUID
 
 import com.wda.sdbc.base._
@@ -13,8 +12,8 @@ import org.postgresql.util.PGInterval
 
 import scala.xml.{XML, Node}
 
-trait Getters extends Java8DefaultGetters {
-  self: Row with IntervalImplicits with Getter =>
+trait Getters extends DefaultGetters {
+  self: Row with Getter =>
 
   implicit val LTreeGetter = new Getter[LTree] {
     override def apply(row: Row, columnIndex: Int): Option[LTree] = {
@@ -30,16 +29,6 @@ trait Getters extends Java8DefaultGetters {
       Option(row.getObject(columnIndex)).collect {
         case pgInterval: PGInterval => pgInterval
         case _ => throw new SQLDataException("column does not contain a PGInterval")
-      }
-    }
-  }
-
-  implicit val DurationGetter = new Getter[Duration] {
-    override def apply(row: Row, columnIndex: Int): Option[Duration] = {
-      row.option[PGInterval](columnIndex).map {
-        case pgInterval: PGInterval =>
-          val asDuration: Duration = pgInterval
-          asDuration
       }
     }
   }

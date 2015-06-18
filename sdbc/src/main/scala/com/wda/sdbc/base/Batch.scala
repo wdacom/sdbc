@@ -93,12 +93,6 @@ trait Batch {
       }
     }
 
-    def largeBatch()(implicit connection: Connection): Seq[Long] = {
-      logger.debug(s"""Executing a large batch using "${statement.originalQueryText}".""")
-      withPreparedStatement[Seq[Long]] { prepared =>
-        prepared.executeLargeBatch().toVector
-      }
-    }
   }
 
   object Batch {

@@ -1,7 +1,6 @@
 package com.wda.sdbc.postgresql
 
 import java.sql.{Array => _, _}
-import java.time._
 import java.util.UUID
 
 import org.json4s.JValue
@@ -52,36 +51,9 @@ class GetterSpec
 
   testSelect[Time]("SELECT '03:04:05'::time --as JDBC Time", Time.valueOf("03:04:05").some)
 
-  testSelect[LocalTime]("SELECT '03:04:05'::time --as Java 8 LocalTime", LocalTime.parse("03:04:05").some)
-
-  testSelect[OffsetTime]("SELECT '03:04:05-4'::time with time zone", OffsetTime.parse("03:04:05-04:00").some)
-
   testSelect[Timestamp]("SELECT '2014-12-29 01:02:03.5'::timestamp --as JDBC Timestamp", Timestamp.valueOf("2014-12-29 01:02:03.5").some)
 
-  //The expected value for this test is a bit odd, because the Timestamp is returned in UTC.
-  testSelect[Timestamp]("SELECT '2014-12-29 01:02:03.5-4'::timestamp with time zone --as JDBC Timestamp", Timestamp.from(OffsetDateTime.parse("2014-12-29T01:02:03.5-04:00").toInstant).some)
-
-  testSelect[LocalDateTime]("SELECT '2014-12-29 01:02:03.5'::timestamp --as Java 8 LocalDateTime", LocalDateTime.parse("2014-12-29T01:02:03.5").some)
-
-  {
-    //Convert the time being tested into UTC time
-    //using the current time zone's offset at the time
-    //that we're testing.
-    //We can't use the current offset, because of, for example,
-    //daylight savings.
-    val localTime = LocalDateTime.parse("2014-12-29T01:02:03.5")
-    val offset = ZoneId.systemDefault().getRules.getOffset(localTime)
-    val expectedTime = localTime.toInstant(offset)
-    testSelect[Instant]("SELECT '2014-12-29 01:02:03.5'::timestamp --as Java 8 Instant", expectedTime.some)
-  }
-
-  testSelect[OffsetDateTime]("SELECT '2014-12-29 01:02:03.5-4'::timestamp with time zone --as Java 8 OffsetDateTime", OffsetDateTime.parse("2014-12-29T01:02:03.5-04:00").some)
-
-  testSelect[Instant]("SELECT '2014-12-29 01:02:03.5-4'::timestamp with time zone --as Java 8 Instant", Instant.parse("2014-12-29T05:02:03.5Z").some)
-
   testSelect[PGInterval]("SELECT '9 years 11 mons 29 days 11:02:13.154936'::interval --as PGInterval", new PGInterval("9 years 11 mons 29 days 11:02:13.154936").some)
-
-  testSelect[Duration]("SELECT '9 years 11 mons 29 days 11:02:13.154936'::interval --as Java 8 Duration", Some[Duration](new PGInterval("9 years 11 mons 29 days 11:02:13.154936")))
 
   testSelect[LTree]("SELECT 'a.b.c'::ltree", LTree("a", "b", "c").some)
 

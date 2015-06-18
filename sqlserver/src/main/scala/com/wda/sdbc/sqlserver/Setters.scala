@@ -24,11 +24,7 @@ trait Setters
   with TimeParameter
   with TimestampParameter
   with ReaderParameter
-  with InputStreamParameter
-  with InstantParameter
-  with LocalDateParameter
-  with LocalTimeParameter
-  with LocalDateTimeParameter{
+  with InputStreamParameter {
   self: ParameterValue with Row with HierarchyId =>
 
   implicit class QUUID(override val value: UUID) extends ParameterValue[UUID] {

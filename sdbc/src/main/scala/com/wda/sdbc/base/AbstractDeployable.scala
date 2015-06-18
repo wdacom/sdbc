@@ -21,8 +21,22 @@ trait AbstractDeployable {
       createStatements.foreach(_.execute())
     }
 
+    /**
+     * Run the drop statements, failing when one fails.
+     * @param connection
+     * @return
+     */
     def drop()(implicit connection: Connection): Unit = {
       dropStatements.foreach(_.execute())
+    }
+
+    /**
+     * Run the drop statements, skipping errors.
+     * @param connection
+     * @return
+     */
+    def dropEach()(implicit connection: Connection): Unit = {
+      dropStatements.foreach(s => util.Try(s.execute()))
     }
 
     def ++(that: AbstractDeployable): AbstractDeployable = {
@@ -58,8 +72,22 @@ trait AbstractDeployable {
       deployables.foreach(_.create())
     }
 
+    /**
+     * Run the drop statements, failing when one fails.
+     * @param connection
+     * @return
+     */
     def drop()(implicit connection: Connection): Unit = {
       deployables.reverse.foreach(_.drop())
+    }
+
+    /**
+     * Run the drop statements, skipping errors.
+     * @param connection
+     * @return
+     */
+    def dropEach()(implicit connection: Connection): Unit = {
+      deployables.reverse.foreach(_.dropEach())
     }
   }
 

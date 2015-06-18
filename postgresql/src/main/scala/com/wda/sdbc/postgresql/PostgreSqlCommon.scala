@@ -1,7 +1,5 @@
 package com.wda.sdbc.postgresql
 
-import java.time.format.{DateTimeFormatter, DateTimeFormatterBuilder}
-
 import com.wda.sdbc.base._
 import com.wda.sdbc.{DBMS, base}
 import org.postgresql.PGConnection
@@ -12,9 +10,6 @@ import org.postgresql.PGConnection
 abstract class PostgreSqlCommon
   extends DBMS
   with Setters
-  with HasJava8TimeFormatter
-  with HasJava8DateTimeFormatter
-  with IntervalImplicits
   with ConnectionImplicits
   with Getters {
 
@@ -25,25 +20,6 @@ abstract class PostgreSqlCommon
   override val supportsIsValid: Boolean = true
 
   override val Identifier: base.Identifier = new Identifier
-
-  override val timeFormatter: DateTimeFormatter = {
-    new DateTimeFormatterBuilder().
-    parseCaseInsensitive().
-    append(DateTimeFormatter.ISO_LOCAL_TIME).
-    optionalStart().
-    appendOffset("+HH:mm", "+00").
-    optionalEnd().
-    toFormatter
-  }
-
-  override val dateTimeFormatter: DateTimeFormatter = {
-    new DateTimeFormatterBuilder().
-    parseCaseInsensitive().
-    append(DateTimeFormatter.ISO_LOCAL_DATE).
-    appendLiteral(' ').
-    append(timeFormatter).
-    toFormatter
-  }
 
   /**
    * Perform any connection initialization that should be done when a connection

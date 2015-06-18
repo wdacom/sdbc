@@ -1,4 +1,4 @@
-name := "postgresql"
+name := "postgresql-java7"
 
 description := "An implementation of WDA SDBC for accessing PostgreSQL."
 
