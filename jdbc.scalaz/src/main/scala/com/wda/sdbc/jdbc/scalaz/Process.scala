@@ -3,16 +3,18 @@ package com.wda.sdbc.jdbc.scalaz
 import java.sql.Connection
 
 import com.wda.sdbc.jdbc
-import scalaz.effect.IO
 import scalaz.stream._
+import scalaz.Applicative
 
 object Process {
 
-  def apply[T](select: jdbc.Select[T])(
-    implicit connection: Connection
-  ): Process[IO, T] = {
+  def apply[F[_], T](
+    select: jdbc.Select[T]
+  )(implicit connection: Connection,
+    ev: Applicative[F]
+  ): Process[F, T] = {
 
-    val acquire: IO[jdbc.Row] = IO {
+    val acquire: F[jdbc.Row] = ev.point {
       val statement = jdbc.prepare(
         queryText = select.queryText,
         parameterValues = select.parameterValues,
@@ -21,10 +23,10 @@ object Process {
       new jdbc.Row(statement.executeQuery())
     }
 
-    def release(row: jdbc.Row): IO[Unit] =
-      IO(row.close())
+    def release(row: jdbc.Row): F[Unit] =
+      ev.point(row.close())
 
-    def step(row: jdbc.Row): IO[T] = IO {
+    def step(row: jdbc.Row): F[T] = ev.point {
       if (row.underlying.next()) {
         select.converter(row)
       } else {
@@ -32,7 +34,7 @@ object Process {
       }
     }
 
-    io.resource[IO, jdbc.Row, T](acquire)(release)(step)
+    io.resource[F, jdbc.Row, T](acquire)(release)(step)
   }
 
   private case class TransactionResource(
@@ -40,11 +42,13 @@ object Process {
     row: jdbc.Row
   )
 
-  def transaction[T](select: jdbc.Select[T])(
-    implicit pool: jdbc.Pool
-  ): Process[IO, T] = {
+  def transaction[F[_], T](
+    select: jdbc.Select[T]
+  )(implicit pool: jdbc.Pool,
+    ev: Applicative[F]
+  ): Process[F, T] = {
 
-    val acquire: IO[TransactionResource] = IO {
+    val acquire: F[TransactionResource] = ev.point {
       implicit val connection = pool.getConnection()
       connection.setAutoCommit(true)
       val statement = jdbc.prepare(
@@ -55,13 +59,13 @@ object Process {
       TransactionResource(connection, new jdbc.Row(statement.executeQuery()))
     }
 
-    def release(resource: TransactionResource): IO[Unit] = {
-      IO(resource.row.close())
+    def release(resource: TransactionResource): F[Unit] = {
+      ev.point(resource.row.close())
     }
 
-    def step(resource: TransactionResource): IO[T] = {
+    def step(resource: TransactionResource): F[T] = {
       val TransactionResource(_, row) = resource
-        IO {
+        ev.point {
           if (row.underlying.next()) {
             select.converter(row)
           } else {
@@ -70,7 +74,7 @@ object Process {
         }
     }
 
-    io.resource[IO, TransactionResource, T](acquire)(release)(step)
+    io.resource[F, TransactionResource, T](acquire)(release)(step)
 
   }
 
