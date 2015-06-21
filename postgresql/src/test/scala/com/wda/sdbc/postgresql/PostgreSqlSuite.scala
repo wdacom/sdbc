@@ -3,10 +3,8 @@ package com.wda.sdbc.postgresql
 import java.time.{Instant, OffsetDateTime}
 
 import com.typesafe.config.{ConfigFactory, Config}
-import com.wda.sdbc.jdbc.{Getter, Select}
 import com.wda.sdbc.config.{PgTestingConfig, TestingConfig}
 import org.scalatest._
-import java.sql.Connection
 
 import com.wda.sdbc.PostgreSql._
 
@@ -21,9 +19,9 @@ abstract class PostgreSqlSuite
 
   override def pgConfigKey: String = "pg"
 
-  def testSelect[T](query: String, expectedValue: Option[T])(implicit getter: Getter[T]): Unit = {
+  def testSelect[T](query: String, expectedValue: Option[T])(implicit converter: Row => Option[T]): Unit = {
     test(query) { implicit connection =>
-      val result = Select[Option[T]](query).get().get
+      val result = Select[Option[T]](query).option().get
       (expectedValue, result) match {
         case (Some(expectedArray: Array[Byte]), Some(resultArray: Array[Byte])) =>
           assert(expectedArray.sameElements(resultArray))

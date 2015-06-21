@@ -48,10 +48,9 @@ trait SerializedParameter {
       }
     }
 
-  implicit val OtherGetter: Getter[Serialized] =
+  implicit val SerializedGetter: Getter[Serialized] =
     new Getter[Serialized] {
-
-      override def apply(row: Row): (Index) => Option[Serialized] = { index =>
+      override def apply(row: Row, index: Index): Option[Serialized] = {
         Option(row.getObject(index(row))).map(o => Serialized(o.asInstanceOf[AnyRef with java.io.Serializable]))
       }
     }

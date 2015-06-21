@@ -3,7 +3,8 @@ package com.wda.sdbc
 import java.sql.{Types, Connection, PreparedStatement}
 
 package object jdbc
-  extends HikariImplicits {
+  extends HikariImplicits
+  with ResultSetImplicits {
 
   type ParameterizedQuery[Self <: ParameterizedQuery[Self]] = base.ParameterizedQuery[Self, PreparedStatement, Int]
 

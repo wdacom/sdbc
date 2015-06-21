@@ -12,7 +12,7 @@ class UUIDSpec
     val selected =
       Select[UUID]("SELECT CAST($uuid AS uniqueidentifier)").on(
         "uuid" -> uuid
-      ).get()
+      ).option()
 
     assertResult(uuid)(selected)
   }
@@ -22,7 +22,7 @@ class UUIDSpec
     val selected =
       Select[UUID]("SELECT $uuid").on(
         "uuid" -> uuid
-      ).get()
+      ).option()
 
     assertResult(uuid)(selected)
   }

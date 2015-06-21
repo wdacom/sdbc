@@ -18,7 +18,7 @@ trait Getters extends Java8DefaultGetters with IntervalImplicits {
   self: HasOffsetDateTimeFormatter with HasOffsetTimeFormatter =>
 
   implicit val LTreeGetter = new Getter[LTree] {
-    override def apply(row: Row): Index => Option[LTree] = { ix =>
+    override def apply(row: Row, ix: Index): Option[LTree] = {
       Option(row.getObject(ix(row))).map {
         case l: LTree => l
         case _ => throw new SQLDataException("column does not contain an LTree value")
@@ -27,7 +27,7 @@ trait Getters extends Java8DefaultGetters with IntervalImplicits {
   }
 
   implicit val PGIntervalGetter = new Getter[PGInterval] {
-    override def apply(row: Row): Index => Option[PGInterval] = { ix =>
+    override def apply(row: Row, ix: Index): Option[PGInterval] = {
       Option(row.getObject(ix(row))).map {
         case pgInterval: PGInterval => pgInterval
         case _ => throw new SQLDataException("column does not contain a PGInterval")
@@ -36,7 +36,7 @@ trait Getters extends Java8DefaultGetters with IntervalImplicits {
   }
 
   implicit val DurationGetter = new Getter[Duration] {
-    override def apply(row: Row): Index => Option[Duration] = { ix =>
+    override def apply(row: Row, ix: Index): Option[Duration] = {
       Option(row.getObject(ix(row))).map {
         case pgInterval: PGInterval =>
           val asDuration: Duration = pgInterval
@@ -60,7 +60,7 @@ trait Getters extends Java8DefaultGetters with IntervalImplicits {
   }
 
   override implicit val UUIDGetter: Getter[UUID] = new Getter[UUID] {
-    override def apply(row: Row): Index =>  Option[UUID] = { ix =>
+    override def apply(row: Row, ix: Index): Option[UUID] = {
       Option(row.getObject(ix(row))).map {
         case uuid: UUID => uuid
         case _ => throw new SQLDataException("column does not contain a UUID")
@@ -76,7 +76,7 @@ trait Getters extends Java8DefaultGetters with IntervalImplicits {
   }
 
   implicit val MapGetter: Getter[Map[String, String]] = new Getter[Map[String, String]] {
-    override def apply(row: Row): (Index) => Option[Map[String, String]] = { ix =>
+    override def apply(row: Row, ix: Index): Option[Map[String, String]] = {
       Option(row.getObject(ix(row))).map {
         case m: java.util.Map[_, _] =>
           import scala.collection.convert.decorateAsScala._

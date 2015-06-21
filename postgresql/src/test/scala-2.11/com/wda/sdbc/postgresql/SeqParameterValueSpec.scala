@@ -8,10 +8,6 @@ class SeqParameterValueSpec
   extends PostgreSqlSuite
   with BeforeAndAfterAll {
 
-  testSelect[Option[Seq[Int]]]("SELECT NULL::int[]", Some(none[Seq[Int]]))
-
-  testSelect[Option[Seq[Option[Int]]]]("SELECT NULL::int[]", Some(none[Seq[Option[Int]]]))
-
   testSelect[Seq[Option[Boolean]]]("SELECT '{}'::boolean[]", Seq.empty[Option[Boolean]].some)
 
   testSelect[Seq[Boolean]]("SELECT '{t}'::boolean[]", Seq(true).some)

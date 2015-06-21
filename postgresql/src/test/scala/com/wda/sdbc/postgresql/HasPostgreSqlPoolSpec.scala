@@ -18,7 +18,7 @@ class HasPostgreSqlPoolSpec
 
   def testDatabaseExists(): Boolean = {
     withPgMaster[Boolean] { implicit connection =>
-      Select[Boolean]("SELECT EXISTS(SELECT * FROM pg_database WHERE datname = $databaseName)").on("databaseName" -> pgTestCatalogName).get().get
+      Select[Boolean]("SELECT EXISTS(SELECT * FROM pg_database WHERE datname = $databaseName)").on("databaseName" -> pgTestCatalogName).option().get
     }
   }
 

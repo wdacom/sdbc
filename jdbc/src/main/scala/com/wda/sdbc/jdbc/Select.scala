@@ -54,7 +54,7 @@ case class Select[T] private (
    * @param connection
    * @return
    */
-  def get()(implicit connection: Connection): Option[T] = {
+  def option()(implicit connection: Connection): Option[T] = {
     logger.debug(s"""Retrieving a value using "$originalQueryText" with parameters $parameterValues.""")
 
     val iterator = executeQuery().iterator()

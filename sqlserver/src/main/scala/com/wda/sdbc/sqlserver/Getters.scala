@@ -27,7 +27,7 @@ trait Getters extends Java8DefaultGetters {
 
   implicit val XMLGetter: Getter[Node] = new Getter[Node] {
 
-    override def apply(row: Row): Index => Option[Node] = { ix: Index =>
+    override def apply(row: Row, ix: Index): Option[Node] = {
       for {
         clob <- Option(row.getClob(ix(row)))
       } yield {
@@ -45,7 +45,7 @@ trait Getters extends Java8DefaultGetters {
    * The JTDS driver fails to parse timestamps, so when it fails, use our own parser.
    */
   override implicit val InstantGetter = new Getter[Instant] {
-    override def apply(row: Row): Index => Option[Instant] = { ix: Index =>
+    override def apply(row: Row, ix: Index): Option[Instant] = {
       try {
         Option(row.getTimestamp(ix(row))).map(_.toInstant)
       } catch {

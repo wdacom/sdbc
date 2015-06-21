@@ -10,7 +10,7 @@ import com.wda.sdbc.base
 object Getter {
   def fromValGetter[T <: AnyVal](valGetter: Row => Int => T): Getter[T] = {
     new Getter[T] {
-      override def apply(row: Row): (Index) => Option[T] = { ix =>
+      override def apply(row: Row, ix: Index): Option[T] = {
         val value = valGetter(row)(ix(row))
         if (row.wasNull()) None
         else Some(value)
@@ -21,7 +21,7 @@ object Getter {
 
 trait Parser[+T] extends Getter[T] {
 
-  override def apply(row: Row): Index => Option[T] = { ix: Index =>
+  override def apply(row: Row, ix: Index): Option[T] = {
     Option(row.getString(ix(row))).map(parse)
   }
 
@@ -60,7 +60,7 @@ trait BytesGetter {
 
   implicit val BytesGetter =
     new Getter[Array[Byte]] {
-      override def apply(row: Row): (Index) => Option[Array[Byte]] = { ix =>
+      override def apply(row: Row, ix: Index): Option[Array[Byte]] = {
         Option(row.getBytes(ix(row)))
       }
     }
@@ -81,7 +81,7 @@ trait DoubleGetter {
 trait JavaBigDecimalGetter {
 
   implicit val JavaBigDecimalGetter = new Getter[java.math.BigDecimal] {
-    override def apply(row: Row): Index => Option[java.math.BigDecimal] = { ix: Index =>
+    override def apply(row: Row, ix: Index): Option[java.math.BigDecimal] = {
       Option(row.getBigDecimal(ix(row)))
     }
   }
@@ -90,7 +90,7 @@ trait JavaBigDecimalGetter {
 
 trait ScalaBigDecimalGetter {
   implicit val ScalaBigDecimalGetter = new Getter[BigDecimal] {
-    override def apply(row: Row): Index => Option[BigDecimal] = { ix: Index =>
+    override def apply(row: Row, ix: Index): Option[BigDecimal] = {
       Option(row.getBigDecimal(ix(row))).map(x => x)
     }
   }
@@ -99,7 +99,7 @@ trait ScalaBigDecimalGetter {
 trait TimestampGetter {
 
   implicit val TimestampGetter = new Getter[Timestamp] {
-    override def apply(row: Row): Index => Option[Timestamp] = { ix: Index =>
+    override def apply(row: Row, ix: Index): Option[Timestamp] = {
       Option(row.getTimestamp(ix(row)))
     }
   }
@@ -108,7 +108,7 @@ trait TimestampGetter {
 trait DateGetter {
 
   implicit val DateGetter = new Getter[Date] {
-    override def apply(row: Row): Index => Option[Date] = { ix: Index =>
+    override def apply(row: Row, ix: Index): Option[Date] = {
       Option(row.getDate(ix(row)))
     }
   }
@@ -117,7 +117,7 @@ trait DateGetter {
 trait TimeGetter {
 
   implicit val TimeGetter = new Getter[Time] {
-    override def apply(row: Row): Index => Option[Time] = { ix: Index =>
+    override def apply(row: Row, ix: Index): Option[Time] = {
       Option(row.getTime(ix(row)))
     }
   }
@@ -127,7 +127,7 @@ trait TimeGetter {
 trait LocalDateTimeGetter {
 
   implicit val LocalDateTimeGetter = new Getter[LocalDateTime] {
-      override def apply(row: Row): Index => Option[LocalDateTime] = { ix: Index =>
+      override def apply(row: Row, ix: Index): Option[LocalDateTime] = {
         Option(row.getTimestamp(ix(row))).map(_.toLocalDateTime)
       }
   }
@@ -137,7 +137,7 @@ trait LocalDateTimeGetter {
 trait InstantGetter {
 
   implicit val InstantGetter = new Getter[Instant] {
-    override def apply(row: Row): Index => Option[Instant] = { ix: Index =>
+    override def apply(row: Row, ix: Index): Option[Instant] = {
       Option(row.getTimestamp(ix(row))).map(_.toInstant)
     }
   }
@@ -147,7 +147,7 @@ trait InstantGetter {
 trait LocalDateGetter {
 
   implicit val LocalDateGetter = new Getter[LocalDate] {
-    override def apply(row: Row): Index => Option[LocalDate] = { ix: Index =>
+    override def apply(row: Row, ix: Index): Option[LocalDate] = {
       Option(row.getDate(ix(row))).map(_.toLocalDate)
     }
   }
@@ -157,7 +157,7 @@ trait LocalDateGetter {
 trait LocalTimeGetter {
 
   implicit val LocalTimeGetter = new Getter[LocalTime] {
-    override def apply(row: Row): Index => Option[LocalTime] = { ix: Index =>
+    override def apply(row: Row, ix: Index): Option[LocalTime] = {
       Option(row.getTime(ix(row))).map(_.toLocalTime)
     }
   }
@@ -206,7 +206,7 @@ trait StringGetter {
 trait UUIDGetter {
 
   implicit val UUIDGetter = new Getter[UUID] {
-    override def apply(row: Row): Index => Option[UUID] = { ix: Index =>
+    override def apply(row: Row, ix: Index): Option[UUID] = {
       Option(row.getObject(ix(row))).map {
         case u: UUID =>
           u
@@ -223,7 +223,7 @@ trait UUIDGetter {
 trait InputStreamGetter {
 
   implicit val InputStreamGetter = new Getter[InputStream] {
-    override def apply(row: Row): Index => Option[InputStream] = { ix: Index =>
+    override def apply(row: Row, ix: Index): Option[InputStream] = {
       Option(row.getBinaryStream(ix(row)))
     }
   }
@@ -233,7 +233,7 @@ trait InputStreamGetter {
 trait ReaderGetter {
 
   implicit val ReaderGetter = new Getter[Reader] {
-    override def apply(row: Row): Index => Option[Reader] = { ix: Index =>
+    override def apply(row: Row, ix: Index): Option[Reader] = {
       Option(row.getCharacterStream(ix(row)))
     }
   }
@@ -243,7 +243,7 @@ trait ReaderGetter {
 trait AnyRefGetter {
 
   val AnyRefGetter = new Getter[AnyRef] {
-    override def apply(row: Row): Index => Option[AnyRef] = { ix: Index =>
+    override def apply(row: Row, ix: Index): Option[AnyRef] = {
       Option(row.getObject(ix(row)))
     }
   }

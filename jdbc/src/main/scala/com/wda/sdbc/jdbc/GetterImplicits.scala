@@ -3,12 +3,12 @@ package com.wda.sdbc.jdbc
 trait GetterImplicits {
   self: IndexImplicits =>
 
-  implicit def GetterToRowSingleton[T](implicit getter: Getter[T]): Function[Row, T] = {
-    row => row[T](1).get
+  implicit def GetterToRowConverterOption[T](implicit getter: Getter[T]): Row => Option[T] = { row =>
+    getter(row, 0)
   }
 
-  implicit def GetterToRowNullable[T](implicit getter: Getter[T]): Function[Row, Option[T]] = {
-    row => row[T](1)
+  implicit def GetterToRowConverter[T](implicit getter: Getter[T]): Row => T = { row =>
+    getter(row, 0).get
   }
 
 }

@@ -6,7 +6,7 @@ package com.wda.sdbc.base
  * primitives are defined by the implicit `Getter`s that are in scope.
  */
 object Row {
-  def apply[Row, Index, T](row: Row)(implicit getter: Getter[Row, Index, T]): Function[Index, Option[T]] = {
-    getter(row)
+  def apply[Row, Index, T](row: Row, index: Index)(implicit getter: Getter[Row, Index, T]): Option[T] = {
+    getter(row, index)
   }
 }

@@ -13,7 +13,7 @@ class RichResultSpec
   test("option() selects nothing from an empty table") {implicit connection =>
     Update("CREATE TABLE tbl (x int)").execute()
 
-    val result = Select[Int]("SELECT * FROM tbl").get()
+    val result = Select[Int]("SELECT * FROM tbl").option()
 
     assert(result.isEmpty, "Selecting from an empty table yielded a row.")
   }
@@ -22,7 +22,7 @@ class RichResultSpec
     Update("CREATE TABLE tbl (x serial)").execute()
     Update("INSERT INTO tbl DEFAULT VALUES").execute()
 
-    val result = Select[Int]("SELECT * FROM tbl").get()
+    val result = Select[Int]("SELECT * FROM tbl").option()
 
     assert(result.isDefined, "Selecting from a table with a row did not yeild a row.")
   }

@@ -35,7 +35,7 @@ class Row private[jdbc] (
   }
 
   def apply[T](columnIndex: Index)(implicit getter: Getter[T]): Option[T] = {
-    getter(this)(columnIndex)
+    getter(this, columnIndex)
   }
 
   def getType: Int = underlying.getType()
