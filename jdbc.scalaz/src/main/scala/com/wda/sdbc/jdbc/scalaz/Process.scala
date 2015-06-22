@@ -43,9 +43,9 @@ object Process {
   )
 
   def transaction[F[_], T](
-    select: jdbc.Select[T]
-  )(implicit pool: jdbc.Pool,
-    ev: Applicative[F]
+    select: jdbc.Select[T],
+    pool: jdbc.Pool
+  )(implicit ev: Applicative[F]
   ): Process[F, T] = {
 
     val acquire: F[TransactionResource] = ev.point {
@@ -60,7 +60,10 @@ object Process {
     }
 
     def release(resource: TransactionResource): F[Unit] = {
-      ev.point(resource.row.close())
+      ev.point {
+        resource.row.close()
+        resource.connection.close()
+      }
     }
 
     def step(resource: TransactionResource): F[T] = {

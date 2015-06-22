@@ -6,6 +6,8 @@ lazy val jdbc = project.in(file("jdbc")).dependsOn(base % "test->test;compile->c
 
 lazy val jdbcScalaz = project.in(file("jdbc.scalaz")).dependsOn(jdbc % "test->test;compile->compile")
 
+lazy val jdbcPlay = project.in(file("jdbc.play")).dependsOn(jdbc % "test->test;compile->compile")
+
 lazy val h2 = project.in(file("h2")).dependsOn(jdbc % "test->test;compile->compile")
 
 lazy val postgresql = project.in(file("postgresql")).dependsOn(jdbc % "test->test;compile->compile")

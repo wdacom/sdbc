@@ -1,6 +1,6 @@
 name := "jdbc.scalaz"
 
-description := "Extensions for com.wda.sdbc for use with Scalaz"
+description := "Extensions for com.wda.sdbc.jdbc for use with Scalaz"
 
 resolvers += "Scalaz Bintray Repo" at "http://dl.bintray.com/scalaz/releases"
 
