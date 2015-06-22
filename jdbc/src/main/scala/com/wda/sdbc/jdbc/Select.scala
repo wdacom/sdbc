@@ -1,6 +1,5 @@
 package com.wda.sdbc.jdbc
 
-import java.io.Closeable
 import java.sql._
 
 import com.wda.Logging
@@ -34,19 +33,10 @@ case class Select[T] private (
    * @param connection
    * @return
    */
-  override def iterator()(implicit connection: Connection): Iterator[T] with Closeable = {
+  override def iterator()(implicit connection: Connection): Iterator[T] = {
     logger.debug(s"""Retrieving an iterator using "$originalQueryText" with parameters $parameterValues.""")
 
-    new Iterator[T] with Closeable {
-      private val iterator = executeQuery().iterator()
-
-      override def hasNext: Boolean = iterator.hasNext
-
-      //Calling .map(converter) would be easier, but it wouldn't expose the close() method.
-      override def next(): T = converter(iterator.next())
-
-      override def close(): Unit = iterator.close()
-    }
+    executeQuery().iterator().map(converter)
   }
 
   /**
@@ -57,11 +47,13 @@ case class Select[T] private (
   def option()(implicit connection: Connection): Option[T] = {
     logger.debug(s"""Retrieving a value using "$originalQueryText" with parameters $parameterValues.""")
 
-    val iterator = executeQuery().iterator()
+    val results = executeQuery()
+
+    val iterator = results.iterator()
 
     val value = iterator.map(converter).toStream.headOption
 
-    iterator.close()
+    results.close()
 
     value
   }

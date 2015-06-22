@@ -14,20 +14,16 @@ trait ResultSetImplicits {
      * If you want another iterator, execute the select statement again.
      * @return
      */
-    def iterator(): Iterator[Row] with Closeable = {
+    def iterator(): Iterator[Row] = {
 
-      new Iterator[Row] with Closeable {
+      new Iterator[Row] {
 
         val row = new Row(underlying)
-
-        override def close(): Unit = {
-          underlying.close()
-        }
 
         override def hasNext: Boolean = {
           val result = underlying.next()
           if (!result) {
-            close()
+            row.close()
           }
           result
         }
