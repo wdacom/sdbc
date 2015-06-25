@@ -17,7 +17,8 @@ libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "2.2.5" % "test",
   "org.scalacheck" %% "scalacheck" % "1.12.4" % "test",
   "org.scalaz" %% "scalaz-core" % "7.1.2" % "test",
-  "org.apache.commons" % "commons-lang3" % "3.4" % "test"
+  "org.apache.commons" % "commons-lang3" % "3.4" % "test",
+  "joda-time" % "joda-time" % "2.8.1"
 )
 
 libraryDependencies <++= scalaVersion { version =>

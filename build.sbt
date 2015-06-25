@@ -10,7 +10,7 @@ lazy val root = project.in(file(".")).settings(publishArtifact := false).aggrega
 
 organization in ThisBuild := "com.wda.sdbc"
 
-scalaVersion in ThisBuild := "2.11.6"
+scalaVersion in ThisBuild := "2.11.7"
 
 crossScalaVersions := Seq("2.10.5")
 
