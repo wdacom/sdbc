@@ -1,12 +1,12 @@
 package com.wda.sdbc
 
-import com.datastax.driver.core.{PreparedStatement, Row => CRow}
+import com.datastax.driver.core.{Row => CRow, BoundStatement}
 
 package object cassandra {
 
-  type ParameterizedQuery[Self <: ParameterizedQuery[Self]] = base.ParameterizedQuery[Self, PreparedStatement, Int]
+  type ParameterizedQuery[Self <: ParameterizedQuery[Self]] = base.ParameterizedQuery[Self, BoundStatement, Int]
 
-  type ParameterValue[+T] = base.ParameterValue[T, PreparedStatement, Int]
+  type ParameterValue[+T] = base.ParameterValue[T, BoundStatement, Int]
 
   type Index = PartialFunction[CRow, Int]
 
