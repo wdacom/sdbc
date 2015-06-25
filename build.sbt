@@ -1,6 +1,6 @@
 lazy val base = project.in(file("base"))
 
-//lazy val cassandra = project.in(file("cassandra")).dependsOn(sdbc % "test->test;compile->compile")
+lazy val cassandra = project.in(file("cassandra")).dependsOn(base % "test->test;compile->compile")
 
 lazy val jdbc = project.in(file("jdbc")).dependsOn(base % "test->test;compile->compile")
 
@@ -19,12 +19,13 @@ lazy val root =
   in(file(".")).
   settings(publishArtifact := false).
   aggregate(
-      base,
-      jdbc,
-      jdbcScalaz,
-      h2,
-      postgresql,
-      sqlserver
+    base,
+    cassandra,
+    jdbc,
+    jdbcScalaz,
+    h2,
+    postgresql,
+    sqlserver
   )
 
 organization in ThisBuild := "com.wda.sdbc"
