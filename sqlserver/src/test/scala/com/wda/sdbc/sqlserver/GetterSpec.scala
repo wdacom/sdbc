@@ -49,6 +49,8 @@ class GetterSpec
 
   testSelect[Timestamp]("SELECT CAST('2014-12-29 01:02:03.5' AS datetime)", Timestamp.valueOf("2014-12-29 01:02:03.5").some)
 
+  testSelect[Timestamp]("SELECT CAST('2014-12-29 01:02:03.5 -4:00' AS datetimeoffset)",  new Timestamp(Instant.parse("2014-12-29T01:02:03.5-04:00").getMillis).some)
+
   testSelect[com.wda.sdbc.SqlServer.HierarchyId]("SELECT CAST('/1/2/3/' AS hierarchyid).ToString()", HierarchyId(1, 2, 3).some)
 
   testSelect[UUID](s"SELECT CAST('$uuid' AS uniqueidentifier)", uuid.some)

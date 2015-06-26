@@ -53,6 +53,8 @@ class GetterSpec
 
   testSelect[Timestamp]("SELECT '2014-12-29 01:02:03.5'::timestamp --as JDBC Timestamp", Timestamp.valueOf("2014-12-29 01:02:03.5").some)
 
+  testSelect[Timestamp]("SELECT '2014-12-29 01:02:03.5-4'::timestamp with time zone --as JDBC Timestamp", new Timestamp(Instant.parse("2014-12-29T01:02:03.5-04:00").getMillis).some)
+
   testSelect[PGInterval]("SELECT '9 years 11 mons 29 days 11:02:13.154936'::interval --as PGInterval", new PGInterval("9 years 11 mons 29 days 11:02:13.154936").some)
 
   testSelect[LTree]("SELECT 'a.b.c'::ltree", LTree("a", "b", "c").some)
@@ -63,7 +65,7 @@ class GetterSpec
 
   testSelect[JValue](s"SELECT '$jsonString'::jsonb", JsonMethods.parse(jsonString).some)
 
-  testSelect[LocalDateTime]("SELECT '2014-12-29 01:02:03.5'::timestamp --as Java 8 LocalDateTime", LocalDateTime.parse("2014-12-29T01:02:03.5").some)
+  testSelect[LocalDateTime]("SELECT '2014-12-29 01:02:03.5'::timestamp --as Joda LocalDateTime", LocalDateTime.parse("2014-12-29T01:02:03.5").some)
 
   {
     //Convert the time being tested into UTC time

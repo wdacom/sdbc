@@ -1,7 +1,7 @@
 package com.wda.sdbc
 package sqlserver
 
-import java.sql.SQLException
+import java.sql.{Timestamp, SQLException}
 import java.util.UUID
 
 import com.wda.sdbc.base._
@@ -9,10 +9,28 @@ import org.joda.time.{Instant, DateTime}
 
 import scala.xml.{XML, Node}
 
-trait Getters extends DefaultGetters with DateTimeGetter {
+trait Getters
+  extends AnyRefGetter
+  with BooleanGetter
+  with ByteGetter
+  with BytesGetter
+  with DateGetter
+  with DoubleGetter
+  with FloatGetter
+  with InputStreamGetter
+  with IntGetter
+  with JavaBigDecimalGetter
+  with LongGetter
+  with ReaderGetter
+  with ScalaBigDecimalGetter
+  with ShortGetter
+  with StringGetter
+  with TimeGetter
+  with LocalDateTimeGetter
+  with DateTimeGetter {
   self: Row with Getter with HierarchyId with HasDateTimeFormatter =>
 
-  override implicit val UUIDGetter: Getter[UUID] = new Getter[UUID] {
+  implicit val UUIDGetter: Getter[UUID] = new Getter[UUID] {
     override def apply(
       row: Row,
       columnIndex: Int
@@ -27,10 +45,25 @@ trait Getters extends DefaultGetters with DateTimeGetter {
     }
   }
 
-  implicit def NullableHierarchyIdSingleton(row: Row): Option[HierarchyId] = HierarchyIdGetter(
-    row,
-    1
-  )
+  implicit def NullableHierarchyIdSingleton(row: Row): Option[HierarchyId] = HierarchyIdGetter(row, 1)
+
+  /**
+   * jTDS is unable to parse datetimeoffsets as timestamps, so use our custom parser
+   * if necessary.
+   */
+  implicit val TimestampGetter: Getter[Timestamp] = new Getter[Timestamp] {
+    def apply(
+      row: Row,
+      columnIndex: Int
+    ): Option[Timestamp] = {
+      try {
+        Option(row.getTimestamp(columnIndex))
+      } catch {
+        case e: SQLException =>
+          DateTimeGetter(row, columnIndex).map(t => new Timestamp(t.getMillis))
+      }
+    }
+  }
 
   implicit def HierarchyIdSingleton(row: Row): HierarchyId = NullableHierarchyIdSingleton(row).get
 
@@ -52,26 +85,20 @@ trait Getters extends DefaultGetters with DateTimeGetter {
     }
   }
 
-  implicit def NullableXMLSingleton(row: Row): Option[Node] = XMLGetter(
-    row,
-    1
-  )
+  implicit def NullableXMLSingleton(row: Row): Option[Node] = XMLGetter(row, 1)
 
   implicit def XMLSingleton(row: Row): Node = NullableXMLSingleton(row).get
 
   /**
    * The JTDS driver sometimes fails to parse timestamps, so when it fails, use our own parser.
    */
-  override implicit val InstantGetter: Getter[Instant] = new Getter[Instant] {
+  implicit val InstantGetter: Getter[Instant] = new Getter[Instant] {
     def apply(row: Row, columnIndex: Int): Option[Instant] = {
       try {
         Option(row.getTimestamp(columnIndex)).map(t => new Instant(t.getTime))
       } catch {
-        case e: SQLException if e.getMessage.endsWith("cannot be converted to TIMESTAMP.") =>
-          Option(row.getString(columnIndex)).map { asString =>
-            val parsed = dateTimeFormatter.parseDateTime(asString)
-            parsed.toInstant()
-          }
+        case e: SQLException =>
+          DateTimeGetter.apply(row, columnIndex).map(_.toInstant)
       }
     }
   }
