@@ -5,9 +5,9 @@ description := "SDBC is a database API for Scala."
 libraryDependencies ++= Seq(
   //Logging
   "org.slf4j" % "slf4j-api" % "1.7.12",
-  "org.apache.logging.log4j" % "log4j-slf4j-impl" % "2.2" % "test",
-  "org.apache.logging.log4j" % "log4j-api" % "2.2" % "test",
-  "org.apache.logging.log4j" % "log4j-core" % "2.2" % "test",
+  "org.apache.logging.log4j" % "log4j-slf4j-impl" % "2.3" % "test",
+  "org.apache.logging.log4j" % "log4j-api" % "2.3" % "test",
+  "org.apache.logging.log4j" % "log4j-core" % "2.3" % "test",
   "org.scala-lang" % "scala-reflect" % scalaVersion.value,
   //Connection pooling
   "com.zaxxer" % "HikariCP-java6" % "2.3.8",
@@ -24,7 +24,7 @@ libraryDependencies ++= Seq(
 
 libraryDependencies <++= scalaVersion { version =>
   val VersionRegex = """(\d+).(\d+)\.?.*""".r("major", "minor")
-  lazy val xmlDependency = "org.scala-lang.modules" %% "scala-xml" % "1.0.3"
+  lazy val xmlDependency = "org.scala-lang.modules" %% "scala-xml" % "1.0.4"
   val VersionRegex(major, minor) = version
   (major.toInt, minor.toInt) match {
     case (2,minor) if minor < 11 =>
