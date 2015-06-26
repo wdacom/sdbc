@@ -4,6 +4,8 @@ import java.io.{InputStream, Reader}
 import java.sql.{Array => _, _}
 import java.util.UUID
 
+import org.joda.time.{DateTime, LocalDateTime, Instant}
+
 import scala.collection.immutable.Seq
 import scala.reflect.runtime.universe._
 
@@ -510,6 +512,79 @@ trait AnyRefParameter {
 
     override def update(row: Row, columnIndex: Int): Unit = {
       row.updateObject(columnIndex, value)
+    }
+  }
+
+}
+
+trait InstantParameter {
+  self: ParameterValue with Row =>
+
+  implicit class QInstant(override val value: Instant) extends ParameterValue[Instant] {
+    val asTimestamp = new Timestamp(value.getMillis)
+
+    override def asJDBCObject: AnyRef = asTimestamp
+
+    override def update(
+      row: Row,
+      columnIndex: Int
+    ): Unit = {
+      row.updateTimestamp(columnIndex, asTimestamp)
+    }
+
+    override def set(
+      preparedStatement: PreparedStatement,
+      parameterIndex: Int
+    ): Unit = {
+      preparedStatement.setTimestamp(parameterIndex, asTimestamp)
+    }
+  }
+
+}
+
+trait LocalDateTimeParameter {
+  self: ParameterValue with Row =>
+
+  implicit class QLocalDateTime(override val value: LocalDateTime) extends ParameterValue[LocalDateTime] {
+    val asDate = new java.sql.Date(value.toDateTime.getMillis)
+
+    override def asJDBCObject: AnyRef = asDate
+
+    override def update(
+      row: Row,
+      columnIndex: Int
+    ): Unit = {
+      row.updateDate(columnIndex, asDate)
+    }
+
+    override def set(
+      preparedStatement: PreparedStatement,
+      parameterIndex: Int
+    ): Unit = {
+      preparedStatement.setDate(parameterIndex, asDate)
+    }
+  }
+
+}
+
+trait DateTimeParameter {
+  self: ParameterValue with Row with HasDateTimeFormatter =>
+
+  implicit class QDateTime(override val value: DateTime) extends ParameterValue[DateTime] {
+    override def asJDBCObject: AnyRef = value.toString(dateTimeFormatter)
+
+    override def update(
+      row: Row,
+      columnIndex: Int
+    ): Unit = {
+      row.updateString(columnIndex, value.toString(dateTimeFormatter))
+    }
+
+    override def set(
+      preparedStatement: PreparedStatement,
+      parameterIndex: Int
+    ): Unit = {
+      preparedStatement.setString(parameterIndex, value.toString(dateTimeFormatter))
     }
   }
 

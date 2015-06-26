@@ -2,6 +2,6 @@ package com.wda.sdbc.base
 
 import org.joda.time.format.DateTimeFormatter
 
-trait JodaDateTimeFormatter {
+trait HasDateTimeFormatter {
   def dateTimeFormatter: DateTimeFormatter
 }

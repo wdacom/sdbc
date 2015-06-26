@@ -3,9 +3,11 @@ package com.wda.sdbc.h2
 import java.sql.{Timestamp, Time, Date}
 import java.util.UUID
 
+import org.joda.time.{Instant, LocalDateTime}
+
 import scalaz.Scalaz._
 
-class ParameterValueSpec
+class GetterSpec
   extends H2Suite {
 
   val uuid = UUID.randomUUID()
@@ -38,7 +40,11 @@ class ParameterValueSpec
 
   testSelect[Time]("SELECT CAST('03:04:05' AS time) --as JDBC Time", Time.valueOf("03:04:05").some)
 
-  testSelect[Timestamp]("SELECT CAST('2014-12-29 01:02:03.5' AS datetime)", Timestamp.valueOf("2014-12-29 01:02:03.5").some)
+  testSelect[Timestamp]("SELECT CAST('2014-12-29 01:02:03.5' AS datetime) --as Timestamp", Timestamp.valueOf("2014-12-29 01:02:03.5").some)
+
+  testSelect[LocalDateTime]("SELECT CAST('2014-12-29 01:02:03.5' AS datetime) --as LocalDateTime", LocalDateTime.parse("2014-12-29T01:02:03.500").some)
+
+  testSelect[Instant]("SELECT CAST('2014-12-29 01:02:03.5' AS datetime) --as Instant", LocalDateTime.parse("2014-12-29T01:02:03.500").toDateTime.toInstant.some)
 
   testSelect[UUID](s"SELECT CAST('$uuid' AS uuid)", uuid.some)
 

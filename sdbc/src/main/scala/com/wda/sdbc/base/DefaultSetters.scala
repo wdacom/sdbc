@@ -16,7 +16,9 @@ trait DefaultSetters
   with TimestampParameter
   with ReaderParameter
   with InputStreamParameter
-  with UUIDParameter {
+  with UUIDParameter
+  with InstantParameter
+  with LocalDateTimeParameter{
   self: ParameterValue with Row =>
 
 }

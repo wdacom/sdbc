@@ -2,6 +2,7 @@ package com.wda.sdbc.postgresql
 
 import com.wda.sdbc.base._
 import com.wda.sdbc.{DBMS, base}
+import org.joda.time.format.{ISODateTimeFormat, DateTimeFormatterBuilder, DateTimeFormatter}
 import org.postgresql.PGConnection
 
 /**
@@ -11,7 +12,9 @@ abstract class PostgreSqlCommon
   extends DBMS
   with Setters
   with ConnectionImplicits
-  with Getters {
+  with Getters
+  with HasDateTimeFormatter
+  with DurationImplicits {
 
   override def dataSourceClassName = "org.postgresql.ds.PGSimpleDataSource"
   override def driverClassName = "org.postgresql.Driver"
@@ -35,5 +38,14 @@ abstract class PostgreSqlCommon
   type LTree = com.wda.sdbc.postgresql.LTree
 
   val LTree = com.wda.sdbc.postgresql.LTree
+
+  override val dateTimeFormatter: DateTimeFormatter = {
+    new DateTimeFormatterBuilder().
+    append(ISODateTimeFormat.date()).
+    appendLiteral(' ').
+    append(ISODateTimeFormat.hourMinuteSecondFraction()).
+    appendTimeZoneOffset("+00", "+00", true, 1, 2).
+    toFormatter
+  }
 
 }

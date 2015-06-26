@@ -4,6 +4,8 @@ import java.io.{InputStream, Reader}
 import java.sql.{Array => _, _}
 import java.util.UUID
 
+import org.joda.time.{LocalDateTime, DateTime, Instant}
+
 trait Getter {
   self: Row =>
 
@@ -278,6 +280,48 @@ trait AnyRefGetter {
   val AnyRefGetter = new Getter[AnyRef] {
     override def apply(row: Row, columnIndex: Int): Option[AnyRef] = {
       Option(row.getObject(columnIndex))
+    }
+  }
+
+}
+
+trait LocalDateTimeGetter {
+  self: Getter with Row =>
+
+  implicit val LocalDateTimeGetter = new Getter[LocalDateTime] {
+    override def apply(
+      row: Row,
+      columnIndex: Int
+    ): Option[LocalDateTime] = {
+      Option(row.getTimestamp(columnIndex)).map(t => LocalDateTime.fromDateFields(t))
+    }
+  }
+
+}
+
+trait InstantGetter {
+  self: Getter with Row =>
+
+  implicit val InstantGetter = new Getter[Instant] {
+    override def apply(
+      row: Row,
+      columnIndex: Int
+    ): Option[Instant] = {
+      Option(row.getTimestamp(columnIndex)).map(t => new Instant(t.getTime))
+    }
+  }
+
+}
+
+trait DateTimeGetter {
+  self: Getter with Row with HasDateTimeFormatter =>
+
+  implicit val DateTimeGetter = new Getter[DateTime] {
+    override def apply(
+      row: Row,
+      columnIndex: Int
+    ): Option[DateTime] = {
+      Option(row.getString(columnIndex)).map(s => DateTime.parse(s, dateTimeFormatter))
     }
   }
 

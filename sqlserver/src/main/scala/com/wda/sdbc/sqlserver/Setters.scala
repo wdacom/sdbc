@@ -24,8 +24,11 @@ trait Setters
   with TimeParameter
   with TimestampParameter
   with ReaderParameter
-  with InputStreamParameter {
-  self: ParameterValue with Row with HierarchyId =>
+  with InputStreamParameter
+  with InstantParameter
+  with LocalDateTimeParameter
+  with DateTimeParameter {
+  self: ParameterValue with Row with HierarchyId with HasDateTimeFormatter =>
 
   implicit class QUUID(override val value: UUID) extends ParameterValue[UUID] {
     override def asJDBCObject: AnyRef = value.toString

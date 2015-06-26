@@ -4,7 +4,8 @@ package postgresql
 import java.net.InetAddress
 import java.sql.PreparedStatement
 
-import com.wda.sdbc.base.{DefaultSetters, Row, ParameterValue}
+import com.wda.sdbc.base._
+import org.joda.time.Duration
 import org.json4s._
 import org.json4s.jackson.JsonMethods
 import org.postgresql.util.PGInterval
@@ -12,8 +13,9 @@ import org.postgresql.util.PGInterval
 import scala.xml.Node
 
 trait Setters
-  extends DefaultSetters {
-  self: ParameterValue with Row =>
+  extends DefaultSetters
+  with DateTimeParameter {
+  self: ParameterValue with Row with HasDateTimeFormatter with DurationImplicits =>
 
   implicit class QInetAddress(override val value: InetAddress) extends ParameterValue[InetAddress] {
     override def asJDBCObject: AnyRef = value.getHostAddress
@@ -31,8 +33,6 @@ trait Setters
   }
 
   implicit class QPGInterval(override val value: PGInterval) extends ParameterValue[PGInterval] {
-    type T = PGInterval
-
     override def asJDBCObject: AnyRef = value
 
     override def set(preparedStatement: PreparedStatement, parameterIndex: Int): Unit = {
@@ -47,9 +47,27 @@ trait Setters
     }
   }
 
-  implicit class QJSON(override val value: JValue)(implicit formats: Formats) extends ParameterValue[JValue] {
-    type T = JValue
+  implicit class QDuration(override val value: Duration) extends ParameterValue[Duration] {
+    val asPGInterval: PGInterval = value
 
+    override def asJDBCObject: AnyRef = asPGInterval
+
+    override def update(
+      row: Row,
+      columnIndex: Int
+    ): Unit = {
+      row.updateObject(columnIndex, asPGInterval)
+    }
+
+    override def set(
+      preparedStatement: PreparedStatement,
+      parameterIndex: Int
+    ): Unit = {
+      preparedStatement.setObject(parameterIndex, asPGInterval)
+    }
+  }
+
+  implicit class QJSON(override val value: JValue)(implicit formats: Formats) extends ParameterValue[JValue] {
     override def asJDBCObject: AnyRef = JsonMethods.compact(JsonMethods.render(value))
 
     override def set(preparedStatement: PreparedStatement, parameterIndex: Int): Unit = {
@@ -65,8 +83,6 @@ trait Setters
   }
 
   implicit class QLTree(override val value: LTree) extends ParameterValue[LTree] {
-    type T = LTree
-
     override def asJDBCObject: AnyRef = value
 
     override def set(preparedStatement: PreparedStatement, parameterIndex: Int): Unit = {

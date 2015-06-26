@@ -1,9 +1,31 @@
 package com.wda.sdbc.postgresql
 
 import com.wda.sdbc.PostgreSql._
+import org.joda.time.{Duration, DateTimeZone, DateTime}
 import org.scalatest.FunSuite
 
 class PostgreSqlSpec extends FunSuite {
+
+  test("Can parse UTC timestamps from PostgreSql.") {
+    val asString = "2014-10-21 20:40:56.586045+00"
+    val manual = new DateTime(2014, 10, 21, 20, 40, 56, 586, DateTimeZone.UTC)
+    val parsed = DateTime.parse(asString, dateTimeFormatter)
+    assert(new Duration(manual, parsed).getMillis == 0)
+  }
+
+  test("Can parse EST timestamps from PostgreSql.") {
+    val asString = "2014-10-21 16:39:38.549548-04"
+    val manual = new DateTime(2014, 10, 21, 16, 39, 38, 549, DateTimeZone.forOffsetHours(-4))
+    val parsed = DateTime.parse(asString, dateTimeFormatter)
+    assert(new Duration(manual, parsed).getMillis == 0)
+  }
+
+  test("Can parse timestamp with minute offsets from ") {
+    val asString = "2014-10-22 02:06:25.003825+05:30"
+    val manual = new DateTime(2014, 10, 22, 2, 6, 25, 3, DateTimeZone.forOffsetHoursMinutes(5, 30))
+    val parsed = DateTime.parse(asString, dateTimeFormatter)
+    assert(new Duration(manual, parsed).getMillis == 0)
+  }
 
   test("Can quote a single identifier.") {
     val manual = "identifier"
