@@ -3,6 +3,7 @@ package com.wda.sdbc.postgresql
 import com.typesafe.config.{ConfigFactory, Config}
 import com.wda.sdbc.PostgreSql._
 import com.wda.sdbc.config.{PgTestingConfig, TestingConfig}
+import org.joda.time.DateTime
 import org.scalatest._
 
 abstract class PostgreSqlSuite
@@ -22,6 +23,8 @@ abstract class PostgreSqlSuite
       (expectedValue, result) match {
         case (Some(expectedArray: Array[Byte]), Some(resultArray: Array[Byte])) =>
           assert(expectedArray.sameElements(resultArray))
+        case (Some(expectedOffset: DateTime), Some(resultOffset: DateTime)) =>
+          assertResult(expectedOffset.toInstant)(resultOffset.toInstant)
         case (Some(x), Some(y)) =>
           assertResult(x)(y)
         case (None, None) => true

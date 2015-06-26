@@ -1,6 +1,7 @@
 package com.wda.sdbc.h2
 
 import com.wda.sdbc.H2._
+import org.joda.time.DateTime
 import org.scalatest._
 
 abstract class H2Suite
@@ -12,6 +13,8 @@ abstract class H2Suite
       (expectedValue, result) match {
         case (Some(expectedArray: Array[_]), Some(resultArray: Array[_])) =>
           assert(expectedArray.sameElements(resultArray))
+        case (Some(expectedOffset: DateTime), Some(resultOffset: DateTime)) =>
+          assertResult(expectedOffset.toInstant)(resultOffset.toInstant)
         case (Some(x), Some(y)) =>
           assertResult(x)(y)
         case (None, None) => true

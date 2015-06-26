@@ -3,7 +3,7 @@ package com.wda.sdbc.h2
 import java.sql.{Timestamp, Time, Date}
 import java.util.UUID
 
-import org.joda.time.{Instant, LocalDateTime}
+import org.joda.time.{DateTimeZone, Instant, LocalDateTime}
 
 import scalaz.Scalaz._
 
@@ -42,9 +42,20 @@ class GetterSpec
 
   testSelect[Timestamp]("SELECT CAST('2014-12-29 01:02:03.5' AS datetime) --as Timestamp", Timestamp.valueOf("2014-12-29 01:02:03.5").some)
 
-  testSelect[LocalDateTime]("SELECT CAST('2014-12-29 01:02:03.5' AS datetime) --as LocalDateTime", LocalDateTime.parse("2014-12-29T01:02:03.500").some)
+  {
+    //Convert the time being tested into UTC time
+    //using the current time zone's offset at the time
+    //that we're testing.
+    //We can't use the current offset, because of, for example,
+    //daylight savings.
+    val localTime = LocalDateTime.parse("2014-12-29T01:02:03.5")
+    val offset = DateTimeZone.getDefault()
+    val expectedTime = new Instant(localTime.toDateTime(offset))
 
-  testSelect[Instant]("SELECT CAST('2014-12-29 01:02:03.5' AS datetime) --as Instant", LocalDateTime.parse("2014-12-29T01:02:03.500").toDateTime.toInstant.some)
+    testSelect[Instant]("SELECT CAST('2014-12-29 01:02:03.5' AS datetime) --as Joda Instant", expectedTime.some)
+  }
+
+  testSelect[LocalDateTime]("SELECT CAST('2014-12-29 01:02:03.5' AS datetime) --as LocalDateTime", LocalDateTime.parse("2014-12-29T01:02:03.500").some)
 
   testSelect[UUID](s"SELECT CAST('$uuid' AS uuid)", uuid.some)
 

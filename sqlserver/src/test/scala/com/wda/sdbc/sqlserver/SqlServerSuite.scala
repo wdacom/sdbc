@@ -3,6 +3,7 @@ package com.wda.sdbc.sqlserver
 import com.typesafe.config.{ConfigFactory, Config}
 import com.wda.sdbc.SqlServer._
 import com.wda.sdbc.config.{SqlTestingConfig, TestingConfig}
+import org.joda.time.DateTime
 import org.scalatest._
 
 abstract class SqlServerSuite
@@ -22,6 +23,8 @@ abstract class SqlServerSuite
       (expectedValue, result) match {
         case (Some(expectedArray: Array[Byte]), Some(resultArray: Array[Byte])) =>
           assert(expectedArray.sameElements(resultArray))
+        case (Some(expectedOffset: DateTime), Some(resultOffset: DateTime)) =>
+          assertResult(expectedOffset.toInstant)(resultOffset.toInstant)
         case (Some(x), Some(y)) =>
           assertResult(x)(y)
         case (None, None) => true

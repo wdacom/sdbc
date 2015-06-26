@@ -74,15 +74,11 @@ class GetterSpec
     val localTime = LocalDateTime.parse("2014-12-29T01:02:03.5")
     val offset = DateTimeZone.getDefault()
     val expectedTime = new Instant(localTime.toDateTime(offset))
-    testSelect[Instant]("SELECT '2014-12-29 01:02:03.5'::timestamp --as Java 8 Instant", expectedTime.some)
+    testSelect[Instant]("SELECT '2014-12-29 01:02:03.5'::timestamp --as Joda Instant", expectedTime.some)
   }
 
-  testSelect[DateTime]("SELECT '2014-12-29 01:02:03.5-4'::timestamp with time zone --as Java 8 OffsetDateTime", DateTime.parse("2014-12-29T01:02:03.5-04:00").some)
+  testSelect[DateTime]("SELECT '2014-12-29 01:02:03.5-4'::timestamp with time zone --as Joda DateTime", DateTime.parse("2014-12-29T01:02:03.5-04:00").some)
 
-  testSelect[Instant]("SELECT '2014-12-29 01:02:03.5-4'::timestamp with time zone --as Java 8 Instant", Instant.parse("2014-12-29T05:02:03.5Z").some)
-
-  testSelect[PGInterval]("SELECT '9 years 11 mons 29 days 11:02:13.154936'::interval --as PGInterval", new PGInterval("9 years 11 mons 29 days 11:02:13.154936").some)
-
-  testSelect[Duration]("SELECT '9 years 11 mons 29 days 11:02:13.154936'::interval --as Java 8 Duration", Some[Duration](new PGInterval("9 years 11 mons 29 days 11:02:13.154936")))
+  testSelect[Duration]("SELECT '9 years 11 mons 29 days 11:02:13.154936'::interval --as Joda Duration", Some[Duration](new PGInterval("9 years 11 mons 29 days 11:02:13.154936")))
 
 }

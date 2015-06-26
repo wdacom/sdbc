@@ -64,11 +64,11 @@ class GetterSpec
     val localTime = LocalDateTime.parse("2014-12-29T01:02:03.5")
     val offset = DateTimeZone.getDefault()
     val expectedTime = new Instant(localTime.toDateTime(offset))
-    testSelect[Instant]("SELECT CAST('2014-12-29 01:02:03.5' AS datetime) --as Java 8 Instant", expectedTime.some)
+    testSelect[Instant]("SELECT CAST('2014-12-29 01:02:03.5' AS datetime) --as Joda Instant", expectedTime.some)
   }
 
-  testSelect[DateTime]("SELECT CAST('2014-12-29 01:02:03.5 -4:00' AS datetimeoffset) --as Java 8 OffsetDateTime", DateTime.parse("2014-12-29T01:02:03.5-04:00").some)
+  testSelect[DateTime]("SELECT CAST('2014-12-29 01:02:03.5 -4:00' AS datetimeoffset) --as Joda DateTime", DateTime.parse("2014-12-29T01:02:03.5-04:00").some)
 
-  testSelect[Instant]("SELECT CAST('2014-12-29 01:02:03.5 -4:00' AS datetimeoffset) --as Java 8 Instant", Instant.parse("2014-12-29T05:02:03.5Z").some)
+  testSelect[Instant]("SELECT CAST('2014-12-29 01:02:03.5 -4:00' AS datetimeoffset) --as Joda Instant", Instant.parse("2014-12-29T01:02:03.5-04:00").some)
 
 }
