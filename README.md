@@ -77,7 +77,7 @@ Packages exist on Maven Central for Scala 2.10 and 2.11. The Scala 2.10 builds f
 | timestamp or datetime | GMT | Instant |
 | timestamp or datetime | same as client | LocalDateTime |
 | timestamp or datetime | not GMT and not client's | java.sql.Timestamp, then convert to LocalDateTime with server's time zone |
-| timestamptz or timestamp with time zone or datetimeoffset |  | DateTime |
+| timestamptz or timestamp with time zone or datetimeoffset |  | OffsetDateTime |
 | date |  | LocalDate |
 | time |  | LocalTime |
 | timetz or time with time zone |  | OffsetTime |
