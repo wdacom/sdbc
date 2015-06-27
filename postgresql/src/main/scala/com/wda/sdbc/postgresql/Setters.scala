@@ -14,7 +14,7 @@ import scala.xml.Node
 
 trait Setters
   extends DefaultSetters
-  with DateTimeParameter {
+  with DateTimeParameterAsTimestamp {
   self: ParameterValue with Row with HasDateTimeFormatter with DurationImplicits =>
 
   implicit class QInetAddress(override val value: InetAddress) extends ParameterValue[InetAddress] {
@@ -111,6 +111,22 @@ trait Setters
       columnIndex: Int
     ): Unit = {
       row.updateString(columnIndex, value.toString)
+    }
+  }
+
+  implicit class QHStore(override val value: Map[String, String]) extends ParameterValue[Map[String, String]] {
+    import scala.collection.convert.decorateAsJava._
+
+    val asJavaMap = value.asJava
+
+    override def asJDBCObject: AnyRef = asJavaMap
+
+    override def update(row: Row, columnIndex: Int): Unit = {
+      row.updateObject(columnIndex, asJavaMap)
+    }
+
+    override def set(preparedStatement: PreparedStatement, parameterIndex: Int): Unit = {
+      preparedStatement.setObject(parameterIndex, asJavaMap)
     }
   }
 

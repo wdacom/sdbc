@@ -503,6 +503,7 @@ trait UUIDParameter {
 
 trait AnyRefParameter {
   self: ParameterValue with Row =>
+
   implicit class QAnyRef(override val value: AnyRef) extends ParameterValue[AnyRef] {
     override def asJDBCObject: AnyRef = value
 
@@ -546,45 +547,78 @@ trait LocalDateTimeParameter {
   self: ParameterValue with Row =>
 
   implicit class QLocalDateTime(override val value: LocalDateTime) extends ParameterValue[LocalDateTime] {
-    val asDate = new java.sql.Date(value.toDateTime.getMillis)
+    val asTimestamp = new java.sql.Timestamp(value.toDateTime.getMillis)
 
-    override def asJDBCObject: AnyRef = asDate
+    override def asJDBCObject: AnyRef = asTimestamp
 
     override def update(
       row: Row,
       columnIndex: Int
     ): Unit = {
-      row.updateDate(columnIndex, asDate)
+      row.updateTimestamp(columnIndex, asTimestamp)
     }
 
     override def set(
       preparedStatement: PreparedStatement,
       parameterIndex: Int
     ): Unit = {
-      preparedStatement.setDate(parameterIndex, asDate)
+      preparedStatement.setTimestamp(parameterIndex, asTimestamp)
     }
   }
 
 }
 
-trait DateTimeParameter {
+/**
+ * This works with PostgreSQL and probably others.
+ */
+trait DateTimeParameterAsTimestamp {
   self: ParameterValue with Row with HasDateTimeFormatter =>
 
   implicit class QDateTime(override val value: DateTime) extends ParameterValue[DateTime] {
-    override def asJDBCObject: AnyRef = value.toString(dateTimeFormatter)
+    val asTimestamp = new Timestamp(value.getMillis)
+
+    override def asJDBCObject: AnyRef = asTimestamp
 
     override def update(
       row: Row,
       columnIndex: Int
     ): Unit = {
-      row.updateString(columnIndex, value.toString(dateTimeFormatter))
+      row.updateTimestamp(columnIndex, asTimestamp)
     }
 
     override def set(
       preparedStatement: PreparedStatement,
       parameterIndex: Int
     ): Unit = {
-      preparedStatement.setString(parameterIndex, value.toString(dateTimeFormatter))
+      preparedStatement.setTimestamp(parameterIndex, asTimestamp)
+    }
+  }
+
+}
+
+/**
+ * This works with jTDS.
+ */
+trait DateTimeParameterAsString {
+  self: ParameterValue with Row with HasDateTimeFormatter =>
+
+  implicit class QDateTime(override val value: DateTime) extends ParameterValue[DateTime] {
+    val asString = value.toString(dateTimeFormatter)
+
+    override def asJDBCObject: AnyRef = asString
+
+    override def update(
+      row: Row,
+      columnIndex: Int
+    ): Unit = {
+      row.updateString(columnIndex, asString)
+    }
+
+    override def set(
+      preparedStatement: PreparedStatement,
+      parameterIndex: Int
+    ): Unit = {
+      preparedStatement.setString(parameterIndex, asString)
     }
   }
 

@@ -98,8 +98,11 @@ trait Getters
         Option(row.getTimestamp(columnIndex)).map(t => new Instant(t.getTime))
       } catch {
         case e: SQLException =>
-          DateTimeGetter.apply(row, columnIndex).map(_.toInstant)
+          val dt = DateTimeGetter(row, columnIndex)
+          val i = dt.map(_.toInstant)
+          i
       }
     }
   }
+
 }

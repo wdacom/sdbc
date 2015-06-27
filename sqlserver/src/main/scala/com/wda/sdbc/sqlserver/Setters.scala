@@ -27,7 +27,7 @@ trait Setters
   with InputStreamParameter
   with InstantParameter
   with LocalDateTimeParameter
-  with DateTimeParameter {
+  with DateTimeParameterAsString {
   self: ParameterValue with Row with HierarchyId with HasDateTimeFormatter =>
 
   implicit class QUUID(override val value: UUID) extends ParameterValue[UUID] {

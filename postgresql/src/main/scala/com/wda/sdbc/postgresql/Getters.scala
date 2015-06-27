@@ -2,7 +2,7 @@ package com.wda.sdbc
 package postgresql
 
 import java.net.InetAddress
-import java.sql.SQLDataException
+import java.sql.SQLException
 import java.util.UUID
 
 import com.wda.sdbc.base._
@@ -20,7 +20,7 @@ trait Getters extends DefaultGetters with DateTimeGetter {
     override def apply(row: Row, columnIndex: Int): Option[LTree] = {
       Option(row.getObject(columnIndex)) collect {
         case l: LTree => l
-        case _ => throw new SQLDataException("column does not contain an LTree value")
+        case _ => throw new SQLException("column does not contain an LTree value")
       }
     }
   }
@@ -29,7 +29,7 @@ trait Getters extends DefaultGetters with DateTimeGetter {
     override def apply(row: Row, columnIndex: Int): Option[PGInterval] = {
       Option(row.getObject(columnIndex)).collect {
         case pgInterval: PGInterval => pgInterval
-        case _ => throw new SQLDataException("column does not contain a PGInterval")
+        case _ => throw new SQLException("column does not contain a PGInterval")
       }
     }
   }
@@ -63,7 +63,7 @@ trait Getters extends DefaultGetters with DateTimeGetter {
     override def apply(row: Row, columnIndex: Int): Option[UUID] = {
       Option(row.getObject(columnIndex)).collect {
         case uuid: UUID => uuid
-        case _ => throw new SQLDataException("column does not contain a UUID")
+        case _ => throw new SQLException("column does not contain a UUID")
       }
     }
   }
@@ -72,6 +72,23 @@ trait Getters extends DefaultGetters with DateTimeGetter {
     //PostgreSQL's ResultSet#getSQLXML just uses getString.
     override def parse(asString: String): Node = {
       XML.loadString(asString)
+    }
+  }
+
+  implicit val HStoreGetter: Getter[Map[String, String]] = new Getter[Map[String, String]] {
+    override def apply(row: Row, columnIndex: Int): Option[Map[String, String]] = {
+      Option(row.getObject(columnIndex)).map {
+        case m: java.util.Map[_, _] =>
+          import scala.collection.convert.wrapAsScala._
+          m.toMap.map {
+            case (k: String, v: String) =>
+              (k, v)
+            case _ =>
+              throw new SQLException("Map contained a key or value that is not a String.")
+          }
+        case otherwise =>
+          throw new SQLException(s"Expected an instance of java.util.Map[String, String], but got ${otherwise.getClass.getName}.")
+      }
     }
   }
 
