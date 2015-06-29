@@ -6,7 +6,7 @@ import com.datastax.driver.core.{Row => CRow}
 
 case class IntIndex(columnIndex: Int) extends Index {
   override def isDefinedAt(row: CRow): Boolean = {
-    row.getColumnDefinitions.size() < columnIndex
+    row.getColumnDefinitions.size() > columnIndex
   }
 
   override def apply(row: CRow): Int = {
