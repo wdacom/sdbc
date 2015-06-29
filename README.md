@@ -41,19 +41,19 @@ Packages exist on Maven Central for Scala 2.10 and 2.11. The Scala 2.10 builds f
 #### H2
 
 ```scala
-"com.wda.sdbc" %% "h2-java7" % "0.9"
+"com.wda.sdbc" %% "h2-java7" % "0.10"
 ```
 
 #### PostgreSql
 
 ```scala
-"com.wda.sdbc" %% "postgresql-java7" % "0.9"
+"com.wda.sdbc" %% "postgresql-java7" % "0.10"
 ```
 
 #### SQL Server
 
 ```scala
-"com.wda.sdbc" %% "sqlserver-java7" % "0.9"
+"com.wda.sdbc" %% "sqlserver-java7" % "0.10"
 ```
 
 ## License
@@ -68,6 +68,28 @@ Packages exist on Maven Central for Scala 2.10 and 2.11. The Scala 2.10 builds f
 * Use Scala collection combinators to manipulate result sets.
 * Use named parameters with queries.
 * Query execution logging
+* Use Java 8's java.time library, or Joda time for Java 7 and below.
+
+## Java 8 time notes
+
+| column type | column time zone | joda type |
+| --- | --- | --- |
+| timestamp or datetime | GMT | Instant |
+| timestamp or datetime | same as client | LocalDateTime |
+| timestamp or datetime | not GMT and not client's | java.sql.Timestamp, then convert to LocalDateTime with server's time zone |
+| timestamptz or timestamp with time zone or datetimeoffset |  | OffsetDateTime |
+| date |  | LocalDate |
+| time |  | LocalTime |
+| timetz or time with time zone |  | OffsetTime |
+
+## Joda time notes
+
+| column type | column time zone | joda type |
+| --- | --- | --- |
+| timestamp or datetime | GMT | Instant |
+| timestamp or datetime | same as client | LocalDateTime |
+| timestamp or datetime | not GMT and not client's | java.sql.Timestamp, then convert to LocalDateTime with server's time zone |
+| timestamptz or timestamp with time zone or datetimeoffset |  | DateTime |
 
 ## Examples
 
@@ -244,6 +266,12 @@ val result = pool.withConnection { implicit connection =>
 ```
 
 ## Changelog
+
+### 0.10
+
+#### Java 7
+
+* Added Joda Time support.
 
 ### 0.9
 
