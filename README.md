@@ -84,7 +84,6 @@ val results =
 	connection.iterator("SELECT * FROM tbl").map(
 		(row: Row) =>
 			row[Int]("key") -> row[String]("value")
-		)
 	).toMap
 ```
 
