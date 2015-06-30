@@ -10,7 +10,7 @@ case class Select[T] private (
   statement: CompiledStatement,
   parameterValues: Map[String, Option[ParameterValue[_]]]
 )(implicit val converter: Row => T)
-  extends base.Select[T, Connection]
+  extends base.Select[Connection, T]
   with ParameterizedQuery[Select[T]]
   with ResultSetImplicits
   with Logging {

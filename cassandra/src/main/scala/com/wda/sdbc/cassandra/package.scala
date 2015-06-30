@@ -1,6 +1,6 @@
 package com.wda.sdbc
 
-import com.datastax.driver.core.{Row => CRow, BoundStatement}
+import com.datastax.driver.core.{Row => CRow, TupleValue, BoundStatement}
 
 package object cassandra {
 
@@ -10,6 +10,8 @@ package object cassandra {
 
   type Index = PartialFunction[CRow, Int]
 
-  type Getter[+T] = base.Getter[CRow, Index, T]
+  type RowGetter[+T] = base.Getter[CRow, Index, T]
+
+  type TupleGetter[+T] = base.Getter[TupleValue, Int, T]
 
 }

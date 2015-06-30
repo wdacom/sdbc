@@ -9,7 +9,7 @@ import com.wda.sdbc.base.CompiledStatement
 case class SelectForUpdate private (
   statement: CompiledStatement,
   parameterValues: Map[String, Option[ParameterValue[_]]]
-) extends base.Select[MutableRow, Connection]
+) extends base.Select[Connection, MutableRow]
   with ParameterizedQuery[SelectForUpdate]
   with ResultSetImplicits
   with Logging {

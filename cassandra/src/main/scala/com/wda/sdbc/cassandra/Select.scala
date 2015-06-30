@@ -20,7 +20,7 @@ case class Select[T] private (
   retryPolicy: RetryPolicy,
   tracing: Boolean
 )(implicit val converter: CRow => T)
-  extends base.Select[T, Session]
+  extends base.Select[Session, T]
   with base.ParameterizedQuery[Select[T], BoundStatement, Int]
   with Logging {
 
@@ -59,7 +59,7 @@ case class Select[T] private (
     forBinding
   }
 
-  override def iterator()(implicit connection: Session): Iterator[T] = {
+  def iterator()(implicit connection: Session): Iterator[T] = {
     connection.execute(prepareQuery()).iterator.asScala.map(converter)
   }
 
@@ -88,7 +88,7 @@ case class Select[T] private (
     }
   }
 
-  override def execute()(implicit connection: Session): Unit = {
+  def execute()(implicit connection: Session): Unit = {
     connection.execute(prepareQuery())
   }
 

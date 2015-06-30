@@ -1,6 +1,7 @@
 package com.wda.sdbc.cassandra
 
 import java.net.InetAddress
+import java.nio.ByteBuffer
 import java.util.UUID
 
 import com.datastax.driver.core.DataType
@@ -9,13 +10,15 @@ import scala.reflect.ClassTag
 
 case class TupleDataType[T](dataType: DataType)
 
-object TupleDataTypes {
+trait TupleDataTypes {
 
   implicit val intDataType = TupleDataType[Int](DataType.cint())
 
   implicit val longDataType = TupleDataType[Long](DataType.bigint())
 
   implicit val arrayByteDataType = TupleDataType[Array[Byte]](DataType.blob())
+
+  implicit val byteBufferDataType = TupleDataType[ByteBuffer](DataType.blob())
 
   implicit val iterableByteDataType = TupleDataType[Iterable[Byte]](DataType.blob())
 

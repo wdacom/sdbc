@@ -33,6 +33,18 @@ abstract class DBMS
 
   val Pool = jdbc.Pool
 
+  type Selectable[Key, Value] = base.Selectable[Connection, Key, Value]
+
+  type SelectableMethods[Value] = base.SelectableMethods[Connection, Value]
+
+  type Updatable[Key] = base.Updatable[Connection, Key]
+
+  type UpdatableMethods = base.UpdatableMethods[Connection]
+
+  type Executable[Key] = base.Executable[Connection, Key]
+
+  type ExecutableMethods = base.ExecutableMethods[Connection]
+
   implicit def PoolToHikariPool(pool: Pool): HikariDataSource = {
     pool.underlying
   }

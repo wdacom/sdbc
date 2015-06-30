@@ -6,7 +6,7 @@ trait Row {
 
   implicit class Row(underlying: CRow) {
 
-    def apply[T](ix: Index)(implicit getter: Getter[T]): Option[T] = {
+    def apply[T](ix: Index)(implicit getter: RowGetter[T]): Option[T] = {
       getter(underlying, ix)
     }
 

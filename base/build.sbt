@@ -11,7 +11,7 @@ libraryDependencies ++= Seq(
   "org.scala-lang" % "scala-reflect" % scalaVersion.value,
   //Config file loading
   //https://github.com/typesafehub/config
-  "com.typesafe" % "config" % "1.2.1",
+  "com.typesafe" % "config" % "1.3.0",
   "org.scalatest" %% "scalatest" % "2.2.4" % "test",
   "org.scalacheck" %% "scalacheck" % "1.12.2" % "test",
   "org.scalaz" %% "scalaz-core" % "7.1.2" % "test",
@@ -20,7 +20,7 @@ libraryDependencies ++= Seq(
 
 libraryDependencies <++= scalaVersion { version =>
   val VersionRegex = """(\d+).(\d+)\.?.*""".r("major", "minor")
-  lazy val xmlDependency = "org.scala-lang.modules" %% "scala-xml" % "1.0.3"
+  lazy val xmlDependency = "org.scala-lang.modules" %% "scala-xml" % "1.0.4"
   val VersionRegex(major, minor) = version
   (major.toInt, minor.toInt) match {
     case (2,minor) if minor < 11 =>
