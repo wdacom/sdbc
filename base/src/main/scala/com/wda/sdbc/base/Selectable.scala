@@ -1,17 +1,25 @@
 package com.wda.sdbc.base
 
 trait Selectable[Connection, Key, Value] {
-  def select(key: Key)(implicit connection: Connection): Iterator[Value]
+  def select(key: Key): Select[Connection, Value]
 }
 
 trait SelectableMethods[Connection, Value] {
 
-  def select[Key](key: Key)(implicit ev: Selectable[Connection, Key, Value], connection: Connection): Iterator[Value] = {
-    ev.select(key)
+  def iterator[Key](
+    key: Key
+  )(implicit selectable: Selectable[Connection, Key, Value],
+    connection: Connection
+  ): Iterator[Value] = {
+    selectable.select(key).iterator()
   }
 
-  def option[Key](key: Key)(implicit ev: Selectable[Connection, Key, Value], connection: Connection): Option[Value] = {
-      select(key).toStream.headOption
+  def option[Key](
+    key: Key
+  )(implicit selectable: Selectable[Connection, Key, Value],
+    connection: Connection
+  ): Option[Value] = {
+      iterator(key).toStream.headOption
   }
 
 }
