@@ -40,7 +40,7 @@ object SelectProcess {
     row: jdbc.Row
   )
 
-  def transaction[T](
+  def forPool[T](
     pool: jdbc.Pool
   ): Channel[Task, jdbc.Select[T], Process[Task, T]] = {
 
@@ -58,7 +58,6 @@ object SelectProcess {
 
       def release(resource: TransactionResource): Task[Unit] = {
         Task {
-          resource.connection.commit()
           resource.row.close()
           resource.connection.close()
         }
