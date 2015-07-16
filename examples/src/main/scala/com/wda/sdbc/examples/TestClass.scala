@@ -1,7 +1,5 @@
 package com.wda.sdbc.examples
 
-import java.sql.Connection
-
 import com.wda.sdbc.H2._
 
 case class TestClass(
@@ -21,37 +19,39 @@ object TestClass
   implicit val selectableByValue = new Selectable[Value, TestClass] {
     val query = Select[TestClass]("SELECT * FROM test_class WHERE value = $value")
 
-    override def select(key: Value)(implicit connection: Connection): Iterator[TestClass] = {
-      query.on("value" -> key.value).iterator()
+    override def select(key: Value): Select[TestClass] = {
+      query.on("value" -> key.value)
     }
   }
 
   implicit val selectableById = new Selectable[Id, TestClass] {
     val query = Select[TestClass]("SELECT * FROM test_class WHERE id = $id")
 
-    override def select(key: Id)(implicit connection: Connection): Iterator[TestClass] = {
-      query.on("id" -> key.id).iterator()
+    override def select(key: Id): Select[TestClass] = {
+      query.on("id" -> key.id)
     }
   }
 
-  implicit val selectableAll = new Selectable[Unit, TestClass] {
+  implicit val selectableAll = new Selectable[All, TestClass] {
     val query = Select[TestClass]("SELECT * FROM test_class")
 
-    override def select(key: Unit)(implicit connection: Connection): Iterator[TestClass] = {
-      query.iterator()
+    override def select(key: All): Select[TestClass] = {
+      query
     }
   }
 
   implicit val insertById = new Updatable[Value] {
     val query = Update("INSERT INTO test_class (value) VALUES ($value)")
 
-    override def update(key: Value)(implicit connection: Connection): Long = {
-      query.on("value" -> key.value).update()
+    override def update(key: Value): Update = {
+      query.on("value" -> key.value)
     }
   }
 
-  case class Value(value: String)
+  final case class Value(value: String)
 
-  case class Id(id: Int)
+  final case class Id(id: Int)
+
+  final case class All()
 
 }

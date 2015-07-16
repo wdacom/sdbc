@@ -4,15 +4,17 @@ lazy val cassandra = project.in(file("cassandra")).dependsOn(base % "test->test;
 
 lazy val jdbc = project.in(file("jdbc")).dependsOn(base % "test->test;compile->compile")
 
-lazy val jdbcScalaz = project.in(file("jdbc.scalaz")).dependsOn(jdbc % "test->test;compile->compile")
+lazy val h2 = project.in(file("h2")).dependsOn(jdbc % "test->test;compile->compile")
+
+lazy val jdbcScalaz = project.in(file("jdbc.scalaz")).dependsOn(jdbc % "compile", h2 % "test->test")
 
 lazy val jdbcPlay = project.in(file("jdbc.play")).dependsOn(jdbc % "test->test;compile->compile")
-
-lazy val h2 = project.in(file("h2")).dependsOn(jdbc % "test->test;compile->compile")
 
 lazy val postgresql = project.in(file("postgresql")).dependsOn(jdbc % "test->test;compile->compile")
 
 lazy val sqlserver = project.in(file("sqlserver")).dependsOn(jdbc % "test->test;compile->compile")
+
+lazy val examples = project.in(file("examples")).dependsOn(h2 % "test->test;compile->compile")
 
 lazy val root =
   project.
@@ -25,7 +27,8 @@ lazy val root =
     jdbcScalaz,
     h2,
     postgresql,
-    sqlserver
+    sqlserver,
+    examples
   )
 
 organization in ThisBuild := "com.wda.sdbc"
