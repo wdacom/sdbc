@@ -38,7 +38,12 @@ object SelectProcess {
   private case class TransactionResource(
     connection: Connection,
     row: jdbc.Row
-  )
+  ) {
+    def close(): Unit = {
+      connection.close()
+      row.close()
+    }
+  }
 
   def forPool[T](
     pool: jdbc.Pool
@@ -47,7 +52,6 @@ object SelectProcess {
     channel.lift[Task, jdbc.Select[T], Process[Task, T]] { select =>
       val acquire: Task[TransactionResource] = Task {
         implicit val connection = pool.getConnection()
-        connection.setAutoCommit(false)
         val statement = jdbc.prepare(
           queryText = select.queryText,
           parameterValues = select.parameterValues,
@@ -57,10 +61,7 @@ object SelectProcess {
       }
 
       def release(resource: TransactionResource): Task[Unit] = {
-        Task {
-          resource.row.close()
-          resource.connection.close()
-        }
+        Task(resource.close())
       }
 
       def step(resource: TransactionResource): Task[T] = {
