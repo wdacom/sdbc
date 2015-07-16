@@ -1,6 +1,6 @@
 package com.wda.sdbc.jdbc.scalaz
 
-import com.wda.sdbc.h2._
+import com.wda.sdbc.h2.H2Suite
 import com.wda.sdbc.H2._
 import com.zaxxer.hikari.HikariConfig
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
