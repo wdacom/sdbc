@@ -23,7 +23,7 @@ abstract class H2Suite
   type FixtureParam = Connection
 
   override protected def withFixture(test: OneArgTest): Outcome = {
-    withMemConnection[Outcome]() { connection: Connection =>
+    withMemConnection[Outcome](name = "test", dbCloseDelay = None) { connection: Connection =>
       withFixture(test.toNoArgTest(connection))
     }
   }
