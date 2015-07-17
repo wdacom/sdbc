@@ -5,7 +5,7 @@ trait Updatable[Connection, Key] {
 }
 
 trait UpdatableMethods[Connection] {
-  def iterator[Key](
+  def updateIterator[Key](
     key: Key
   )(implicit updatable: Updatable[Connection, Key],
     connection: Connection
