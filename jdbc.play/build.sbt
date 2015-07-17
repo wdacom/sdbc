@@ -8,4 +8,6 @@ libraryDependencies ++= Seq(
   "com.typesafe.play" %% "play-iteratees" % "2.3.8"
 )
 
-publishArtifact in Test := true
+publishArtifact := false
+
+//publishArtifact in Test := true
