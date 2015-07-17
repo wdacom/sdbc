@@ -178,11 +178,7 @@ trait ParameterValues {
       statement: BoundStatement,
       parameterIndex: Int
     ): Unit = {
-      statement
-      .setInt(
-          parameterIndex,
-          value
-        )
+      statement.setInt(parameterIndex, value)
     }
   }
 
