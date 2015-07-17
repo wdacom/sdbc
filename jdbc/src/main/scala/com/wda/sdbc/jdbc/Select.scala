@@ -59,7 +59,7 @@ case class Select[T] private (
   }
 
   override def execute()(implicit connection: Connection): Unit = {
-    logger.debug(s"""Retrieving an iterator using "$originalQueryText" with parameters $parameterValues.""")
+    logger.debug(s"""Executing "$originalQueryText" with parameters $parameterValues.""")
 
     val prepared = prepare(
       queryText = queryText,

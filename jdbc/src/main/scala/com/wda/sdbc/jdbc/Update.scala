@@ -14,7 +14,7 @@ case class Update private (
   with Logging {
 
   override def update()(implicit connection: Connection): Long = {
-    logger.debug(s"""Executing update "$originalQueryText" with parameter values $parameterValues.""")
+    logger.debug(s"""Executing "$originalQueryText" with parameters $parameterValues.""")
     val prepared = prepare(
       queryText = queryText,
       parameterValues = parameterValues,
@@ -27,7 +27,7 @@ case class Update private (
   }
 
   override def execute()(implicit connection: Connection): Unit = {
-    logger.debug(s"""Executing update "$originalQueryText" with parameter values $parameterValues.""")
+    logger.debug(s"""Executing "$originalQueryText" with parameters $parameterValues.""")
     val prepared = prepare(
       queryText = queryText,
       parameterValues = parameterValues,
