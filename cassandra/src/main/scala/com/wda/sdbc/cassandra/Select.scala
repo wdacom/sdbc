@@ -1,6 +1,5 @@
 package com.wda.sdbc.cassandra
 
-import com.datastax.driver.core.policies.{DefaultRetryPolicy, RetryPolicy}
 import com.google.common.util.concurrent.{FutureCallback, Futures}
 import com.wda.Logging
 import com.wda.sdbc.base
@@ -12,59 +11,20 @@ import scala.collection.convert.decorateAsScala._
 case class Select[T] private (
   statement: CompiledStatement,
   parameterValues: Map[String, Option[ParameterValue[_]]],
-  consistencyLevel: ConsistencyLevel,
-  serialConsistencyLevel: ConsistencyLevel,
-  defaultTimestamp: Option[Long],
-  fetchSize: Int,
-  idempotent: Boolean,
-  retryPolicy: RetryPolicy,
-  tracing: Boolean
+  queryOptions: QueryOptions
 )(implicit val converter: CRow => T)
   extends base.Select[Session, T]
   with base.ParameterizedQuery[Select[T], BoundStatement, Int]
   with Logging {
 
-  private def prepareQuery()(implicit session: Session): BoundStatement = {
-    val prepared = session.prepare(statement.queryText)
-
-    val forBinding = prepared.bind()
-
-    for ((key, maybeValue) <- parameterValues) {
-      val parameterIndices = statement.parameterPositions(key)
-
-      maybeValue match {
-        case None =>
-          for (parameterIndex <- parameterIndices) {
-            forBinding.setToNull(parameterIndex - 1)
-          }
-        case Some(value) =>
-          for (parameterIndex <- parameterIndices) {
-            value.set(forBinding, parameterIndex - 1)
-          }
-      }
-    }
-    forBinding.setConsistencyLevel(consistencyLevel)
-    forBinding.setSerialConsistencyLevel(serialConsistencyLevel)
-    defaultTimestamp.map(forBinding.setDefaultTimestamp)
-    forBinding.setFetchSize(fetchSize)
-    forBinding.setIdempotent(idempotent)
-    forBinding.setRetryPolicy(retryPolicy)
-
-    if (tracing) {
-      forBinding.enableTracing()
-    } else {
-      forBinding.disableTracing()
-    }
-
-    forBinding
-  }
-
   def iterator()(implicit connection: Session): Iterator[T] = {
-    connection.execute(prepareQuery()).iterator.asScala.map(converter)
+    val prepared = prepare(statement, parameterValues, queryOptions)
+    connection.execute(prepared).iterator.asScala.map(converter)
   }
 
   def iteratorAsync()(implicit connection: Session, ec: ExecutionContext): Future[Iterator[T]] = {
-    val toListen = connection.executeAsync(prepareQuery())
+    val prepared = prepare(statement, parameterValues, queryOptions)
+    val toListen = connection.executeAsync(prepared)
 
     //Thanks http://stackoverflow.com/questions/18026601/listenablefuture-to-scala-future
     val p = Promise[ResultSet]()
@@ -89,7 +49,8 @@ case class Select[T] private (
   }
 
   def execute()(implicit connection: Session): Unit = {
-    connection.execute(prepareQuery())
+    val prepared = prepare(statement, parameterValues, queryOptions)
+    connection.execute(prepared)
   }
 
   override def subclassConstructor(
@@ -107,25 +68,13 @@ object Select {
   def apply[T](
     queryText: String,
     hasParameters: Boolean = true,
-    consistencyLevel: ConsistencyLevel = QueryOptions.DEFAULT_CONSISTENCY_LEVEL,
-    serialConsistencyLevel: ConsistencyLevel = QueryOptions.DEFAULT_SERIAL_CONSISTENCY_LEVEL,
-    defaultTimestamp: Option[Long] = None,
-    fetchSize: Int = QueryOptions.DEFAULT_FETCH_SIZE,
-    idempotent: Boolean = QueryOptions.DEFAULT_IDEMPOTENCE,
-    retryPolicy: RetryPolicy = DefaultRetryPolicy.INSTANCE,
-    tracing: Boolean = false
+    queryOptions: QueryOptions = QueryOptions.default
   )(implicit converter: CRow => T
   ): Select[T] = {
     Select[T](
       statement = CompiledStatement(queryText, hasParameters),
       parameterValues = Map.empty[String, Option[ParameterValue[_]]],
-      consistencyLevel,
-      serialConsistencyLevel,
-      defaultTimestamp,
-      fetchSize,
-      idempotent,
-      retryPolicy,
-      tracing
+      queryOptions
     )
   }
 }

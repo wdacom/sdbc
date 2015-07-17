@@ -19,20 +19,18 @@ abstract class Cassandra
 
   val Select = cassandra.Select
 
-  type Connection = java.sql.Connection
-
   type Pool = Session
 
   type Selectable[Key, Value] = base.Selectable[Pool, Key, Value]
 
   type SelectableMethods[Value] = base.SelectableMethods[Pool, Value]
 
-  type Updatable[Key] = base.Updatable[Connection, Key]
+  type Updatable[Key] = base.Updatable[Pool, Key]
 
-  type UpdatableMethods = base.UpdatableMethods[Connection]
+  type UpdatableMethods = base.UpdatableMethods[Pool]
 
-  type Executable[Key] = base.Executable[Connection, Key]
+  type Executable[Key] = base.Executable[Pool, Key]
 
-  type ExecutableMethods = base.ExecutableMethods[Connection]
+  type ExecutableMethods = base.ExecutableMethods[Pool]
 
 }
