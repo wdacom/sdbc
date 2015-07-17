@@ -2,15 +2,14 @@ package com.wda.sdbc.h2
 
 import java.nio.file.Path
 import java.sql.DriverManager
-
-import com.wda.sdbc.DBMS
-import com.wda.sdbc.base.{Java8DefaultGetters, DefaultSetters}
+import com.wda.sdbc.jdbc.DBMS
 
 abstract class H2
   extends DBMS
-  with Java8DefaultGetters
-  with DefaultSetters
-  with OtherParameter {
+  with Getters
+  with Setters
+  with Updaters
+  with SerializedParameter {
   /**
    * Class name for the DataSource class.
    */
@@ -35,19 +34,27 @@ abstract class H2
    */
   override def supportsIsValid: Boolean = true
 
-  override def Identifier: Identifier = new Identifier
-
   /**
    * The result of getMetaData.getDatabaseProductName
    */
   override def productName: String = "H2"
 
-  def withMemConnection[T](name: String = "")(f: Connection => T): T = {
-    val connection = DriverManager.getConnection("jdbc:h2:mem:" + name)
+  /**
+   *
+   * @param name The name of the database. A name is required if you want multiple connections or dbCloseDelay != Some(0).
+   * @param dbCloseDelay The number of seconds to wait after the last connection closes before deleting the database. The default is right away, or Some(0). None means never.
+   * @param f
+   * @tparam T
+   * @return
+   */
+  def withMemConnection[T](name: String = "", dbCloseDelay: Option[Int] = Some(0))(f: Connection => T): T = {
+    val dbCloseDelayArg = s";DB_CLOSE_DELAY=${dbCloseDelay.getOrElse(-1)}"
+    val connectionString = s"jdbc:h2:mem:$name$dbCloseDelayArg"
+    val connection = DriverManager.getConnection(connectionString)
     try {
       f(connection)
     } finally {
-      connection.closeQuietly()
+      connection.close()
     }
   }
 
@@ -57,7 +64,7 @@ abstract class H2
     try {
       f(connection)
     } finally {
-      connection.closeQuietly()
+      connection.close()
     }
   }
 }

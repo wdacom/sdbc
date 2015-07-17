@@ -6,9 +6,9 @@ import org.scalatest._
 abstract class H2Suite
   extends fixture.FunSuite {
 
-  def testSelect[T](query: String, expectedValue: Option[T])(implicit getter: Getter[T]): Unit = {
+  def testSelect[T](query: String, expectedValue: Option[T])(implicit converter: Row => Option[T]): Unit = {
     test(query) { implicit connection =>
-      val result = Select[Option[T]](query).single()
+      val result = Select[Option[T]](query).option().flatten
       (expectedValue, result) match {
         case (Some(expectedArray: Array[_]), Some(resultArray: Array[_])) =>
           assert(expectedArray.sameElements(resultArray))
@@ -23,7 +23,7 @@ abstract class H2Suite
   type FixtureParam = Connection
 
   override protected def withFixture(test: OneArgTest): Outcome = {
-    withMemConnection[Outcome]() { connection: Connection =>
+    withMemConnection[Outcome](name = "test", dbCloseDelay = Some(0)) { connection: Connection =>
       withFixture(test.toNoArgTest(connection))
     }
   }

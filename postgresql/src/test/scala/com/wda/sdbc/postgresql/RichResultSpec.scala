@@ -2,7 +2,7 @@ package com.wda.sdbc.postgresql
 
 import com.wda.sdbc.PostgreSql._
 
-import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
+import org.scalatest.BeforeAndAfterEach
 
 import scala.collection.immutable.Seq
 
@@ -29,12 +29,12 @@ class RichResultSpec
 
   test("seq() works on an empty result") {implicit connection =>
     Update("CREATE TABLE tbl (x serial)").execute()
-    val results = Select[Int]("SELECT * FROM tbl").seq()
+    val results = Select[Int]("SELECT * FROM tbl").iterator().toSeq
     assert(results.isEmpty)
   }
 
   test("seq() works on a single result") {implicit connection =>
-    val results = Select[Int]("SELECT 1::integer").seq()
+    val results = Select[Int]("SELECT 1::integer").iterator().toSeq
     assert(results == Seq(1))
   }
 
@@ -47,11 +47,11 @@ class RichResultSpec
         batch.addBatch("x" -> r)
     }
 
-    val insertions = batch.batch()
+    val insertions = batch.iterator()
 
-    assert(insertions.sum[Int] == randoms.size)
+    assert(insertions.sum[Long] == randoms.size)
 
-    val results = Select[Int]("SELECT x FROM tbl").seq()
+    val results = Select[Int]("SELECT x FROM tbl").iterator().toSeq
     assert(results == randoms)
   }
 
@@ -67,13 +67,14 @@ class RichResultSpec
         batch.addBatch("x" -> r)
     }
 
-    batch.batch()
+    batch.execute()
 
     for(row <- connection.iteratorForUpdate("SELECT * FROM tbl")) {
-      row("x") = row[Int]("x") + 1
+      row("x") = row[Int]("x").map(_ + 1)
+      row.updateRow()
     }
 
-    val incrementedFromDb = connection.seq[Int]("SELECT x FROM tbl ORDER BY x ASC")
+    val incrementedFromDb = connection.iterator[Int]("SELECT x FROM tbl ORDER BY x ASC").toSeq
 
     assert(incrementedFromDb.zip(incrementedRandoms).forall(xs => xs._1 == xs._2))
   }

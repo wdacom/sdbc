@@ -2,7 +2,6 @@ package com.wda.sdbc.postgresql
 
 import com.wda.sdbc.PostgreSql._
 import com.wda.sdbc.config._
-import org.scalatest.{BeforeAndAfterAll, Suite}
 
 trait HasPostgreSqlPool {
   this: PgTestingConfig =>
@@ -37,7 +36,7 @@ trait HasPostgreSqlPool {
       withPgMaster { implicit connection =>
         connection.setAutoCommit(true)
 
-        Update(s"CREATE DATABASE ${Identifier.quote(pgTestCatalogName)};").execute()
+        Update(s"CREATE DATABASE $pgTestCatalogName").execute()
       }
       pgPool = Some(Pool(pgConfig))
     }
@@ -53,7 +52,7 @@ trait HasPostgreSqlPool {
       val databases =
         Select[String]("SELECT datname FROM pg_database WHERE datname LIKE $catalogPrefix").
         on("catalogPrefix" -> (pgTestCatalogPrefix + "%")).
-        seq()
+        iterator().toSeq
 
       for (database <- databases) {
         util.Try {
@@ -65,7 +64,7 @@ trait HasPostgreSqlPool {
             """.stripMargin
           ).on("databaseName" -> database).execute()
 
-          Update("DROP DATABASE " + Identifier.quote(database)).execute()
+          Update(s"DROP DATABASE $database").execute()
         }
       }
     }

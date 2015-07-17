@@ -1,16 +1,41 @@
-lazy val sdbc = project.in(file("sdbc"))
+lazy val base = project.in(file("base"))
 
-lazy val h2 = project.in(file("h2")).dependsOn(sdbc % "test->test;compile->compile")
+lazy val cassandra = project.in(file("cassandra")).dependsOn(base % "test->test;compile->compile")
 
-lazy val postgresql = project.in(file("postgresql")).dependsOn(sdbc % "test->test;compile->compile")
+lazy val cassandraScalaz = project.in(file("cassandra.scalaz")).dependsOn(cassandra % "test->test;compile->compile")
 
-lazy val sqlserver = project.in(file("sqlserver")).dependsOn(sdbc % "test->test;compile->compile")
+lazy val jdbc = project.in(file("jdbc")).dependsOn(base % "test->test;compile->compile")
 
-lazy val root = project.in(file(".")).settings(publishArtifact := false).aggregate(sdbc, h2, postgresql, sqlserver)
+lazy val h2 = project.in(file("h2")).dependsOn(jdbc % "test->test;compile->compile")
+
+lazy val jdbcScalaz = project.in(file("jdbc.scalaz")).dependsOn(jdbc, h2 % "test->test")
+
+lazy val jdbcPlay = project.in(file("jdbc.play")).dependsOn(jdbc % "test->test;compile->compile")
+
+lazy val postgresql = project.in(file("postgresql")).dependsOn(jdbc % "test->test;compile->compile")
+
+lazy val sqlserver = project.in(file("sqlserver")).dependsOn(jdbc % "test->test;compile->compile")
+
+lazy val examples = project.in(file("examples")).dependsOn(h2 % "test->test;compile->compile")
+
+lazy val root =
+  project.
+  in(file(".")).
+  settings(publishArtifact := false).
+  aggregate(
+    base,
+    cassandra,
+    jdbc,
+    jdbcScalaz,
+    h2,
+    postgresql,
+    sqlserver,
+    examples
+  )
 
 organization in ThisBuild := "com.wda.sdbc"
 
-scalaVersion in ThisBuild := "2.11.6"
+scalaVersion in ThisBuild := "2.11.7"
 
 crossScalaVersions := Seq("2.10.5")
 
@@ -48,6 +73,5 @@ scalacOptions in ThisBuild ++= Seq(
   "-unchecked",
   "-Xfatal-warnings",
   "-Yno-adapted-args",
-  "-Ywarn-dead-code",        // N.B. doesn't work well with the ??? hole
   "-Xfuture"
 )

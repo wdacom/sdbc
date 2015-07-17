@@ -12,12 +12,12 @@ class OtherSpec
     Update("CREATE TABLE tbl (obj other)").execute()
 
     Update("INSERT INTO tbl (obj) VALUES ($obj)").on(
-      "obj" -> Other(original)
+      "obj" -> Serialized(original)
     ).execute()
 
-    val Other(result) = Select[Other]("SELECT obj FROM tbl").single()
+    val result = Select[Serialized]("SELECT obj FROM tbl").option()
 
-    assertResult(original)(result)
+    assertResult(Some(original))(result.map(_.value))
 
   }
 

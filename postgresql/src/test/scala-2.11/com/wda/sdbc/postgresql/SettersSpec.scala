@@ -1,7 +1,7 @@
 package com.wda.sdbc.postgresql
 
+import com.wda.sdbc.jdbc.ParameterValue
 import org.scalatest._
-
 import com.wda.sdbc.PostgreSql._
 import java.math.{BigDecimal => JBigDecimal}
 
