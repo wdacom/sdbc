@@ -8,6 +8,7 @@ import com.datastax.driver.core.{Row => CRow, UDTValue, TupleValue}
 import com.google.common.reflect.TypeToken
 
 trait RowGetters {
+
   implicit val BooleanRowGetter: RowGetter[Boolean] = RowGetters[Boolean](row => ix => row.getBool(ix))
 
   implicit val BoxedBooleanRowGetter: RowGetter[java.lang.Boolean] = RowGetters[java.lang.Boolean](row => ix => row.getBool(ix))

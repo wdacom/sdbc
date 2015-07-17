@@ -2,6 +2,8 @@ lazy val base = project.in(file("base"))
 
 lazy val cassandra = project.in(file("cassandra")).dependsOn(base % "test->test;compile->compile")
 
+lazy val cassandraScalaz = project.in(file("cassandra.scalaz")).dependsOn(cassandra % "test->test;compile->compile")
+
 lazy val jdbc = project.in(file("jdbc")).dependsOn(base % "test->test;compile->compile")
 
 lazy val h2 = project.in(file("h2")).dependsOn(jdbc % "test->test;compile->compile")

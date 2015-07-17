@@ -7,7 +7,7 @@ import scalaz.stream._
 
 trait PoolImplicits {
 
-  implicit class StreamOnPool(pool: Pool) {
+  implicit class PoolChannels(pool: Pool) {
     lazy val updates: Channel[Task, Update, Long] = {
       UpdateProcess.forPool(pool)
     }

@@ -9,12 +9,12 @@ class RichResultSetSpec
   extends H2Suite
   with BeforeAndAfterEach {
 
-  test("seq() works on a single result") {implicit connection =>
+  test("iterator() works on a single result") {implicit connection =>
     val results = Select[Int]("SELECT 1").iterator().toSeq
     assertResult(Seq(1))(results)
   }
 
-  test("seq() works on several results") {implicit connection =>
+  test("iterator() works on several results") {implicit connection =>
     val randoms = Seq.fill(10)(util.Random.nextInt())
     Update("CREATE TABLE tbl (x int)").execute()
 

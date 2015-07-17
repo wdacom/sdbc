@@ -9,6 +9,20 @@ class SelectProcessSpec
   test("Use a stream of Select to select rows using a connection.") { implicit connection =>
     val selectFuture = for {
       _ <- inserts.through(pool.updates).run
+      rows <- merge.mergeN(Process(select).through(connection.selects)).runLog
+    } yield rows
+
+    val selectResults = selectFuture.runFor(5.seconds)
+
+    assertResult(expectedCount)(selectResults.size.toLong)
+
+    assertResult(insertSet)(selectResults.toSet)
+  }
+
+  test("Use a stream of Select to select rows using a connection pool.") { implicit connection =>
+
+    val selectFuture = for {
+      _ <- inserts.through(pool.updates).run
       rows <- merge.mergeN(Process(select).through(pool.selects)).runLog
     } yield rows
 
@@ -17,6 +31,7 @@ class SelectProcessSpec
     assertResult(expectedCount)(selectResults.size.toLong)
 
     assertResult(insertSet)(selectResults.toSet)
+
   }
 
 }

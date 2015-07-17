@@ -4,7 +4,7 @@ import com.datastax.driver.core.{Cluster, Session}
 import org.cassandraunit.utils.EmbeddedCassandraServerHelper
 import org.scalatest.{BeforeAndAfterEach, fixture, Outcome, BeforeAndAfterAll}
 
-class CassandraSuite
+abstract class CassandraSuite
   extends fixture.FunSuite
   with BeforeAndAfterAll
   with BeforeAndAfterEach {

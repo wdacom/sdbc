@@ -1,6 +1,6 @@
-name := "jdbc.scalaz"
+name := "cassandra.scalaz"
 
-description := "Extensions for com.wda.sdbc.jdbc for use with Scalaz streaming"
+description := "Extensions for com.wda.sdbc.cassandra for use with Scalaz streaming"
 
 resolvers += "Scalaz Bintray Repo" at "http://dl.bintray.com/scalaz/releases"
 

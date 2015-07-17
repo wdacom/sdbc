@@ -8,7 +8,7 @@ import scalaz.stream._
 
 trait ConnectionImplicits {
 
-  implicit class StreamOnConnection(connection: Connection) {
+  implicit class ConnectionChannels(connection: Connection) {
     val updates: Channel[Task, Update, Long] = {
       UpdateProcess.forConnection()(connection)
     }
