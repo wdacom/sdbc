@@ -25,6 +25,7 @@ lazy val root =
   aggregate(
     base,
     cassandra,
+    cassandraScalaz,
     jdbc,
     jdbcScalaz,
     h2,
