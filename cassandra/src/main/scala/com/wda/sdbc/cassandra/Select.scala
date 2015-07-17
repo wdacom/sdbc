@@ -35,11 +35,11 @@ case class Select[T] private (
       maybeValue match {
         case None =>
           for (parameterIndex <- parameterIndices) {
-            forBinding.setToNull(parameterIndex)
+            forBinding.setToNull(parameterIndex - 1)
           }
         case Some(value) =>
           for (parameterIndex <- parameterIndices) {
-            value.set(forBinding, parameterIndex)
+            value.set(forBinding, parameterIndex - 1)
           }
       }
     }
