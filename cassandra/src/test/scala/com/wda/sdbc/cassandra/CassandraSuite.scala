@@ -10,14 +10,14 @@ abstract class CassandraSuite
   with BeforeAndAfterEach {
 
   override protected def beforeAll(): Unit = {
-    EmbeddedCassandraServerHelper.startEmbeddedCassandra()
+    EmbeddedCassandraServerHelper.startEmbeddedCassandra("another-cassandra.yaml")
   }
 
   override protected def beforeEach(): Unit = {
     EmbeddedCassandraServerHelper.cleanEmbeddedCassandra()
   }
 
-  lazy val client = Cluster.builder().addContactPoint("127.0.0.1").build()
+  lazy val client = Cluster.builder().addContactPoint("localhost").withPort(9142).build()
 
   override type FixtureParam = Session
 
