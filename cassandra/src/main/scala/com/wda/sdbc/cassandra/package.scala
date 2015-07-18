@@ -16,10 +16,22 @@ package object cassandra {
   type TupleGetter[+T] = base.Getter[TupleValue, Int, T]
 
   private [cassandra] def prepare(
+    select: Select[_]
+  )(implicit session: Session
+  ): BoundStatement = {
+    prepare(
+      select.statement,
+      select.parameterValues,
+      select.queryOptions
+    )
+  }
+
+  private [cassandra] def prepare(
     statement: CompiledStatement,
     parameterValues: Map[String, Option[ParameterValue[_]]],
     queryOptions: QueryOptions
-  )(implicit session: Session): BoundStatement = {
+  )(implicit session: Session
+  ): BoundStatement = {
     val prepared = session.prepare(statement.queryText)
 
     val forBinding = prepared.bind()

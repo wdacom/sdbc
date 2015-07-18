@@ -1,6 +1,6 @@
 package com.wda.sdbc.cassandra.scalaz
 
-import com.datastax.driver.core.ResultSet
+import com.datastax.driver.core.{BoundStatement, ResultSet, Row => CRow}
 import com.wda.sdbc.cassandra
 import com.wda.sdbc.Cassandra._
 import scalaz._
@@ -11,48 +11,44 @@ import com.google.common.util.concurrent.{FutureCallback, Futures}
 
 object SelectProcess {
 
-  def forPool[T]()(implicit pool: Pool): Channel[Task, Select[T], Process[Task, T]] = {
+  private def runBoundStatement(
+    prepared: BoundStatement
+  )(implicit pool: Pool
+  ): Task[ResultSet] = {
+    Task.async { callback =>
+      val rsFuture = pool.executeAsync(prepared)
 
-    channel.lift[Task, Select[T], Process[Task, T]] { select =>
-
-      val acquire: Task[ResultSet] = {
-        val statement = cassandra.prepare(
-          statement = select.statement,
-          parameterValues = select.parameterValues,
-          queryOptions = select.queryOptions
-        )
-
-        /*
-        See com.rocketfuel.kafka.streaming.Producer.channel for an explanation of why
-        this is so convoluted.
-         */
-        def sendWithCallback(callback: Throwable \/ ResultSet => Unit): Unit = {
-
-          val rsFuture = pool.executeAsync(statement)
-
-          val googleCallback = new FutureCallback[ResultSet] {
-            override def onFailure(t: Throwable): Unit = {
-              callback(-\/(t))
-            }
-
-            override def onSuccess(result: ResultSet): Unit = {
-              callback(\/-(result))
-            }
-          }
-
-          Futures.addCallback(rsFuture, googleCallback)
+      val googleCallback = new FutureCallback[ResultSet] {
+        override def onFailure(t: Throwable): Unit = {
+          callback(-\/(t))
         }
 
-        Task.async(sendWithCallback)
-
+        override def onSuccess(result: ResultSet): Unit = {
+          callback(\/-(result))
+        }
       }
 
-      Task(Process.await(acquire)(rs => IteratorToProcess(rs.iterator()).map(select.converter)))
+      Futures.addCallback(rsFuture, googleCallback)
     }
   }
 
-  private def IteratorToProcess[T](iterator: Iterator[T]): Process[Task, T] = {
-    Process.repeatEval(Task(if (iterator.hasNext) iterator.next() else throw Cause.Terminated(Cause.End)))
+  def forPool[T](implicit pool: Pool): Channel[Task, Select[T], Process[Task, T]] = {
+    channel.lift[Task, Select[T], Process[Task, T]] { select =>
+      val asyncResultSet: Task[ResultSet] =
+        Task(cassandra.prepare(select)).flatMap(runBoundStatement)
+
+      Task(Process.await(asyncResultSet)(rs => IteratorToProcess[Task, CRow](Task(rs.iterator())).map(select.converter)))
+    }
+  }
+
+  def IteratorToProcess[F[_], O](iteratorCreator: => F[Iterator[O]]): Process[F, O] = {
+    //This design was based on unfold.
+    def go(iterator: Iterator[O]): Process0[O] = {
+      if (iterator.hasNext) Process.emit(iterator.next()) ++ go(iterator)
+      else Process.halt
+    }
+
+    Process.await(iteratorCreator)(go)
   }
 
 }
