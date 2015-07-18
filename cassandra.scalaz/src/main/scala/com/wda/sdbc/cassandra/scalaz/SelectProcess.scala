@@ -14,7 +14,7 @@ object SelectProcess {
   private def runBoundStatement(
     prepared: BoundStatement
   )(implicit pool: Pool
-  ): Task[ResultSet] = {
+  ): Task[Iterator[CRow]] = {
     Task.async { callback =>
       val rsFuture = pool.executeAsync(prepared)
 
@@ -24,7 +24,7 @@ object SelectProcess {
         }
 
         override def onSuccess(result: ResultSet): Unit = {
-          callback(\/-(result))
+          callback(\/-(result.iterator()))
         }
       }
 
@@ -34,14 +34,17 @@ object SelectProcess {
 
   def forPool[T](implicit pool: Pool): Channel[Task, Select[T], Process[Task, T]] = {
     channel.lift[Task, Select[T], Process[Task, T]] { select =>
-      val asyncResultSet: Task[ResultSet] =
-        Task(cassandra.prepare(select)).flatMap(runBoundStatement)
-
-      Task(Process.await(asyncResultSet)(rs => IteratorToProcess[Task, CRow](Task(rs.iterator())).map(select.converter)))
+      for {
+        statement <- Task(cassandra.prepare(select))
+        iteratorCreator = runBoundStatement(statement)
+        process <- Task(IteratorToProcess(iteratorCreator))
+      } yield {
+        process.map(select.converter)
+      }
     }
   }
 
-  def IteratorToProcess[F[_], O](iteratorCreator: => F[Iterator[O]]): Process[F, O] = {
+  def IteratorToProcess[F[_], O](iteratorCreator: F[Iterator[O]]): Process[F, O] = {
     //This design was based on unfold.
     def go(iterator: Iterator[O]): Process0[O] = {
       if (iterator.hasNext) Process.emit(iterator.next()) ++ go(iterator)

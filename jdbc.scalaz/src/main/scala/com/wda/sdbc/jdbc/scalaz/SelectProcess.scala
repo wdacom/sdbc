@@ -40,8 +40,8 @@ object SelectProcess {
     row: jdbc.Row
   ) {
     def close(): Unit = {
-      connection.close()
       row.close()
+      connection.close()
     }
   }
 
