@@ -22,4 +22,25 @@ class RichResultSetSpec
     assertResult(randoms.toSet)(results.toSet)
   }
 
+  test("Insert and select works for tuples.") {implicit connection =>
+    Select[Unit]("CREATE KEYSPACE spc WITH REPLICATION = {'class': 'SimpleStrategy', 'replication_factor': 1}").execute()
+    val randoms = Seq.fill(10)(Some(util.Random.nextInt()))
+    val randoms2 = Seq.fill(10)(Some(util.Random.nextInt()))
+    val tuples = randoms.zip(randoms2)
+    Select[Int]("CREATE TABLE spc.tbl (x tuple<int, int> PRIMARY KEY)").execute()
+
+    //Note: Peng verified that values in tuples are nullable, so we need
+    //to support that.
+
+    val insert = Select[Int]("INSERT INTO spc.tbl (x) VALUES ($x)")
+
+    for (tuple <- tuples) {
+      insert.on("x" -> ToOptionParameterValue(tuple)).execute()
+    }
+
+    val results = Select[(Option[Int], Option[Int])]("SELECT x FROM spc.tbl").iterator()
+
+    assertResult(tuples.map{case (k,v) => (Some(k), Some(v))}.toSet)(results.toSet)
+  }
+
 }

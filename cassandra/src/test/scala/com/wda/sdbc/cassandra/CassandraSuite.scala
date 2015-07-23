@@ -17,11 +17,11 @@ abstract class CassandraSuite
     EmbeddedCassandraServerHelper.cleanEmbeddedCassandra()
   }
 
-  lazy val client = Cluster.builder().addContactPoint("localhost").withPort(9142).build()
-
   override type FixtureParam = Session
 
   override protected def withFixture(test: OneArgTest): Outcome = {
+    val client = Cluster.builder().addContactPoint("localhost").withPort(9142).build()
+
     val session = client.connect()
     try {
       test.toNoArgTest(session)()

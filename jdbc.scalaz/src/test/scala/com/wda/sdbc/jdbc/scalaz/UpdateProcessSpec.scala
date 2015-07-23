@@ -3,7 +3,7 @@ package com.wda.sdbc.jdbc.scalaz
 import scala.concurrent.duration._
 
 class UpdateProcessSpec
-  extends ProcessSuite{
+  extends ProcessSuite {
 
   test("Use a stream of Updates to insert rows using a connection.") { implicit connection =>
     val insertCount = inserts.through(connection.updates).runLog.runFor(5.seconds).sum
