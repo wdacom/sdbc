@@ -8,6 +8,8 @@ import com.datastax.driver.core.{UDTValue, TupleValue}
 import com.google.common.reflect.TypeToken
 
 trait TupleGetters {
+  implicit val UnitTupleGetter: TupleGetter[Unit] = TupleGetters[Unit](row => ix => ())
+
   implicit val BooleanTupleGetter: TupleGetter[Boolean] = TupleGetters[Boolean](row => ix => row.getBool(ix))
 
   implicit val BoxedBooleanTupleGetter: TupleGetter[java.lang.Boolean] = TupleGetters[java.lang.Boolean](row => ix => row.getBool(ix))
@@ -57,8 +59,6 @@ trait TupleGetters {
   implicit def MapTupleGetter[K, V]: TupleGetter[Map[K, V]] = TupleGetters[Map[K, V]](row => ix => row.getMap[K, V](ix, new TypeToken[K] {}, new TypeToken[V] {}).toMap)
 
   implicit def JavaMapTupleGetter[K, V]: TupleGetter[java.util.Map[K, V]] = TupleGetters[java.util.Map[K, V]](row => ix => row.getMap[K, V](ix, new TypeToken[K] {}, new TypeToken[V] {}))
-
-  val AnyRefTupleGetter: TupleGetter[AnyRef] = TupleGetters[AnyRef](row => ix => row.getObject(ix))
 
   implicit val Tuple0TupleGetter: TupleGetter[Unit] = new TupleGetter[Unit] {
     override def apply(
@@ -505,7 +505,9 @@ trait TupleGetters {
 object TupleGetters {
   def apply[T](getter: TupleValue => Int => T): TupleGetter[T] = {
     new TupleGetter[T] {
-      override def apply(tuple: TupleValue, ix: Int
+      override def apply(
+        tuple: TupleValue,
+        ix: Int
       ): Option[T] = {
         if (tuple.isNull(ix)) None
         else Some(getter(tuple)(ix))
