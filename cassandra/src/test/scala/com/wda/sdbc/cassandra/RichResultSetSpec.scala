@@ -35,12 +35,37 @@ class RichResultSetSpec
     val insert = Select[Int]("INSERT INTO spc.tbl (x) VALUES ($x)")
 
     for (tuple <- tuples) {
-      insert.on("x" -> ToOptionParameterValue(tuple)).execute()
+      insert.on("x" -> tuple).execute()
     }
 
     val results = Select[(Option[Int], Option[Int])]("SELECT x FROM spc.tbl").iterator()
 
-    assertResult(tuples.map{case (k,v) => (Some(k), Some(v))}.toSet)(results.toSet)
+    assertResult(tuples.toSet)(results.toSet)
+  }
+
+  def genTuple: (Option[Int], Option[Int]) = {
+    val v0Null = util.Random.nextBoolean()
+    val v1Null = util.Random.nextBoolean()
+
+    def aux(b: Boolean) = if (b) Some(util.Random.nextInt()) else None
+
+    (aux(v0Null), aux(v1Null))
+  }
+
+  test("Insert and select works for tuples having some null elements.") {implicit connection =>
+    Select[Unit]("CREATE KEYSPACE spc WITH REPLICATION = {'class': 'SimpleStrategy', 'replication_factor': 1}").execute()
+    val tuples = Seq.fill(10)(genTuple)
+    Select[Int]("CREATE TABLE spc.tbl (x tuple<int, int> PRIMARY KEY)").execute()
+
+    val insert = Select[Int]("INSERT INTO spc.tbl (x) VALUES ($x)")
+
+    for (tuple <- tuples) {
+      insert.on("x" -> tuple).execute()
+    }
+
+    val results = Select[(Option[Int], Option[Int])]("SELECT x FROM spc.tbl").iterator()
+
+    assertResult(tuples.toSet)(results.toSet)
   }
 
 }

@@ -59,8 +59,6 @@ trait RowGetters {
 
   implicit def JavaMapRowGetter[K, V]: RowGetter[java.util.Map[K, V]] = RowGetters[java.util.Map[K, V]](row => ix => row.getMap[K, V](ix, new TypeToken[K] {}, new TypeToken[V] {}))
 
-  val AnyRefRowGetter: RowGetter[AnyRef] = RowGetters[AnyRef](row => ix => row.getObject(ix))
-
   implicit val Tuple0RowGetter: RowGetter[Unit] = new RowGetter[Unit] {
     override def apply(
       row: CRow,

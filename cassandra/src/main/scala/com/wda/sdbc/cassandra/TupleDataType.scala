@@ -58,7 +58,7 @@ trait TupleDataTypes {
     TupleDataType[collection.mutable.Map[K, V]](DataType.map(keyType.dataType, valueType.dataType, false))
   }
 
-  implicit def customDataType[T](implicit tag: ClassTag[T]): TupleDataType[T] = {
+  def customDataType[T](implicit tag: ClassTag[T]): TupleDataType[T] = {
     TupleDataType[T](DataType.custom(tag.runtimeClass.getName))
   }
 
