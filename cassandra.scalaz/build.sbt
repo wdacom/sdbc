@@ -5,5 +5,5 @@ description := "Extensions for com.wda.sdbc.cassandra for use with Scalaz stream
 resolvers += "Scalaz Bintray Repo" at "http://dl.bintray.com/scalaz/releases"
 
 libraryDependencies ++= Seq(
-  "org.scalaz.stream" %% "scalaz-stream" % "0.7.1a"
+  "com.rocketfuel.scalaz.stream" %% "iterator" % "0.0a"
 )

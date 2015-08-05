@@ -10,11 +10,11 @@ trait ConnectionImplicits {
 
   implicit class ConnectionChannels(connection: Connection) {
     val updates: Channel[Task, Update, Long] = {
-      UpdateProcess.forConnection()(connection)
+      UpdateProcess.forConnection(connection)
     }
 
     def selects[T]: Channel[Task, Select[T], Process[Task, T]] = {
-      SelectProcess.forConnection[T]()(connection)
+      SelectProcess.forConnection[T](connection)
     }
   }
 

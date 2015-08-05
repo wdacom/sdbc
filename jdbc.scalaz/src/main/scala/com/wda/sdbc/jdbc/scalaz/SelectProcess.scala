@@ -3,79 +3,80 @@ package com.wda.sdbc.jdbc.scalaz
 import java.sql.Connection
 
 import com.wda.sdbc.jdbc
+import com.wda.sdbc.jdbc.ResultSetImplicits
 import scalaz.concurrent.Task
 import scalaz.stream._
+import com.rocketfuel.scalaz.stream._
 
-object SelectProcess {
+object SelectProcess extends ResultSetImplicits {
 
-  def forConnection[T]()(implicit connection: Connection): Channel[Task, jdbc.Select[T], Process[Task, T]] = {
+  private case class Resource[T](
+    select: jdbc.Select[T]
+  )(implicit connection: Connection) {
 
+    val statement =
+      jdbc.prepare(
+        queryText = select.queryText,
+        parameterValues = select.parameterValues,
+        parameterPositions = select.parameterPositions
+      )
+
+    val resultSet = statement.executeQuery()
+
+    def iterator(): Task[Iterator[T]] = {
+      Task(resultSet.iterator().map(select.converter))
+    }
+
+    def close(closeConnection: Boolean = true): Task[Unit] = Task {
+      resultSet.close()
+
+      statement.close()
+
+      if (closeConnection) {
+        connection.close()
+      }
+    }
+  }
+
+  def forSelect[T](select: jdbc.Select[T])(implicit connection: Connection) = {
+    val acquire: Task[Resource[T]] = Task.delay(Resource[T](select))
+
+    io.iterator[Resource[T], T](acquire)(_.iterator())(_.close(closeConnection = false))
+  }
+
+  /**
+   * Run a stream of select statements. If the connection's autocommit is on, each select statement is
+   * run in its own transaction, otherwise they are run in the same transaction.
+   * @param connection
+   * @tparam T
+   * @return
+   */
+  def forConnection[T](implicit connection: Connection): Channel[Task, jdbc.Select[T], Process[Task, T]] = {
     channel.lift[Task, jdbc.Select[T], Process[Task, T]] { select =>
+      val acquire: Task[Resource[T]] = Task.delay(Resource[T](select))
 
-      val acquire: Task[jdbc.Row] = Task {
-        val statement = jdbc.prepare(
-          queryText = select.queryText,
-          parameterValues = select.parameterValues,
-          parameterPositions = select.parameterPositions
-        )
-        new jdbc.Row(statement.executeQuery())
-      }
-
-      def release(row: jdbc.Row): Task[Unit] = Task(row.close())
-
-      def step(row: jdbc.Row): Task[T] = Task {
-        if (row.underlying.next()) {
-          select.converter(row)
-        } else {
-          throw Cause.Terminated(Cause.End)
-        }
-      }
-
-      Task(io.resource[Task, jdbc.Row, T](acquire)(release)(step))
+      Task(io.iterator[Resource[T], T](acquire)(_.iterator())(_.close(closeConnection = false)))
     }
   }
 
-  private case class TransactionResource(
-    connection: Connection,
-    row: jdbc.Row
-  ) {
-    def close(): Unit = {
-      row.close()
-      connection.close()
-    }
-  }
-
+  /**
+   * Run a series of selects, each in its own connection and transaction.
+   * Each statement is committed if the pool has autoCommit turned on.
+   * @param pool
+   * @tparam T
+   * @return
+   */
   def forPool[T](
-    pool: jdbc.Pool
+    implicit pool: jdbc.Pool
   ): Channel[Task, jdbc.Select[T], Process[Task, T]] = {
 
     channel.lift[Task, jdbc.Select[T], Process[Task, T]] { select =>
-      val acquire: Task[TransactionResource] = Task {
-        implicit val connection = pool.getConnection()
-        val statement = jdbc.prepare(
-          queryText = select.queryText,
-          parameterValues = select.parameterValues,
-          parameterPositions = select.parameterPositions
-        )
-        TransactionResource(connection, new jdbc.Row(statement.executeQuery()))
-      }
+      val acquire: Task[Resource[T]] = for {
+        connection <- Task.delay(pool.getConnection())
+        resource <- Task.delay(Resource[T](select)(connection))
+      } yield resource
 
-      def release(resource: TransactionResource): Task[Unit] = {
-        Task(resource.close())
-      }
-
-      def step(resource: TransactionResource): Task[T] = {
-        val TransactionResource(_, row) = resource
-          Task {
-            if (row.underlying.next()) {
-              select.converter(row)
-            } else {
-              throw Cause.Terminated(Cause.End)
-            }
-          }
-      }
-
-      Task(io.resource[Task, TransactionResource, T](acquire)(release)(step))
+      Task(io.iterator[Resource[T], T](acquire)(_.iterator())(_.close()))
     }
   }
 

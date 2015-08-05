@@ -1,6 +1,8 @@
 package com.wda.sdbc.cassandra
 
 package object scalaz
-  extends PoolImplicits {
+  extends ClusterImplicits
+  with PoolImplicits
+  with SelectImplicits {
 
 }

@@ -1,14 +1,16 @@
 package com.wda.sdbc.cassandra.scalaz
 
+import com.datastax.driver.core.Cluster
 import com.wda.sdbc.Cassandra._
+
 import scalaz.concurrent.Task
 import scalaz.stream._
 
-trait PoolImplicits {
+trait ClusterImplicits {
 
-  implicit class PoolChannels(pool: Pool) {
+  implicit class ClusterChannels(cluster: Cluster) {
     def selects[T]: Channel[Task, Select[T], Process[Task, T]] = {
-      SelectProcess.forPool[T](pool)
+      SelectProcess.forCluster(cluster)
     }
   }
 
