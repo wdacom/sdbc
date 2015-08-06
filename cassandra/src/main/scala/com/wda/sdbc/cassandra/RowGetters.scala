@@ -7,6 +7,8 @@ import scala.collection.convert.wrapAsScala._
 import com.datastax.driver.core.{Row => CRow, UDTValue, TupleValue}
 import com.google.common.reflect.TypeToken
 
+import scala.reflect.ClassTag
+
 trait RowGetters {
 
   implicit val BooleanRowGetter: RowGetter[Boolean] = RowGetters[Boolean](row => ix => row.getBool(ix))
@@ -47,17 +49,14 @@ trait RowGetters {
 
   implicit val UDTValueRowGetter: RowGetter[UDTValue] = RowGetters[UDTValue](row => ix => row.getUDTValue(ix))
 
-  implicit def SeqRowGetter[T]: RowGetter[Seq[T]] = RowGetters[Seq[T]](row => ix => row.getList[T](ix, new TypeToken[T]() {}))
+  implicit def SeqRowGetter[T](implicit tTag: ClassTag[T]): RowGetter[Seq[T]] =
+    RowGetters[Seq[T]](row => ix => row.getList[T](ix, tTag.runtimeClass.asInstanceOf[Class[T]]))
 
-  implicit def JavaListRowGetter[T]: RowGetter[java.util.List[T]] = RowGetters[java.util.List[T]](row => ix => row.getList[T](ix, new TypeToken[T]() {}))
+  implicit def SetRowGetter[T](implicit tTag: ClassTag[T]): RowGetter[Set[T]] =
+    RowGetters[Set[T]](row => ix => row.getSet[T](ix, TypeToken.of[T](tTag.runtimeClass.asInstanceOf[Class[T]])).toSet)
 
-  implicit def SetRowGetter[T]: RowGetter[Set[T]] = RowGetters[Set[T]](row => ix => row.getSet[T](ix, new TypeToken[T]() {}).toSet)
-
-  implicit def JavaSetRowGetter[T]: RowGetter[java.util.Set[T]] = RowGetters[java.util.Set[T]](row => ix => row.getSet[T](ix, new TypeToken[T]() {}))
-
-  implicit def MapRowGetter[K, V]: RowGetter[Map[K, V]] = RowGetters[Map[K, V]](row => ix => row.getMap[K, V](ix, new TypeToken[K] {}, new TypeToken[V] {}).toMap)
-
-  implicit def JavaMapRowGetter[K, V]: RowGetter[java.util.Map[K, V]] = RowGetters[java.util.Map[K, V]](row => ix => row.getMap[K, V](ix, new TypeToken[K] {}, new TypeToken[V] {}))
+  implicit def MapRowGetter[K, V](implicit keyTag: ClassTag[K], valueTag: ClassTag[V]): RowGetter[Map[K, V]] =
+    RowGetters[Map[K, V]](row => ix => row.getMap[K, V](ix, TypeToken.of[K](keyTag.runtimeClass.asInstanceOf[Class[K]]), TypeToken.of[V](valueTag.runtimeClass.asInstanceOf[Class[V]])).toMap)
 
   implicit val Tuple0RowGetter: RowGetter[Unit] = new RowGetter[Unit] {
     override def apply(

@@ -1,5 +1,7 @@
 package com.wda.sdbc.cassandra
 
+import com.datastax.driver.core.{Row => CRow}
+
 trait PoolMethods {
   self: Cassandra =>
 
@@ -7,7 +9,7 @@ trait PoolMethods {
     def iterator[T](
       queryText: String,
       parameters: (String, Option[ParameterValue[_]])*
-    )(implicit converter: Row => T
+    )(implicit converter: CRow => T
     ): Iterator[T] = {
       Select[T](queryText).on(parameters: _*).iterator()(pool)
     }

@@ -52,6 +52,25 @@ class RichResultSetSpec
     (aux(v0Null), aux(v1Null))
   }
 
+  def genTuple(max0: Int, max1: Int): (Option[Int], Option[Int]) = {
+    val v0Null = util.Random.nextBoolean()
+    val v1Null = util.Random.nextBoolean()
+
+    def aux(b: Boolean, max: Int) = if (b) Some(util.Random.nextInt(max)) else None
+
+    (aux(v0Null, max0), aux(v1Null, max1))
+  }
+
+  def genKvp: (String, String) = {
+    val (l0, l1) = genTuple(5, 5)
+    (util.Random.nextString(l0.getOrElse(0)), util.Random.nextString(l1.getOrElse(0)))
+  }
+
+  def genMap: Map[String, String] = {
+    val size = util.Random.nextInt(10)
+    Seq.fill(size)(genKvp).toMap
+  }
+
   test("Insert and select works for tuples having some null elements.") {implicit connection =>
     Select[Unit]("CREATE KEYSPACE spc WITH REPLICATION = {'class': 'SimpleStrategy', 'replication_factor': 1}").execute()
     val tuples = Seq.fill(10)(genTuple)
@@ -66,6 +85,22 @@ class RichResultSetSpec
     val results = Select[(Option[Int], Option[Int])]("SELECT x FROM spc.tbl").iterator()
 
     assertResult(tuples.toSet)(results.toSet)
+  }
+
+  test("Insert and select works for maps.") {implicit connection =>
+    Select[Unit]("CREATE KEYSPACE spc WITH REPLICATION = {'class': 'SimpleStrategy', 'replication_factor': 1}").execute()
+    val maps = Seq.fill(10)(genMap)
+    Select[Int]("CREATE TABLE spc.tbl (id int PRIMARY KEY, x map<text, text>)").execute()
+
+    val insert = Select[Map[String, String]]("INSERT INTO spc.tbl (id, x) VALUES ($id, $x)")
+
+    for ((map, id) <- maps.zipWithIndex) {
+      insert.on("id" -> id, "x" -> map).execute()
+    }
+
+    val results = Select[Map[String, String]]("SELECT x FROM spc.tbl")(row => row[Map[String, String]](1)).iterator()
+
+    assertResult(maps.toSet)(results.toSet)
   }
 
 }
