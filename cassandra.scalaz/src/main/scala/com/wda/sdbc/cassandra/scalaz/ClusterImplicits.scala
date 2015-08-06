@@ -9,7 +9,7 @@ import scalaz.stream._
 trait ClusterImplicits {
 
   implicit class ClusterChannels(cluster: Cluster) {
-    def selects[T]: Channel[Task, Select[T], Process[Task, T]] = {
+    def process[T]: Channel[Task, Select[T], Process[Task, T]] = {
       SelectProcess.forCluster(cluster)
     }
   }

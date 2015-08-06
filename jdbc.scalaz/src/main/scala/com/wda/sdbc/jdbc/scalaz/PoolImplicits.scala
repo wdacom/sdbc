@@ -8,11 +8,11 @@ import scalaz.stream._
 trait PoolImplicits {
 
   implicit class PoolChannels(pool: Pool) {
-    lazy val updates: Channel[Task, Update, Long] = {
+    lazy val updateProcess: Channel[Task, Update, Long] = {
       UpdateProcess.forPool(pool)
     }
 
-    def selects[T]: Channel[Task, Select[T], Process[Task, T]] = {
+    def selectProcess[T]: Channel[Task, Select[T], Process[Task, T]] = {
       SelectProcess.forPool[T](pool)
     }
   }

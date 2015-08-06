@@ -7,7 +7,7 @@ import scalaz.stream._
 trait PoolImplicits {
 
   implicit class PoolChannels(pool: Pool) {
-    def selects[T]: Channel[Task, Select[T], Process[Task, T]] = {
+    def process[T]: Channel[Task, Select[T], Process[Task, T]] = {
       SelectProcess.forPool[T](pool)
     }
   }
