@@ -13,7 +13,8 @@ abstract class Cassandra
   with TupleParameterValues
   with TupleDataTypes
   with ParameterValueImplicits
-  with TupleGetters {
+  with TupleGetters
+  with PoolMethods {
 
   type Select[T] = cassandra.Select[T]
 
@@ -24,13 +25,5 @@ abstract class Cassandra
   type Selectable[Key, Value] = base.Selectable[Pool, Key, Value]
 
   type SelectableMethods[Value] = base.SelectableMethods[Pool, Value]
-
-  type Updatable[Key] = base.Updatable[Pool, Key]
-
-  type UpdatableMethods = base.UpdatableMethods[Pool]
-
-  type Executable[Key] = base.Executable[Pool, Key]
-
-  type ExecutableMethods = base.ExecutableMethods[Pool]
 
 }
