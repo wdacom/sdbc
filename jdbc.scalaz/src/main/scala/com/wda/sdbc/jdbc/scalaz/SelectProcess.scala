@@ -24,7 +24,7 @@ object SelectProcess extends ResultSetImplicits {
     val resultSet = statement.executeQuery()
 
     def iterator(): Task[Iterator[T]] = {
-      Task(resultSet.iterator().map(select.converter))
+      Task.delay(resultSet.iterator().map(select.converter))
     }
 
     def close(closeConnection: Boolean = true): Task[Unit] = Task {
@@ -55,7 +55,7 @@ object SelectProcess extends ResultSetImplicits {
     channel.lift[Task, jdbc.Select[T], Process[Task, T]] { select =>
       val acquire: Task[Resource[T]] = Task.delay(Resource[T](select))
 
-      Task(io.iterator[Resource[T], T](acquire)(_.iterator())(_.close(closeConnection = false)))
+      Task.delay(io.iterator[Resource[T], T](acquire)(_.iterator())(_.close(closeConnection = false)))
     }
   }
 
