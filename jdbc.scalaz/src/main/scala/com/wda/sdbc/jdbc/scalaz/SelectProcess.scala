@@ -6,7 +6,7 @@ import com.wda.sdbc.jdbc
 import com.wda.sdbc.jdbc.ResultSetImplicits
 import scalaz.concurrent.Task
 import scalaz.stream._
-import com.rocketfuel.scalaz.stream._
+import me.jeffshaw.scalaz.stream.IteratorConstructors._
 
 object SelectProcess extends ResultSetImplicits {
 
