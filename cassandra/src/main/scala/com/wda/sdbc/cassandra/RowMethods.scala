@@ -2,7 +2,7 @@ package com.wda.sdbc.cassandra
 
 import com.datastax.driver.core.{Row => CRow}
 
-trait Row {
+trait RowMethods {
 
   implicit class Row(underlying: CRow) {
 

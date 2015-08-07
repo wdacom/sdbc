@@ -8,7 +8,7 @@ abstract class Cassandra
   extends RowGetters
   with RowGetterImplicits
   with IndexImplicits
-  with Row
+  with RowMethods
   with ParameterValues
   with TupleParameterValues
   with TupleDataTypes

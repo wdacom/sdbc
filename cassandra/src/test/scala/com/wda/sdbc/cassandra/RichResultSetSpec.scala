@@ -98,7 +98,7 @@ class RichResultSetSpec
       insert.on("id" -> id, "x" -> map).execute()
     }
 
-    val results = Select[Map[String, String]]("SELECT x FROM spc.tbl")(row => row[Map[String, String]](1)).iterator()
+    val results = Select[Map[String, String]]("SELECT x FROM spc.tbl")(row => row[Map[String, String]](1).get).iterator()
 
     assertResult(maps.toSet)(results.toSet)
   }
