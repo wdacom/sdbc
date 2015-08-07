@@ -97,57 +97,10 @@ object SelectProcess
    * @return
    */
   def forClusterWithKeyspace[T](implicit cluster: Cluster): Channel[Task, (String, Select[T]), Process[Task, T]] = {
-    val poolsRef = new AtomicReference(Map.empty[String, Pool])
-
-    /**
-     * Get a Pool for the keyspace, creating it if it does not exist.
-     * @param keySpace
-     * @return
-     */
-    def getPool(keySpace: String): Task[Pool] = Task.delay {
-      val pools =
-        poolsRef.updateAndGet(
-          new UnaryOperator[Map[String, Pool]] {
-            override def apply(t: Map[String, Cassandra.Pool]): Map[String, Cassandra.Pool] = {
-              if (t.contains(keySpace)) t
-              else {
-                val pool = cluster.connect(keySpace)
-                t + (keySpace -> pool)
-              }
-            }
-          }
-        )
-
-      pools(keySpace)
+    forClusterWithKeyspaceAux[Select[T], Process[Task, T]] {
+      select => implicit pool =>
+        Task.delay(Process.iterator(Task.delay(select.iterator())))
     }
-
-    /**
-     * Empty the pools collection, and close all the pools.
-     */
-    val closePools: Task[Unit] = {
-      val getToClose = Task.delay[Map[String, Pool]] {
-        poolsRef.getAndUpdate(
-          new UnaryOperator[Map[String, Pool]] {
-            override def apply(t: Map[String, Cassandra.Pool]): Map[String, Cassandra.Pool] = {
-              Map.empty
-            }
-          }
-        )
-      }
-
-      for {
-        toClose <- getToClose
-        _ <- Task.gatherUnordered(toClose.map(kvp => closePool(kvp._2)).toSeq)
-      } yield ()
-    }
-
-    channel.lift[Task, (String, Select[T]), Process[Task, T]] { case (keyspace, select) =>
-      for {
-        pool <- getPool(keyspace)
-      } yield {
-        Process.iterator(Task.delay(select.iterator()(pool)))
-      }
-    }.onComplete(Process.eval_(closePools))
   }
 
 }

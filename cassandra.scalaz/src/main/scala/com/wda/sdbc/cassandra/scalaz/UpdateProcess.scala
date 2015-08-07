@@ -1,13 +1,10 @@
 package com.wda.sdbc.cassandra.scalaz
 
-import java.util.concurrent.atomic.AtomicReference
-import java.util.function.UnaryOperator
-
 import com.datastax.driver.core.Cluster
 
 import scalaz.stream._
 import com.wda.sdbc.Cassandra._
-import com.wda.sdbc.{Cassandra, cassandra}
+import com.wda.sdbc.cassandra
 
 import scalaz.concurrent.Task
 
@@ -76,66 +73,17 @@ object UpdateProcess
   }
 
   /**
-   * Using a Cluster, create a Process that takes pairs of (keySpace, Select) and produces a Process[T] for each.
+   * Using a Cluster, create a Sink that takes pairs of (keySpace, Update).
    * At most one pool is created for each keyspace. The Pools will be closed after the Process completes.
-   *
-   * Use merge.mergeN on the result to interleave the results, or .flatMap(identity)
-   * to receive them in order.
    *
    * @param cluster
    * @return
    */
   def forClusterWithKeyspace(implicit cluster: Cluster): Sink[Task, (String, Update)] = {
-    val poolsRef = new AtomicReference(Map.empty[String, Pool])
-
-    /**
-     * Get a Pool for the keyspace, creating it if it does not exist.
-     * @param keySpace
-     * @return
-     */
-    def getPool(keySpace: String): Task[Pool] = Task.delay {
-      val pools =
-        poolsRef.updateAndGet(
-          new UnaryOperator[Map[String, Pool]] {
-            override def apply(t: Map[String, Cassandra.Pool]): Map[String, Cassandra.Pool] = {
-              if (t.contains(keySpace)) t
-              else {
-                val pool = cluster.connect(keySpace)
-                t + (keySpace -> pool)
-              }
-            }
-          }
-        )
-
-      pools(keySpace)
+    forClusterWithKeyspaceAux[Update, Unit] {
+      update => implicit pool =>
+        Task.delay(update.execute())
     }
-
-    /**
-     * Empty the pools collection, and close all the pools.
-     */
-    val closePools: Task[Unit] = {
-      val getToClose = Task.delay[Map[String, Pool]] {
-        poolsRef.getAndUpdate(
-          new UnaryOperator[Map[String, Pool]] {
-            override def apply(t: Map[String, Cassandra.Pool]): Map[String, Cassandra.Pool] = {
-              Map.empty
-            }
-          }
-        )
-      }
-
-      for {
-        toClose <- getToClose
-        _ <- Task.gatherUnordered(toClose.map(kvp => closePool(kvp._2)).toSeq)
-      } yield ()
-    }
-
-    sink.lift[Task, (String, Update)] { case (keyspace, update) =>
-      for {
-        pool <- getPool(keyspace)
-        _ <- Task.delay(update.execute()(pool))
-      } yield ()
-    }.onComplete(Process.eval_(closePools))
   }
 
 }
