@@ -1,7 +1,10 @@
 package com.wda.sdbc
 
-import com.datastax.driver.core.{Row => CRow, Session, TupleValue, BoundStatement}
+import com.datastax.driver.core.{Row => CRow, ResultSet, Session, TupleValue, BoundStatement}
+import com.google.common.util.concurrent.{Futures, FutureCallback, ListenableFuture}
 import com.wda.sdbc.base.CompiledStatement
+
+import scala.concurrent.{Promise, Future, ExecutionContext}
 
 package object cassandra {
 
@@ -27,7 +30,7 @@ package object cassandra {
   }
 
   private [cassandra] def prepare(
-    select: Update
+    select: Execute
   )(implicit session: Session
   ): BoundStatement = {
     prepare(
@@ -75,6 +78,25 @@ package object cassandra {
     }
 
     forBinding
+  }
+
+  private [cassandra] def toScalaFuture[T](f: ListenableFuture[T])(implicit ec: ExecutionContext): Future[T] = {
+    //Thanks http://stackoverflow.com/questions/18026601/listenablefuture-to-scala-future
+    val p = Promise[T]()
+
+    val pCallback = new FutureCallback[T] {
+      override def onFailure(t: Throwable): Unit = {
+        p.failure(t)
+      }
+
+      override def onSuccess(result: T): Unit = {
+        p.success(result)
+      }
+    }
+
+    Futures.addCallback(f, pCallback)
+
+    p.future
   }
 
 }

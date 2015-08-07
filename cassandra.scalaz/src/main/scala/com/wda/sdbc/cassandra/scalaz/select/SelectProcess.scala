@@ -1,33 +1,16 @@
-package com.wda.sdbc.cassandra.scalaz
-
-import java.util.concurrent.atomic.AtomicReference
-import java.util.function.UnaryOperator
+package com.wda.sdbc.cassandra.scalaz.select
 
 import com.datastax.driver.core.Cluster
-import com.wda.sdbc.{Cassandra, cassandra}
+import com.rocketfuel.scalaz.stream._
 import com.wda.sdbc.Cassandra._
-import scalaz._
+import com.wda.sdbc.cassandra
+import com.wda.sdbc.cassandra.scalaz._
+
 import scalaz.concurrent.Task
 import scalaz.stream._
-import com.rocketfuel.scalaz.stream._
-import com.google.common.util.concurrent.{FutureCallback, Futures}
 
 object SelectProcess
   extends ProcessMethods {
-
-  /**
-   * Create a Process[T] from a Select.
-   *
-   * The Pool (i.e. Session) is not closed after the Process completes.
-   * For resource safety. use forPool.
-   * @param select
-   * @param pool
-   * @tparam T
-   * @return
-   */
-  def forSelect[T](select: Select[T])(implicit pool: Pool): Process[Task, T] = {
-    Process.iterator[T](runBoundStatement(cassandra.prepare(select)).map(_.map(select.converter)))
-  }
 
   /**
    * Using a pool, create a Process that takes Selects and produces a Process[T] for each.
@@ -80,7 +63,7 @@ object SelectProcess
    * @tparam T
    * @return
    */
-  def forCluster[T](implicit cluster: Cluster): Channel[Task, Select[T], Process[Task, T]] = {
+  def forCluster[T]()(implicit cluster: Cluster): Channel[Task, Select[T], Process[Task, T]] = {
     Process.await(Task.delay(cluster.connect())) { pool =>
       forPool[T](pool).onComplete(Process.eval_(closePool(pool)))
     }
@@ -96,7 +79,7 @@ object SelectProcess
    * @tparam T
    * @return
    */
-  def forClusterWithKeyspace[T](implicit cluster: Cluster): Channel[Task, (String, Select[T]), Process[Task, T]] = {
+  def forClusterWithKeyspace[T]()(implicit cluster: Cluster): Channel[Task, (String, Select[T]), Process[Task, T]] = {
     forClusterWithKeyspaceAux[Select[T], Process[Task, T]] {
       select => implicit pool =>
         Task.delay(Process.iterator(Task.delay(select.iterator())))

@@ -9,9 +9,9 @@ class OtherSpec
 
     val original = util.Success(BigDecimal("3.14159"))
 
-    Update("CREATE TABLE tbl (obj other)").execute()
+    Execute("CREATE TABLE tbl (obj other)").execute()
 
-    Update("INSERT INTO tbl (obj) VALUES ($obj)").on(
+    Execute("INSERT INTO tbl (obj) VALUES ($obj)").on(
       "obj" -> Serialized(original)
     ).execute()
 

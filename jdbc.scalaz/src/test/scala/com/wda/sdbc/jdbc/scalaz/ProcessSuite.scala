@@ -34,13 +34,13 @@ abstract class ProcessSuite
 
   override protected def beforeEach(): Unit = {
     withMemConnection(name = "test", dbCloseDelay = None) { implicit connection: Connection =>
-      Update("CREATE TABLE tbl (i bigint PRIMARY KEY)").execute()
+      Execute("CREATE TABLE tbl (i bigint PRIMARY KEY)").execute()
     }
   }
 
   override protected def afterEach(): Unit = {
     withMemConnection(name = "test", dbCloseDelay = None) { implicit connection: Connection =>
-      Update("DROP TABLE tbl").execute()
+      Execute("DROP TABLE tbl").execute()
     }
   }
 

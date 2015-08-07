@@ -58,20 +58,6 @@ case class Select[T] private (
     value
   }
 
-  override def execute()(implicit connection: Connection): Unit = {
-    logger.debug(s"""Executing "$originalQueryText" with parameters $parameterValues.""")
-
-    val prepared = prepare(
-      queryText = queryText,
-      parameterValues = parameterValues,
-      parameterPositions = parameterPositions
-    )
-
-    prepared.execute()
-
-    prepared.close()
-  }
-
   override def subclassConstructor(
     statement: CompiledStatement,
     parameterValues: Map[String, Option[ParameterValue[_]]]

@@ -12,36 +12,36 @@ class RichResultSetSpec
   override implicit val generatorDrivenConfig: PropertyCheckConfig = PropertyCheckConfig(maxSize = 10)
 
   test("iterator() works on several results") {implicit connection =>
-    Select[Unit]("CREATE KEYSPACE spc WITH REPLICATION = {'class': 'SimpleStrategy', 'replication_factor': 1}").execute()
-    Select[Int]("CREATE TABLE spc.tbl (x int PRIMARY KEY)").execute()
+    Execute("CREATE KEYSPACE spc WITH REPLICATION = {'class': 'SimpleStrategy', 'replication_factor': 1}").execute()
+    Execute("CREATE TABLE spc.tbl (x int PRIMARY KEY)").execute()
 
     forAll { (randoms: Seq[Int]) =>
-      val insert = Update("INSERT INTO spc.tbl (x) VALUES ($x)")
+      val insert = Execute("INSERT INTO spc.tbl (x) VALUES ($x)")
 
       for (random <- randoms) {
-        insert.on("x" -> random).update()
+        insert.on("x" -> random).execute()
       }
 
       val results = Select[Int]("SELECT x FROM spc.tbl").iterator()
 
       assertResult(randoms.toSet)(results.toSet)
 
-      Select[Unit]("TRUNCATE spc.tbl").execute()
+      RichResultSetSpec.truncate.execute()
     }
   }
 
   test("Insert and select works for tuples.") { implicit connection =>
-    Select[Unit]("CREATE KEYSPACE spc WITH REPLICATION = {'class': 'SimpleStrategy', 'replication_factor': 1}").execute()
-    Select[Int]("CREATE TABLE spc.tbl (x tuple<int, int> PRIMARY KEY)").execute()
+    Execute("CREATE KEYSPACE spc WITH REPLICATION = {'class': 'SimpleStrategy', 'replication_factor': 1}").execute()
+    Execute("CREATE TABLE spc.tbl (x tuple<int, int> PRIMARY KEY)").execute()
 
     forAll { (tuples: Seq[(Int, Int)]) =>
       //Note: Peng verified that values in tuples are nullable, so we need
       //to support that.
 
-      val insert = Update("INSERT INTO spc.tbl (x) VALUES ($x)")
+      val insert = Execute("INSERT INTO spc.tbl (x) VALUES ($x)")
 
       for (tuple <- tuples) {
-        insert.on("x" -> tuple).update()
+        insert.on("x" -> tuple).execute()
       }
 
       val results = Select[(Option[Int], Option[Int])]("SELECT x FROM spc.tbl").iterator()
@@ -50,45 +50,45 @@ class RichResultSetSpec
 
       assertResult(expectedResults.toSet)(results.toSet)
 
-      Select[Unit]("TRUNCATE spc.tbl").execute()
+      RichResultSetSpec.truncate.execute()
     }
   }
 
   test("Insert and select works for tuples having some null elements.") {implicit connection =>
-    Select[Unit]("CREATE KEYSPACE spc WITH REPLICATION = {'class': 'SimpleStrategy', 'replication_factor': 1}").execute()
-    Select[Int]("CREATE TABLE spc.tbl (x tuple<int, int> PRIMARY KEY)").execute()
+    Execute("CREATE KEYSPACE spc WITH REPLICATION = {'class': 'SimpleStrategy', 'replication_factor': 1}").execute()
+    Execute("CREATE TABLE spc.tbl (x tuple<int, int> PRIMARY KEY)").execute()
 
     forAll { (tuples: Seq[(Option[Int], Option[Int])]) =>
-      val insert = Update("INSERT INTO spc.tbl (x) VALUES ($x)")
+      val insert = Execute("INSERT INTO spc.tbl (x) VALUES ($x)")
 
       for (tuple <- tuples) {
-        insert.on("x" -> tuple).update()
+        insert.on("x" -> tuple).execute()
       }
 
       val results = Select[(Option[Int], Option[Int])]("SELECT x FROM spc.tbl").iterator()
 
       assertResult(tuples.toSet)(results.toSet)
 
-      Select[Unit]("TRUNCATE spc.tbl").execute()
+      RichResultSetSpec.truncate.execute()
     }
   }
 
   test("Insert and select works for sets.") {implicit connection =>
-    Select[Unit]("CREATE KEYSPACE spc WITH REPLICATION = {'class': 'SimpleStrategy', 'replication_factor': 1}").execute()
-    Select[Int]("CREATE TABLE spc.tbl (id int PRIMARY KEY, x set<text>)").execute()
+    Execute("CREATE KEYSPACE spc WITH REPLICATION = {'class': 'SimpleStrategy', 'replication_factor': 1}").execute()
+    Execute("CREATE TABLE spc.tbl (id int PRIMARY KEY, x set<text>)").execute()
 
     forAll(Gen.nonEmptyListOf(Gen.nonEmptyContainerOf[Set, String](Gen.alphaStr))) { sets =>
-      val insert = Update("INSERT INTO spc.tbl (id, x) VALUES ($id, $x)")
+      val insert = Execute("INSERT INTO spc.tbl (id, x) VALUES ($id, $x)")
 
       for ((set, id) <- sets.zipWithIndex) {
-        insert.on( "id" -> id, "x" -> set).update()
+        insert.on( "id" -> id, "x" -> set).execute()
       }
 
       val results = Select[Set[String]]("SELECT x FROM spc.tbl").iterator()
 
       assertResult(sets.toSet)(results.toSet)
 
-      Select[Unit]("TRUNCATE spc.tbl").execute()
+      RichResultSetSpec.truncate.execute()
     }
   }
 
@@ -100,22 +100,26 @@ class RichResultSetSpec
   implicit val getter = MapRowGetter[String, String](classTag[String], classTag[String])
 
   test("Insert and select works for maps.") {implicit connection =>
-    Select[Unit]("CREATE KEYSPACE spc WITH REPLICATION = {'class': 'SimpleStrategy', 'replication_factor': 1}").execute()
-    Select[Int]("CREATE TABLE spc.tbl (id int PRIMARY KEY, x map<text, text>)").execute()
+    Execute("CREATE KEYSPACE spc WITH REPLICATION = {'class': 'SimpleStrategy', 'replication_factor': 1}").execute()
+    Execute("CREATE TABLE spc.tbl (id int PRIMARY KEY, x map<text, text>)").execute()
 
     forAll(Gen.nonEmptyListOf[Map[String, String]](Gen.nonEmptyMap[String, String](genStringTuple))) { maps =>
-      val insert = Update("INSERT INTO spc.tbl (id, x) VALUES ($id, $x)")
+      val insert = Execute("INSERT INTO spc.tbl (id, x) VALUES ($id, $x)")
 
       for ((map, id) <- maps.zipWithIndex) {
-        insert.on("id" -> id, "x" -> map).update()
+        insert.on("id" -> id, "x" -> map).execute()
       }
 
       val results = Select[Map[String, String]]("SELECT x FROM spc.tbl").iterator()
 
       assertResult(maps.toSet)(results.toSet)
 
-      Select[Unit]("TRUNCATE spc.tbl").execute()
+      RichResultSetSpec.truncate.execute()
     }
   }
 
+}
+
+object RichResultSetSpec {
+  val truncate = Execute("TRUNCATE spc.tbl")
 }

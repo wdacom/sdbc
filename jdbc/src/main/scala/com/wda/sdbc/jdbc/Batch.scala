@@ -57,19 +57,6 @@ case class Batch private (
     result.toIterator
   }
 
-  override def execute()(implicit connection: Connection): Unit = {
-    logger.debug(s"""Executing batch "$originalQueryText".""")
-    val prepared = prepare()
-    try {
-      prepared.executeLargeBatch()
-    }
-    catch {
-      case e: UnsupportedOperationException =>
-        prepared.executeBatch()
-    }
-    prepared.close()
-  }
-
   override def subclassConstructor(
     statement: CompiledStatement,
     parameterValues: Map[String, Option[ParameterValue[_]]]

@@ -16,7 +16,7 @@ class RichResultSetSpec
 
   test("iterator() works on several results") {implicit connection =>
     val randoms = Seq.fill(10)(util.Random.nextInt())
-    Update("CREATE TABLE tbl (x int)").execute()
+    Execute("CREATE TABLE tbl (x int)").execute()
 
     val batch = randoms.foldLeft(Batch("INSERT INTO tbl (x) VALUES ($x)")) {
       case (batch, r) =>
@@ -35,14 +35,14 @@ class RichResultSetSpec
   test("using SelectForUpdate to update a value works") {implicit connection =>
     val randoms = Seq.fill(10)(util.Random.nextInt()).sorted
 
-    Update("CREATE TABLE tbl (id identity PRIMARY KEY, x int)").execute()
+    Execute("CREATE TABLE tbl (id identity PRIMARY KEY, x int)").execute()
 
     val batch = randoms.foldLeft(Batch("INSERT INTO tbl (x) VALUES ($x)")) {
       case (batch, r) =>
         batch.addBatch("x" -> r)
     }
 
-    batch.execute()
+    batch.iterator()
 
     for(row <- connection.iteratorForUpdate("SELECT * FROM tbl")) {
       row("x") = row[Int]("x").map(_ + 1)

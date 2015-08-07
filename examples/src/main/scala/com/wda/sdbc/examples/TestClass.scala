@@ -7,10 +7,7 @@ case class TestClass(
   value: String
 )
 
-object TestClass
-  extends SelectableMethods[TestClass]
-  with UpdatableMethods
-  with ExecutableMethods {
+object TestClass {
 
   implicit def apply(row: Row): TestClass = {
     TestClass(row[Int]("id").get, row[String]("value").get)

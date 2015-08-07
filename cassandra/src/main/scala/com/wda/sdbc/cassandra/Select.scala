@@ -24,38 +24,16 @@ case class Select[T] private (
   }
 
   def iteratorAsync()(implicit connection: Session, ec: ExecutionContext): Future[Iterator[T]] = {
-    logger.debug(s"""Retrieving an iterator asynchronously using "$originalQueryText" with parameters $parameterValues.""")
+    logger.debug(s"""Asynchronously retrieving an iterator asynchronously using "$originalQueryText" with parameters $parameterValues.""")
 
     val prepared = prepare(statement, parameterValues, queryOptions)
     val toListen = connection.executeAsync(prepared)
 
-    //Thanks http://stackoverflow.com/questions/18026601/listenablefuture-to-scala-future
-    val p = Promise[ResultSet]()
-
-    val pCallback = new FutureCallback[ResultSet] {
-      override def onFailure(t: Throwable): Unit = {
-        p.failure(t)
-      }
-
-      override def onSuccess(result: ResultSet): Unit = {
-        p.success(result)
-      }
-    }
-
-    Futures.addCallback(toListen, pCallback)
-
     for {
-      result <- p.future
+      result <- toScalaFuture(toListen)
     } yield {
       result.iterator().asScala.map(converter)
     }
-  }
-
-  override def execute()(implicit connection: Session): Unit = {
-    logger.debug(s"""Executing "$originalQueryText" with parameters $parameterValues.""")
-
-    val prepared = prepare(statement, parameterValues, queryOptions)
-    connection.execute(prepared)
   }
 
   override def subclassConstructor(

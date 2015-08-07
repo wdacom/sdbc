@@ -5,11 +5,11 @@ import com.wda.sdbc.Cassandra._
 import scalaz.concurrent.Task
 import scalaz.stream.Process
 
-trait UpdateImplicits {
+trait ExecuteImplicits {
 
-  implicit class UpdateProcessMethods[T](update: Update) {
+  implicit class ExecuteProcessMethods[T](execute: Execute) {
     def process(implicit pool: Pool): Process[Task, Unit] = {
-      UpdateProcess.forUpdate(update)
+      ExecuteProcess.forExecute(execute)
     }
   }
 

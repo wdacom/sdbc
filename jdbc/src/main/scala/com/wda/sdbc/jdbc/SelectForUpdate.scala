@@ -20,12 +20,6 @@ case class SelectForUpdate private (
     preparedStatement.executeQuery().mutableIterator()
   }
 
-  override def execute()(implicit connection: Connection): Unit = {
-    logger.debug(s"""Executing an update using "$originalQueryText" with parameters $parameterValues.""")
-    val preparedStatement = prepare(queryText, parameterValues, parameterPositions)
-    preparedStatement.execute()
-  }
-
   override def subclassConstructor(
     statement: CompiledStatement,
     parameterValues: Map[String, Option[base.ParameterValue[_, PreparedStatement, Int]]]

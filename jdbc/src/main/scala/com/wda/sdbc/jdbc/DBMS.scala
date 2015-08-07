@@ -9,23 +9,31 @@ abstract class DBMS
   with HikariImplicits
   with OptionParameter
   with GetterImplicits
-  with UpdaterImplicits {
+  with UpdaterImplicits
+  with base.BatchableMethods[java.sql.Connection]
+  with base.UpdatableMethods[java.sql.Connection]
+  with base.SelectableMethods[java.sql.Connection]
+  with base.ExecutableMethods[java.sql.Connection] {
 
   type Row = jdbc.Row
 
   type MutableRow = jdbc.MutableRow
 
-  type Select[T] = jdbc.Select[T]
+  override type Select[T] = jdbc.Select[T]
 
   val Select = jdbc.Select
 
-  type Update = jdbc.Update
+  override type Update = jdbc.Update
 
   val Update = jdbc.Update
 
-  type Batch = jdbc.Batch
+  override type Batch = jdbc.Batch
 
   val Batch = jdbc.Batch
+
+  override type Execute = jdbc.Execute
+
+  val Execute = jdbc.Execute
 
   type Connection = java.sql.Connection
 
@@ -33,17 +41,11 @@ abstract class DBMS
 
   val Pool = jdbc.Pool
 
-  type Selectable[Key, Value] = base.Selectable[Connection, Key, Value]
+  type Selectable[Key, Value] = base.Selectable[Connection, Key, Value, Select[Value]]
 
-  type SelectableMethods[Value] = base.SelectableMethods[Connection, Value]
+  type Updatable[Key] = base.Updatable[Connection, Key, Update]
 
-  type Updatable[Key] = base.Updatable[Connection, Key]
-
-  type UpdatableMethods = base.UpdatableMethods[Connection]
-
-  type Executable[Key] = base.Executable[Connection, Key]
-
-  type ExecutableMethods = base.ExecutableMethods[Connection]
+  type Executable[Key] = base.Executable[Connection, Key, Execute]
 
   implicit def PoolToHikariPool(pool: Pool): HikariDataSource = {
     pool.underlying
@@ -75,7 +77,7 @@ abstract class DBMS
       queryText: String,
       parameterValues: (String, Option[ParameterValue[_]])*
     ): Unit = {
-      Update(queryText).on(parameterValues: _*).execute()(connection)
+      Execute(queryText).on(parameterValues: _*).execute()(connection)
     }
   }
 

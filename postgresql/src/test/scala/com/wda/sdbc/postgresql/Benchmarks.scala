@@ -74,7 +74,7 @@ class Benchmarks
 
   override protected def afterEach(): Unit = {
     withPg {implicit connection =>
-      TestTable.drop.update()
+      TestTable.drop.execute()
       connection.commit()
     }
   }
@@ -114,7 +114,7 @@ class Benchmarks
   test("test JDBC select") {implicit connection =>
     val batch = values.foldLeft(TestTable.batchInsert){case (b, v) => v.addBatch(b)}
 
-    batch.execute()
+    batch.iterator()
 
     val selectedRows = Array.ofDim[TestTable](rowCount)
 
@@ -138,7 +138,7 @@ class Benchmarks
   }
 
   test("time JDBC select") {implicit connection =>
-    values.foldLeft(TestTable.batchInsert){case (b, v) => v.addBatch(b)}.execute()
+    values.foldLeft(TestTable.batchInsert){case (b, v) => v.addBatch(b)}.iterator()
 
     connection.commit()
 
@@ -163,7 +163,7 @@ class Benchmarks
   test("time com.wda.sql batch insert") {implicit connection =>
 
     val insertDuration = averageTime(repetitions) {
-      values.foldLeft(TestTable.batchInsert){case (b, v) => v.addBatch(b)}.execute()
+      values.foldLeft(TestTable.batchInsert){case (b, v) => v.addBatch(b)}.iterator()
       connection.commit()
     }{
       TestTable.truncate.execute()
@@ -301,10 +301,10 @@ class Benchmarks
     val select = Select[TestTable]("SELECT * FROM test ORDER BY id;", hasParameters = false)
 
     val drop =
-      Update("DROP TABLE test;", hasParameters = false)
+      Execute("DROP TABLE test;", hasParameters = false)
 
     val truncate =
-      Update("TRUNCATE TABLE test RESTART IDENTITY;")
+      Execute("TRUNCATE TABLE test RESTART IDENTITY;")
 
   }
 

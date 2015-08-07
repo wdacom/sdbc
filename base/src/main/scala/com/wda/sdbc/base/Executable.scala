@@ -1,11 +1,15 @@
 package com.wda.sdbc.base
 
-trait Executable[Connection, Key] {
-  def execute(key: Key)(implicit connection: Connection): Unit
+import com.wda.sdbc.base
+
+trait Executable[Connection, Key, E <: Execute[Connection]] {
+  def execute(key: Key): E
 }
 
 trait ExecutableMethods[Connection] {
-  def execute[Key](key: Key)(implicit ev: Executable[Connection, Key], connection: Connection): Unit = {
+  type Execute <: base.Execute[Connection]
+
+  def execute[Key](key: Key)(implicit ev: Executable[Connection, Key, Execute], connection: Connection): Unit = {
     ev.execute(key)
   }
 }
