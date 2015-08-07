@@ -55,7 +55,15 @@ trait RowGetters {
   implicit def SetRowGetter[T](implicit tTag: ClassTag[T]): RowGetter[Set[T]] =
     RowGetters[Set[T]](row => ix => row.getSet[T](ix, TypeToken.of[T](tTag.runtimeClass.asInstanceOf[Class[T]])).toSet)
 
-  implicit def MapRowGetter[K, V](implicit keyTag: ClassTag[K], valueTag: ClassTag[V]): RowGetter[Map[K, V]] =
+  /**
+   * This function is broken when it's used implicitly, because valueTag always becomes ClassTag[Nothing], instead of ClassTag[V].
+   * @param keyTag
+   * @param valueTag
+   * @tparam K
+   * @tparam V
+   * @return
+   */
+  def MapRowGetter[K, V](keyTag: ClassTag[K], valueTag: ClassTag[V]): RowGetter[Map[K, V]] =
     RowGetters[Map[K, V]](row => ix => row.getMap[K, V](ix, TypeToken.of[K](keyTag.runtimeClass.asInstanceOf[Class[K]]), TypeToken.of[V](valueTag.runtimeClass.asInstanceOf[Class[V]])).toMap)
 
   implicit val Tuple0RowGetter: RowGetter[Unit] = new RowGetter[Unit] {
