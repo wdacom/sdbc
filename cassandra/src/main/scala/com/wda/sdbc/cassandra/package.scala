@@ -27,6 +27,17 @@ package object cassandra {
   }
 
   private [cassandra] def prepare(
+    select: Update
+  )(implicit session: Session
+  ): BoundStatement = {
+    prepare(
+      select.statement,
+      select.parameterValues,
+      select.queryOptions
+    )
+  }
+
+  private [cassandra] def prepare(
     statement: CompiledStatement,
     parameterValues: Map[String, Option[ParameterValue[_]]],
     queryOptions: QueryOptions

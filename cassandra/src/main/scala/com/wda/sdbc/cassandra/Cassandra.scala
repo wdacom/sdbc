@@ -20,10 +20,18 @@ abstract class Cassandra
 
   val Select = cassandra.Select
 
+  type Update = cassandra.Update
+
+  val Update = cassandra.Update
+
   type Pool = Session
 
   type Selectable[Key, Value] = base.Selectable[Pool, Key, Value]
 
   type SelectableMethods[Value] = base.SelectableMethods[Pool, Value]
+
+  type Updatable[Key] = base.Updatable[Pool, Key]
+
+  type UpdatableMethods = base.UpdatableMethods[Session]
 
 }
