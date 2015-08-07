@@ -1,12 +1,9 @@
 package com.wda.sdbc.cassandra
 
-import com.google.common.util.concurrent.{FutureCallback, Futures}
 import com.wda.Logging
 import com.wda.sdbc.base
 import com.wda.sdbc.base.CompiledStatement
-import com.datastax.driver.core.{Row => CRow, _}
-import scala.concurrent._
-import scala.collection.convert.decorateAsScala._
+import com.datastax.driver.core._
 
 case class Update private (
   statement: CompiledStatement,
