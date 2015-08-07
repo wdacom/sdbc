@@ -16,10 +16,10 @@ class RichResultSetSpec
     Select[Int]("CREATE TABLE spc.tbl (x int PRIMARY KEY)").execute()
 
     forAll { (randoms: Seq[Int]) =>
-      val insert = Select[Int]("INSERT INTO spc.tbl (x) VALUES ($x)")
+      val insert = Update("INSERT INTO spc.tbl (x) VALUES ($x)")
 
       for (random <- randoms) {
-        insert.on("x" -> random).execute()
+        insert.on("x" -> random).update()
       }
 
       val results = Select[Int]("SELECT x FROM spc.tbl").iterator()
@@ -38,10 +38,10 @@ class RichResultSetSpec
       //Note: Peng verified that values in tuples are nullable, so we need
       //to support that.
 
-      val insert = Select[Int]("INSERT INTO spc.tbl (x) VALUES ($x)")
+      val insert = Update("INSERT INTO spc.tbl (x) VALUES ($x)")
 
       for (tuple <- tuples) {
-        insert.on("x" -> tuple).execute()
+        insert.on("x" -> tuple).update()
       }
 
       val results = Select[(Option[Int], Option[Int])]("SELECT x FROM spc.tbl").iterator()
@@ -59,10 +59,10 @@ class RichResultSetSpec
     Select[Int]("CREATE TABLE spc.tbl (x tuple<int, int> PRIMARY KEY)").execute()
 
     forAll { (tuples: Seq[(Option[Int], Option[Int])]) =>
-      val insert = Select[Int]("INSERT INTO spc.tbl (x) VALUES ($x)")
+      val insert = Update("INSERT INTO spc.tbl (x) VALUES ($x)")
 
       for (tuple <- tuples) {
-        insert.on("x" -> tuple).execute()
+        insert.on("x" -> tuple).update()
       }
 
       val results = Select[(Option[Int], Option[Int])]("SELECT x FROM spc.tbl").iterator()
@@ -78,10 +78,10 @@ class RichResultSetSpec
     Select[Int]("CREATE TABLE spc.tbl (id int PRIMARY KEY, x set<text>)").execute()
 
     forAll(Gen.nonEmptyListOf(Gen.nonEmptyContainerOf[Set, String](Gen.alphaStr))) { sets =>
-      val insert = Select[Set[String]]("INSERT INTO spc.tbl (id, x) VALUES ($id, $x)")
+      val insert = Update("INSERT INTO spc.tbl (id, x) VALUES ($id, $x)")
 
       for ((set, id) <- sets.zipWithIndex) {
-        insert.on( "id" -> id, "x" -> set).execute()
+        insert.on( "id" -> id, "x" -> set).update()
       }
 
       val results = Select[Set[String]]("SELECT x FROM spc.tbl").iterator()
@@ -104,10 +104,10 @@ class RichResultSetSpec
     Select[Int]("CREATE TABLE spc.tbl (id int PRIMARY KEY, x map<text, text>)").execute()
 
     forAll(Gen.nonEmptyListOf[Map[String, String]](Gen.nonEmptyMap[String, String](genStringTuple))) { maps =>
-      val insert = Select[Map[String, String]]("INSERT INTO spc.tbl (id, x) VALUES ($id, $x)")
+      val insert = Update("INSERT INTO spc.tbl (id, x) VALUES ($id, $x)")
 
       for ((map, id) <- maps.zipWithIndex) {
-        insert.on("id" -> id, "x" -> map).execute()
+        insert.on("id" -> id, "x" -> map).update()
       }
 
       val results = Select[Map[String, String]]("SELECT x FROM spc.tbl").iterator()

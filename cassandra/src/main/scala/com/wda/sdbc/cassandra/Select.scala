@@ -18,11 +18,14 @@ case class Select[T] private (
   with Logging {
 
   def iterator()(implicit connection: Session): Iterator[T] = {
+    logger.debug(s"""Retrieving an iterator using "$originalQueryText" with parameters $parameterValues.""")
     val prepared = prepare(statement, parameterValues, queryOptions)
     connection.execute(prepared).iterator.asScala.map(converter)
   }
 
   def iteratorAsync()(implicit connection: Session, ec: ExecutionContext): Future[Iterator[T]] = {
+    logger.debug(s"""Retrieving an iterator asynchronously using "$originalQueryText" with parameters $parameterValues.""")
+
     val prepared = prepare(statement, parameterValues, queryOptions)
     val toListen = connection.executeAsync(prepared)
 
@@ -48,7 +51,9 @@ case class Select[T] private (
     }
   }
 
-  def execute()(implicit connection: Session): Unit = {
+  override def execute()(implicit connection: Session): Unit = {
+    logger.debug(s"""Executing "$originalQueryText" with parameters $parameterValues.""")
+
     val prepared = prepare(statement, parameterValues, queryOptions)
     connection.execute(prepared)
   }
