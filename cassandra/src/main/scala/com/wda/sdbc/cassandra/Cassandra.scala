@@ -1,7 +1,7 @@
 package com.wda.sdbc
 package cassandra
 
-import com.datastax.driver.core.Session
+import com.datastax.driver.core
 import com.wda.sdbc.base.ParameterValueImplicits
 
 abstract class Cassandra
@@ -22,6 +22,8 @@ abstract class Cassandra
 
   val Execute = cassandra.Execute
 
-  type Pool = Session
+  type Cluster = core.Cluster
+
+  type Session = core.Session
 
 }

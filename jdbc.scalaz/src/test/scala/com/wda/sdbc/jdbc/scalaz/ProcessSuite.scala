@@ -1,5 +1,6 @@
 package com.wda.sdbc.jdbc.scalaz
 
+import com.wda.sdbc.jdbc.Updatable
 import com.wda.sdbc.h2.H2Suite
 import com.wda.sdbc.H2._
 import com.zaxxer.hikari.HikariConfig
@@ -20,14 +21,20 @@ abstract class ProcessSuite
 
   val expectedCount = 100L
 
+  case class LongKey(key: Long)
+  
+  implicit val LongInsertable = new Updatable[LongKey] {
+    val update = Update("INSERT INTO tbl (i) VALUES ($i)")
+    
+    override def update(key: LongKey): Update = {
+      update.on("i" -> key.key)  
+    }
+  }
+
   val insertSet = 0L.until(expectedCount).toSet
 
   val inserts = {
-    val integers = Process.emitAll(insertSet.toSeq)
-
-    val insert = Update("INSERT INTO tbl (i) VALUES ($i)")
-
-    integers.map(i => insert.on("i" -> i)).toSource
+    Process.emitAll(insertSet.toSeq.map(key => LongKey(key)))
   }
 
   val select = Select[Int]("SELECT i FROM tbl")

@@ -22,7 +22,7 @@ trait ParameterizedQuery[
   Index
 ] {
 
-  protected def statement: CompiledStatement
+  def statement: CompiledStatement
 
   def parameterValues: Map[String, Option[ParameterValue[_, UnderlyingQuery, Index]]]
 

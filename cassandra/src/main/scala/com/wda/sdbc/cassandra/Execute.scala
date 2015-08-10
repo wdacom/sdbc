@@ -8,24 +8,25 @@ import com.datastax.driver.core._
 import scala.concurrent.{ExecutionContext, Future}
 
 case class Execute private (
-  statement: CompiledStatement,
-  parameterValues: Map[String, Option[ParameterValue[_]]],
-  queryOptions: QueryOptions
+  override val statement: CompiledStatement,
+  override val parameterValues: Map[String, Option[ParameterValue[_]]],
+  override val queryOptions: QueryOptions
 ) extends base.Execute[Session]
-  with base.ParameterizedQuery[Execute, BoundStatement, Int]
+  with ParameterizedQuery[Execute]
+  with HasQueryOptions
   with Logging {
 
-  override def execute()(implicit connection: Session): Unit = {
+  override def execute()(implicit session: Session): Unit = {
     logger.debug(s"""Executing "$originalQueryText" with parameters $parameterValues.""")
     val prepared = prepare(statement, parameterValues, queryOptions)
-    connection.execute(prepared)
+    session.execute(prepared)
   }
 
-  def executeAsync()(implicit connection: Session, ec: ExecutionContext): Future[Unit] = {
+  def executeAsync()(implicit session: Session, ec: ExecutionContext): Future[Unit] = {
     logger.debug(s"""Asynchronously executing "$originalQueryText" with parameters $parameterValues.""")
     val prepared = prepare(statement, parameterValues, queryOptions)
 
-    toScalaFuture[ResultSet](connection.executeAsync(prepared)).map(Function.const(()))
+    toScalaFuture[ResultSet](session.executeAsync(prepared)).map(Function.const(()))
   }
 
   override def subclassConstructor(

@@ -9,25 +9,26 @@ import scala.concurrent._
 import scala.collection.convert.decorateAsScala._
 
 case class Select[T] private (
-  statement: CompiledStatement,
-  parameterValues: Map[String, Option[ParameterValue[_]]],
-  queryOptions: QueryOptions
+  override val statement: CompiledStatement,
+  override val parameterValues: Map[String, Option[ParameterValue[_]]],
+  override val queryOptions: QueryOptions
 )(implicit val converter: CRow => T)
   extends base.Select[Session, T]
-  with base.ParameterizedQuery[Select[T], BoundStatement, Int]
+  with ParameterizedQuery[Select[T]]
+  with HasQueryOptions
   with Logging {
 
-  def iterator()(implicit connection: Session): Iterator[T] = {
+  def iterator()(implicit session: Session): Iterator[T] = {
     logger.debug(s"""Retrieving an iterator using "$originalQueryText" with parameters $parameterValues.""")
     val prepared = prepare(statement, parameterValues, queryOptions)
-    connection.execute(prepared).iterator.asScala.map(converter)
+    session.execute(prepared).iterator.asScala.map(converter)
   }
 
-  def iteratorAsync()(implicit connection: Session, ec: ExecutionContext): Future[Iterator[T]] = {
+  def iteratorAsync()(implicit session: Session, ec: ExecutionContext): Future[Iterator[T]] = {
     logger.debug(s"""Asynchronously retrieving an iterator asynchronously using "$originalQueryText" with parameters $parameterValues.""")
 
     val prepared = prepare(statement, parameterValues, queryOptions)
-    val toListen = connection.executeAsync(prepared)
+    val toListen = session.executeAsync(prepared)
 
     for {
       result <- toScalaFuture(toListen)

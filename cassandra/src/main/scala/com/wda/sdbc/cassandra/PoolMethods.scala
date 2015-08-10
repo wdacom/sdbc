@@ -5,7 +5,7 @@ import com.datastax.driver.core.{Row => CRow}
 trait PoolMethods {
   self: Cassandra =>
 
-  implicit class PoolMethods(pool: Pool) {
+  implicit class PoolMethods(pool: Session) {
     def iterator[T](
       queryText: String,
       parameters: (String, Option[ParameterValue[_]])*

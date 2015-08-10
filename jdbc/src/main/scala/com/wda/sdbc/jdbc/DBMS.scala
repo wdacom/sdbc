@@ -1,51 +1,40 @@
-package com.wda.sdbc
-package jdbc
+package com.wda.sdbc.jdbc
 
-import com.wda.CaseInsensitiveOrdering
-import com.zaxxer.hikari.{HikariDataSource, HikariConfig}
+import com.wda.sdbc.jdbc
+import com.zaxxer.hikari.HikariDataSource
 
 abstract class DBMS
   extends IndexImplicits
   with HikariImplicits
   with OptionParameter
   with GetterImplicits
-  with UpdaterImplicits
-  with base.BatchableMethods[java.sql.Connection]
-  with base.UpdatableMethods[java.sql.Connection]
-  with base.SelectableMethods[java.sql.Connection]
-  with base.ExecutableMethods[java.sql.Connection] {
+  with UpdaterImplicits {
 
   type Row = jdbc.Row
 
   type MutableRow = jdbc.MutableRow
 
-  override type Select[T] = jdbc.Select[T]
+  type Select[T] = jdbc.Select[T]
 
   val Select = jdbc.Select
 
-  override type Update = jdbc.Update
+  type Update = jdbc.Update
 
   val Update = jdbc.Update
 
-  override type Batch = jdbc.Batch
+  type Batch = jdbc.Batch
 
   val Batch = jdbc.Batch
 
-  override type Execute = jdbc.Execute
+  type Execute = jdbc.Execute
 
   val Execute = jdbc.Execute
-
-  type Connection = java.sql.Connection
 
   type Pool = jdbc.Pool
 
   val Pool = jdbc.Pool
 
-  type Selectable[Key, Value] = base.Selectable[Connection, Key, Value, Select[Value]]
-
-  type Updatable[Key] = base.Updatable[Connection, Key, Update]
-
-  type Executable[Key] = base.Executable[Connection, Key, Execute]
+  type Connection = jdbc.Connection
 
   implicit def PoolToHikariPool(pool: Pool): HikariDataSource = {
     pool.underlying
@@ -114,68 +103,6 @@ abstract class DBMS
 
   }
 
-  DBMS.register(this)
-
-}
-
-object DBMS {
-
-  private val dataSources: collection.mutable.Map[String, DBMS] = collection.mutable.Map.empty
-
-  private val jdbcSchemes: collection.mutable.Map[String, DBMS] = {
-    import scala.collection.convert.decorateAsScala._
-    //Scala's collections don't contain an ordered mutable map,
-    //so just use java's.
-    new java.util.TreeMap[String, DBMS](CaseInsensitiveOrdering).asScala
-  }
-
-  private val productNames: collection.mutable.Map[String, DBMS] = collection.mutable.Map.empty
-
-  private val jdbcURIRegex = "(?i)jdbc:(.+):.*".r
-
-  private def register(dbms: DBMS): Unit = {
-    this.synchronized {
-      dataSources(dbms.dataSourceClassName) = dbms
-      for (scheme <- dbms.jdbcSchemes) {
-        jdbcSchemes(scheme) = dbms
-      }
-      productNames(dbms.productName) = dbms
-      Class.forName(dbms.driverClassName)
-    }
-  }
-
-  def ofJdbcUrl(connectionString: String): DBMS = {
-    val jdbcURIRegex(scheme) = connectionString
-
-    jdbcSchemes(scheme)
-  }
-
-  def ofDataSourceClassName(toLookup: String): DBMS = {
-    dataSources(toLookup)
-  }
-
-  def of(config: HikariConfig): DBMS = {
-    val dataSourceClassDbms = Option(config.getDataSourceClassName).flatMap(dataSources.get)
-    val urlDbms = Option(config.getJdbcUrl).map(ofJdbcUrl)
-    dataSourceClassDbms.
-    orElse(urlDbms).
-    get
-  }
-
-  def of(c: java.sql.Connection): DBMS = {
-    productNames(c.getMetaData.getDatabaseProductName)
-  }
-
-  def of(s: java.sql.PreparedStatement): DBMS = {
-    of(s.getConnection)
-  }
-
-  def of(s: java.sql.Statement): DBMS = {
-    of(s.getConnection)
-  }
-
-  def of(r: java.sql.ResultSet): DBMS = {
-    of(r.getStatement)
-  }
+  register(this)
 
 }

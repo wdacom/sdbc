@@ -1,6 +1,6 @@
 package com.wda.sdbc.jdbc
 
-import java.sql.{PreparedStatement, Types, Connection}
+import java.sql.{PreparedStatement, Types}
 
 import com.wda.Logging
 import com.wda.sdbc.base
@@ -44,7 +44,7 @@ case class Batch private (
     prepared
   }
 
-  override def iterator()(implicit connection: Connection): Iterator[Long] = {
+  def seq()(implicit connection: Connection): Seq[Long] = {
     logger.debug(s"""Executing batch "$originalQueryText".""")
     val prepared = prepare()
     val result = try {
@@ -54,7 +54,11 @@ case class Batch private (
         prepared.executeBatch().map(_.toLong)
     }
     prepared.close()
-    result.toIterator
+    result
+  }
+
+  override def iterator()(implicit connection: Connection): Iterator[Long] = {
+    seq().toIterator
   }
 
   override def subclassConstructor(

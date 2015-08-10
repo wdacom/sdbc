@@ -7,8 +7,8 @@ import com.wda.sdbc.base
 import com.wda.sdbc.base.CompiledStatement
 
 case class Select[T] private (
-  statement: CompiledStatement,
-  parameterValues: Map[String, Option[ParameterValue[_]]]
+  override val statement: CompiledStatement,
+  override val parameterValues: Map[String, Option[ParameterValue[_]]]
 )(implicit val converter: Row => T)
   extends base.Select[Connection, T]
   with ParameterizedQuery[Select[T]]

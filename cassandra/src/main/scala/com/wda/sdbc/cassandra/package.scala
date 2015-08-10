@@ -1,6 +1,7 @@
 package com.wda.sdbc
 
-import com.datastax.driver.core.{Row => CRow, ResultSet, Session, TupleValue, BoundStatement}
+import com.datastax.driver.core
+//import com.datastax.driver.core.{Row => CRow, TupleValue, BoundStatement}
 import com.google.common.util.concurrent.{Futures, FutureCallback, ListenableFuture}
 import com.wda.sdbc.base.CompiledStatement
 
@@ -8,31 +9,30 @@ import scala.concurrent.{Promise, Future, ExecutionContext}
 
 package object cassandra {
 
-  type ParameterizedQuery[Self <: ParameterizedQuery[Self]] = base.ParameterizedQuery[Self, BoundStatement, Int]
+  type ParameterizedQuery[Self <: ParameterizedQuery[Self]] = base.ParameterizedQuery[Self, core.BoundStatement, Int]
 
-  type ParameterValue[+T] = base.ParameterValue[T, BoundStatement, Int]
+  type ParameterValue[+T] = base.ParameterValue[T, core.BoundStatement, Int]
 
-  type Index = PartialFunction[CRow, Int]
+  type ParameterList = Seq[(String, Option[ParameterValue[_]])]
 
-  type RowGetter[+T] = base.Getter[CRow, Index, T]
+  type Index = PartialFunction[core.Row, Int]
 
-  type TupleGetter[+T] = base.Getter[TupleValue, Int, T]
+  type RowGetter[+T] = base.Getter[core.Row, Index, T]
+
+  type TupleGetter[+T] = base.Getter[core.TupleValue, Int, T]
+
+  type Session = core.Session
+
+  type Cluster = core.Cluster
+
+  type Selectable[Key, Value] = Cassandra#Selectable[Key, Value]
+
+  type Executable[Key] = Cassandra#Executable[Key]
 
   private [cassandra] def prepare(
-    select: Select[_]
+    select: ParameterizedQuery[_] with HasQueryOptions
   )(implicit session: Session
-  ): BoundStatement = {
-    prepare(
-      select.statement,
-      select.parameterValues,
-      select.queryOptions
-    )
-  }
-
-  private [cassandra] def prepare(
-    select: Execute
-  )(implicit session: Session
-  ): BoundStatement = {
+  ): core.BoundStatement = {
     prepare(
       select.statement,
       select.parameterValues,
@@ -45,7 +45,7 @@ package object cassandra {
     parameterValues: Map[String, Option[ParameterValue[_]]],
     queryOptions: QueryOptions
   )(implicit session: Session
-  ): BoundStatement = {
+  ): core.BoundStatement = {
     val prepared = session.prepare(statement.queryText)
 
     val forBinding = prepared.bind()

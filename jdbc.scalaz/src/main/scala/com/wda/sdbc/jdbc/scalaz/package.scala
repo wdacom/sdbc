@@ -1,9 +1,11 @@
 package com.wda.sdbc.jdbc
 
-package object scalaz
-  extends scalaz.ConnectionImplicits
-  with scalaz.PoolImplicits
-  with scalaz.SelectImplicits
-  with scalaz.UpdateImplicits {
+import _root_.scalaz.stream.Process
+
+package object scalaz {
+
+  implicit def ProcessToProcessMethods(x: Process.type): ProcessMethods.type = {
+    ProcessMethods
+  }
 
 }

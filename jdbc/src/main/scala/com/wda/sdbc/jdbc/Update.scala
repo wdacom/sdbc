@@ -1,7 +1,5 @@
 package com.wda.sdbc.jdbc
 
-import java.sql.Connection
-
 import com.wda.Logging
 import com.wda.sdbc.base
 import com.wda.sdbc.base.CompiledStatement

@@ -3,10 +3,9 @@ package com.wda.sdbc.cassandra
 import java.util.concurrent.atomic.AtomicReference
 import java.util.function.UnaryOperator
 
-import com.datastax.driver.core.{Row => CRow, Cluster, BoundStatement, ResultSet}
-import com.google.common.util.concurrent.{FutureCallback, Futures}
-import com.wda.sdbc.Cassandra
-import com.wda.sdbc.Cassandra._
+import me.jeffshaw.scalaz.stream.IteratorConstructors._
+import com.datastax.driver.core.{Row => CRow, PreparedStatement, BoundStatement, ResultSet}
+import com.google.common.util.concurrent.{ListenableFuture, FutureCallback, Futures}
 
 import scala.collection.convert.wrapAsScala._
 import _root_.scalaz.concurrent.Task
@@ -15,81 +14,144 @@ import _root_.scalaz.stream._
 
 package object scalaz {
 
-  protected def runBoundStatement(
-    prepared: BoundStatement
-  )(implicit pool: Pool
-  ): Task[Iterator[CRow]] = {
-    Task.async { callback =>
-      val rsFuture = pool.executeAsync(prepared)
+  private [scalaz] def connect(cluster: Cluster, keyspace: Option[String] = None): Task[Session] = {
+    Task.delay(keyspace.map(cluster.connect).getOrElse(cluster.connect()))
+  }
 
-      val googleCallback = new FutureCallback[ResultSet] {
+  private [scalaz] def toTask[T](f: ListenableFuture[T]): Task[T] = {
+    Task.async[T] { callback =>
+      val googleCallback = new FutureCallback[T] {
         override def onFailure(t: Throwable): Unit = {
           callback(-\/(t))
         }
 
-        override def onSuccess(result: ResultSet): Unit = {
-          callback(\/-(result.iterator()))
+        override def onSuccess(result: T): Unit = {
+          callback(\/-(result))
         }
       }
 
-      Futures.addCallback(rsFuture, googleCallback)
+      Futures.addCallback(f, googleCallback)
     }
   }
 
-  protected def ignoreBoundStatement(
+  private [scalaz] def prepareAsync(
+    query: ParameterizedQuery[_]
+  )(implicit pool: Session): Task[PreparedStatement] = {
+    toTask(pool.prepareAsync(query.queryText))
+  }
+
+  private [scalaz] def bind(
+    query: ParameterizedQuery[_] with HasQueryOptions,
+    statement: PreparedStatement
+  ): Task[BoundStatement] = {
+    Task.delay {
+      val forBinding = statement.bind()
+
+      for ((key, maybeValue) <- query.parameterValues) {
+        val parameterIndices = query.parameterPositions(key)
+
+        maybeValue match {
+          case None =>
+            for (parameterIndex <- parameterIndices) {
+              forBinding.setToNull(parameterIndex - 1)
+            }
+          case Some(value) =>
+            for (parameterIndex <- parameterIndices) {
+              value.set(forBinding, parameterIndex - 1)
+            }
+        }
+      }
+
+      val queryOptions = query.queryOptions
+      forBinding.setConsistencyLevel(queryOptions.consistencyLevel)
+      forBinding.setSerialConsistencyLevel(queryOptions.serialConsistencyLevel)
+      queryOptions.defaultTimestamp.map(forBinding.setDefaultTimestamp)
+      forBinding.setFetchSize(queryOptions.fetchSize)
+      forBinding.setIdempotent(queryOptions.idempotent)
+      forBinding.setRetryPolicy(queryOptions.retryPolicy)
+
+      if (queryOptions.tracing) {
+        forBinding.enableTracing()
+      } else {
+        forBinding.disableTracing()
+      }
+
+      forBinding
+    }
+  }
+
+  private [scalaz] def runSelect[Value](
+    select: Select[Value]
+  )(implicit pool: Session
+  ): Task[Process[Task, Value]] = {
+    for {
+      prepared <- prepareAsync(select)
+      bound <- bind(select, prepared)
+      resultProcess <- runBoundStatement(bound)
+    } yield {
+      resultProcess.map(select.converter)
+    }
+  }
+
+  private def runBoundStatement(
     prepared: BoundStatement
-  )(implicit pool: Pool
+  )(implicit pool: Session
+  ): Task[Process[Task, CRow]] = {
+    toTask[ResultSet](pool.executeAsync(prepared)).map { result =>
+      Process.iterator(Task.delay(result.iterator()))
+    }
+  }
+
+  private [scalaz] def runExecute(
+    execute: Execute
+  )(implicit pool: Session
   ): Task[Unit] = {
-    Task.async { callback =>
-      val rsFuture = pool.executeAsync(prepared)
-
-      val googleCallback = new FutureCallback[ResultSet] {
-        override def onFailure(t: Throwable): Unit = {
-          callback(-\/(t))
-        }
-
-        override def onSuccess(result: ResultSet): Unit = {
-          callback(\/-(()))
-        }
-      }
-
-      Futures.addCallback(rsFuture, googleCallback)
-    }
+    for {
+      prepared <- prepareAsync(execute)
+      bound <- bind(execute, prepared)
+      _ <- ignoreBoundStatement(bound)
+    } yield ()
   }
 
-
-  protected def closePool(pool: Pool): Task[Unit] = {
-    Task.async[Unit] { callback =>
-      val rsFuture = pool.closeAsync()
-
-      val googleCallback = new FutureCallback[Void] {
-        override def onFailure(t: Throwable): Unit = {
-          callback(-\/(t))
-        }
-
-        override def onSuccess(result: Void): Unit = {
-          callback(\/-(()))
-        }
-      }
-
-      Futures.addCallback(rsFuture, googleCallback)
-    }
+  private def ignoreBoundStatement(
+    prepared: BoundStatement
+  )(implicit pool: Session
+  ): Task[Unit] = {
+    val rsFuture = pool.executeAsync(prepared)
+    toTask(rsFuture).map(Function.const(()))
   }
 
-  def forClusterWithKeyspaceAux[T, O](runner: T => Pool => Task[O])(implicit cluster: Cluster): Channel[Task, (String, T), O] = {
+  private [scalaz] def closePool(pool: Session): Task[Unit] = {
+    val f = pool.closeAsync()
+    toTask(f).map(Function.const(()))
+  }
 
-    val poolsRef = new AtomicReference(Map.empty[String, Pool])
+  /**
+   * Run statements, but open only one session per keyspace.
+   * Sessions are created when they are first required.
+   * @param runner
+   * @param cluster
+   * @tparam T
+   * @tparam O
+   * @return
+   */
+  private [scalaz] def forClusterWithKeyspaceAux[T, O](
+    runner: T => Session => Task[O]
+  )(implicit cluster: Cluster
+  ): Channel[Task, (String, T), O] = {
+
+    val poolsRef = new AtomicReference(Map.empty[String, Session])
 
     /**
      * Get a Pool for the keyspace, creating it if it does not exist.
      * @param keySpace
      * @return
      */
-    def getPool(keySpace: String): Task[Pool] = Task.delay {
+    def getPool(keySpace: String): Task[Session] = Task.delay {
       val pools =
         poolsRef.updateAndGet(
-          new UnaryOperator[Map[String, Pool]] {
-            override def apply(t: Map[String, Cassandra.Pool]): Map[String, Cassandra.Pool] = {
+          new UnaryOperator[Map[String, Session]] {
+            override def apply(t: Map[String, Session]): Map[String, Session] = {
               if (t.contains(keySpace)) t
               else {
                 val pool = cluster.connect(keySpace)
@@ -106,10 +168,10 @@ package object scalaz {
      * Empty the pools collection, and close all the pools.
      */
     val closePools: Task[Unit] = {
-      val getToClose = Task.delay[Map[String, Pool]] {
+      val getToClose = Task.delay[Map[String, Session]] {
         poolsRef.getAndUpdate(
-          new UnaryOperator[Map[String, Pool]] {
-            override def apply(t: Map[String, Cassandra.Pool]): Map[String, Cassandra.Pool] = {
+          new UnaryOperator[Map[String, Session]] {
+            override def apply(t: Map[String, Session]): Map[String, Session] = {
               Map.empty
             }
           }

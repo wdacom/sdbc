@@ -1,6 +1,6 @@
 package com.wda.sdbc.cassandra
 
-import com.datastax.driver.core.{Cluster, Session}
+import com.datastax.driver.core
 import org.cassandraunit.utils.EmbeddedCassandraServerHelper
 import org.scalatest.{BeforeAndAfterEach, fixture, Outcome, BeforeAndAfterAll}
 
@@ -20,7 +20,7 @@ abstract class CassandraSuite
   override type FixtureParam = Session
 
   override protected def withFixture(test: OneArgTest): Outcome = {
-    val client = Cluster.builder().addContactPoint("localhost").withPort(9142).build()
+    val client = core.Cluster.builder().addContactPoint("localhost").withPort(9142).build()
 
     val session = client.connect()
     try {
