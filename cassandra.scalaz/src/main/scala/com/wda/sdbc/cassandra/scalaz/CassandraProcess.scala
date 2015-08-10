@@ -37,7 +37,7 @@ object CassandraProcess {
       }
 
       def executeWithKeyspace[Value](cluster: Cluster, execute: Execute): Sink[Task, (String, ParameterList)] = {
-        forClusterWithKeyspaceAux[ParameterList, Unit] { params => implicit pool =>
+        forClusterWithKeyspaceAux[ParameterList, Unit] { params => implicit session =>
           runExecute(execute.on(params: _*))
         }(cluster)
       }
@@ -49,7 +49,7 @@ object CassandraProcess {
       }
 
       def selectWithKeyspace[Value](cluster: Cluster, select: Select[Value]): Channel[Task, (String, ParameterList), Process[Task, Value]] = {
-        forClusterWithKeyspaceAux[ParameterList, Process[Task, Value]] { params => implicit pool =>
+        forClusterWithKeyspaceAux[ParameterList, Process[Task, Value]] { params => implicit session =>
           runSelect[Value](select.on(params: _*))
         }(cluster)
       }

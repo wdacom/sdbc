@@ -40,8 +40,8 @@ package object scalaz {
 
   private [scalaz] def prepareAsync(
     query: ParameterizedQuery[_]
-  )(implicit pool: Session): Task[PreparedStatement] = {
-    toTask(pool.prepareAsync(query.queryText))
+  )(implicit session: Session): Task[PreparedStatement] = {
+    toTask(session.prepareAsync(query.queryText))
   }
 
   private [scalaz] def bind(
@@ -86,7 +86,7 @@ package object scalaz {
 
   private [scalaz] def runSelect[Value](
     select: Select[Value]
-  )(implicit pool: Session
+  )(implicit session: Session
   ): Task[Process[Task, Value]] = {
     for {
       prepared <- prepareAsync(select)
@@ -99,16 +99,16 @@ package object scalaz {
 
   private def runBoundStatement(
     prepared: BoundStatement
-  )(implicit pool: Session
+  )(implicit session: Session
   ): Task[Process[Task, CRow]] = {
-    toTask[ResultSet](pool.executeAsync(prepared)).map { result =>
+    toTask[ResultSet](session.executeAsync(prepared)).map { result =>
       Process.iterator(Task.delay(result.iterator()))
     }
   }
 
   private [scalaz] def runExecute(
     execute: Execute
-  )(implicit pool: Session
+  )(implicit session: Session
   ): Task[Unit] = {
     for {
       prepared <- prepareAsync(execute)
@@ -119,9 +119,9 @@ package object scalaz {
 
   private def ignoreBoundStatement(
     prepared: BoundStatement
-  )(implicit pool: Session
+  )(implicit session: Session
   ): Task[Unit] = {
-    val rsFuture = pool.executeAsync(prepared)
+    val rsFuture = session.executeAsync(prepared)
     toTask(rsFuture).map(Function.const(()))
   }
 
@@ -144,36 +144,36 @@ package object scalaz {
   )(implicit cluster: Cluster
   ): Channel[Task, (String, T), O] = {
 
-    val poolsRef = new AtomicReference(Map.empty[String, Session])
+    val sessionsRef = new AtomicReference(Map.empty[String, Session])
 
     /**
-     * Get a Pool for the keyspace, creating it if it does not exist.
+     * Get a Session for the keyspace, creating it if it does not exist.
      * @param keySpace
      * @return
      */
-    def getPool(keySpace: String): Task[Session] = Task.delay {
-      val pools =
-        poolsRef.updateAndGet(
+    def getSession(keySpace: String): Task[Session] = Task.delay {
+      val sessions =
+        sessionsRef.updateAndGet(
           new UnaryOperator[Map[String, Session]] {
             override def apply(t: Map[String, Session]): Map[String, Session] = {
               if (t.contains(keySpace)) t
               else {
-                val pool = cluster.connect(keySpace)
-                t + (keySpace -> pool)
+                val session = cluster.connect(keySpace)
+                t + (keySpace -> session)
               }
             }
           }
         )
 
-      pools(keySpace)
+      sessions(keySpace)
     }
 
     /**
-     * Empty the pools collection, and close all the pools.
+     * Empty the sessions collection, and close all the sessions.
      */
-    val closePools: Task[Unit] = {
+    val closeSessions: Task[Unit] = {
       val getToClose = Task.delay[Map[String, Session]] {
-        poolsRef.getAndUpdate(
+        sessionsRef.getAndUpdate(
           new UnaryOperator[Map[String, Session]] {
             override def apply(t: Map[String, Session]): Map[String, Session] = {
               Map.empty
@@ -190,10 +190,10 @@ package object scalaz {
 
     channel.lift[Task, (String, T), O]{ case (keyspace, thing) =>
       for {
-        pool <- getPool(keyspace)
-        result <- runner(thing)(pool)
+        session <- getSession(keyspace)
+        result <- runner(thing)(session)
       } yield result
-    }.onComplete(Process.eval_(closePools))
+    }.onComplete(Process.eval_(closeSessions))
   }
 
 }
