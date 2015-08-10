@@ -7,7 +7,7 @@ import com.zaxxer.hikari.HikariConfig
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
 import scalaz.stream._
 
-abstract class ProcessSuite
+abstract class JdbcProcessSuite
   extends H2Suite
   with BeforeAndAfterEach
   with BeforeAndAfterAll {

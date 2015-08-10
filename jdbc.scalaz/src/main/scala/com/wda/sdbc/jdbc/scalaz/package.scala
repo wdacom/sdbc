@@ -4,8 +4,8 @@ import _root_.scalaz.stream.Process
 
 package object scalaz {
 
-  implicit def ProcessToProcessMethods(x: Process.type): ProcessMethods.type = {
-    ProcessMethods
+  implicit def ProcessToJdbcProcess(x: Process.type): JdbcProcess.type = {
+    JdbcProcess
   }
 
 }

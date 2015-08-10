@@ -14,6 +14,10 @@ import _root_.scalaz.stream._
 
 package object scalaz {
 
+  implicit def ProcessToCassandraProcess(x: Process.type): CassandraProcess.type = {
+    CassandraProcess
+  }
+
   private [scalaz] def connect(cluster: Cluster, keyspace: Option[String] = None): Task[Session] = {
     Task.delay(keyspace.map(cluster.connect).getOrElse(cluster.connect()))
   }
@@ -121,8 +125,8 @@ package object scalaz {
     toTask(rsFuture).map(Function.const(()))
   }
 
-  private [scalaz] def closePool(pool: Session): Task[Unit] = {
-    val f = pool.closeAsync()
+  private [scalaz] def closeSession(session: Session): Task[Unit] = {
+    val f = session.closeAsync()
     toTask(f).map(Function.const(()))
   }
 
@@ -180,7 +184,7 @@ package object scalaz {
 
       for {
         toClose <- getToClose
-        _ <- Task.gatherUnordered(toClose.map(kvp => closePool(kvp._2)).toSeq)
+        _ <- Task.gatherUnordered(toClose.map(kvp => closeSession(kvp._2)).toSeq)
       } yield ()
     }
 
