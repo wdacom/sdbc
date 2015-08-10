@@ -43,7 +43,7 @@ trait HasPostgreSqlPool {
   }
 
   protected def pgDropTestCatalogs(): Unit = {
-    pgPool.foreach(_.shutdown())
+    pgPool.foreach(_.close())
     pgPool = None
 
     withPgMaster { implicit connection =>
@@ -112,6 +112,6 @@ trait HasPostgreSqlPool {
    */
   protected def pgAfterAll(): Unit = {
     pgDropTestCatalogs()
-    pgMasterPool.shutdown()
+    pgMasterPool.close()
   }
 }

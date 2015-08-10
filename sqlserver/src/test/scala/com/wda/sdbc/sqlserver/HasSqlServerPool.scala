@@ -40,7 +40,7 @@ trait HasSqlServerPool {
   }
 
   protected def sqlDropTestCatalogs(): Unit = {
-    sqlPool.foreach(_.shutdown())
+    sqlPool.foreach(_.close())
     sqlPool = None
 
     withSqlMaster { implicit connection =>
@@ -103,7 +103,7 @@ trait HasSqlServerPool {
    */
   protected def sqlAfterAll(): Unit = {
     sqlDropTestCatalogs()
-    sqlMasterPool.shutdown()
+    sqlMasterPool.close()
   }
 
 }

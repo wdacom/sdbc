@@ -20,7 +20,7 @@ libraryDependencies ++= Seq(
 
 libraryDependencies <++= scalaVersion { version =>
   val VersionRegex = """(\d+).(\d+)\.?.*""".r("major", "minor")
-  lazy val xmlDependency = "org.scala-lang.modules" %% "scala-xml" % "1.0.4"
+  lazy val xmlDependency = "org.scala-lang.modules" %% "scala-xml" % "1.0.5"
   val VersionRegex(major, minor) = version
   (major.toInt, minor.toInt) match {
     case (2,minor) if minor < 11 =>

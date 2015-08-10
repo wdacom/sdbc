@@ -35,7 +35,7 @@ class HasSqlServerPoolSpec
   }
 
   override protected def afterAll(): Unit = {
-    sqlMasterPool.shutdown()
+    sqlMasterPool.close()
   }
 }
 

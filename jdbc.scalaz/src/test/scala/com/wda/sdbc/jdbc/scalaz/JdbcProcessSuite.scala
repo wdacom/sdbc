@@ -52,7 +52,7 @@ abstract class JdbcProcessSuite
   }
 
   override protected def afterAll(): Unit = {
-    pool.shutdown()
+    pool.close()
   }
 
 }
