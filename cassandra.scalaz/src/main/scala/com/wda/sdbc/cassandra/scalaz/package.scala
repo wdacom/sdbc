@@ -148,24 +148,24 @@ package object scalaz {
 
     /**
      * Get a Session for the keyspace, creating it if it does not exist.
-     * @param keySpace
+     * @param keyspace
      * @return
      */
-    def getSession(keySpace: String): Task[Session] = Task.delay {
+    def getSession(keyspace: String): Task[Session] = Task.delay {
       val sessions =
         sessionsRef.updateAndGet(
           new UnaryOperator[Map[String, Session]] {
             override def apply(t: Map[String, Session]): Map[String, Session] = {
-              if (t.contains(keySpace)) t
+              if (t.contains(keyspace)) t
               else {
-                val session = cluster.connect(keySpace)
-                t + (keySpace -> session)
+                val session = cluster.connect(keyspace)
+                t + (keyspace -> session)
               }
             }
           }
         )
 
-      sessions(keySpace)
+      sessions(keyspace)
     }
 
     /**
