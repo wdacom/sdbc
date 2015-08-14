@@ -47,53 +47,47 @@ package object scalaz {
   private [scalaz] def bind(
     query: ParameterizedQuery[_] with HasQueryOptions,
     statement: PreparedStatement
-  ): Task[BoundStatement] = {
-    Task.delay {
-      val forBinding = statement.bind()
+  ): BoundStatement = {
+    val forBinding = statement.bind()
 
-      for ((key, maybeValue) <- query.parameterValues) {
-        val parameterIndices = query.parameterPositions(key)
+    for ((key, maybeValue) <- query.parameterValues) {
+      val parameterIndices = query.parameterPositions(key)
 
-        maybeValue match {
-          case None =>
-            for (parameterIndex <- parameterIndices) {
-              forBinding.setToNull(parameterIndex - 1)
-            }
-          case Some(value) =>
-            for (parameterIndex <- parameterIndices) {
-              value.set(forBinding, parameterIndex - 1)
-            }
-        }
+      maybeValue match {
+        case None =>
+          for (parameterIndex <- parameterIndices) {
+            forBinding.setToNull(parameterIndex - 1)
+          }
+        case Some(value) =>
+          for (parameterIndex <- parameterIndices) {
+            value.set(forBinding, parameterIndex - 1)
+          }
       }
-
-      val queryOptions = query.queryOptions
-      forBinding.setConsistencyLevel(queryOptions.consistencyLevel)
-      forBinding.setSerialConsistencyLevel(queryOptions.serialConsistencyLevel)
-      queryOptions.defaultTimestamp.map(forBinding.setDefaultTimestamp)
-      forBinding.setFetchSize(queryOptions.fetchSize)
-      forBinding.setIdempotent(queryOptions.idempotent)
-      forBinding.setRetryPolicy(queryOptions.retryPolicy)
-
-      if (queryOptions.tracing) {
-        forBinding.enableTracing()
-      } else {
-        forBinding.disableTracing()
-      }
-
-      forBinding
     }
+
+    val queryOptions = query.queryOptions
+    forBinding.setConsistencyLevel(queryOptions.consistencyLevel)
+    forBinding.setSerialConsistencyLevel(queryOptions.serialConsistencyLevel)
+    queryOptions.defaultTimestamp.map(forBinding.setDefaultTimestamp)
+    forBinding.setFetchSize(queryOptions.fetchSize)
+    forBinding.setIdempotent(queryOptions.idempotent)
+    forBinding.setRetryPolicy(queryOptions.retryPolicy)
+
+    if (queryOptions.tracing) {
+      forBinding.enableTracing()
+    } else {
+      forBinding.disableTracing()
+    }
+
+    forBinding
   }
 
   private [scalaz] def runSelect[Value](
     select: Select[Value]
   )(implicit session: Session
-  ): Task[Process[Task, Value]] = {
-    for {
-      prepared <- prepareAsync(select)
-      bound <- bind(select, prepared)
-      resultProcess <- runBoundStatement(bound)
-    } yield {
-      resultProcess.map(select.converter)
+  ): Process[Task, Value] = {
+    Process.await(prepareAsync(select).map(p => bind(select, p))) { bound =>
+      Process.await(runBoundStatement(bound))(_.map(select.converter))
     }
   }
 
@@ -112,7 +106,7 @@ package object scalaz {
   ): Task[Unit] = {
     for {
       prepared <- prepareAsync(execute)
-      bound <- bind(execute, prepared)
+      bound = bind(execute, prepared)
       _ <- ignoreBoundStatement(bound)
     } yield ()
   }

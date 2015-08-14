@@ -13,7 +13,7 @@ object CassandraProcess {
       Process.eval(scalaz.runExecute(execute))
     }
 
-    def select[T](select: Select[T])(implicit session: Session): Task[Process[Task, T]] = {
+    def select[T](select: Select[T])(implicit session: Session): Process[Task, T] = {
       scalaz.runSelect(select)
     }
 
@@ -26,7 +26,7 @@ object CassandraProcess {
 
       def select[Value](session: Session, select: Select[Value]): Channel[Task, ParameterList, Process[Task, Value]] = {
         channel.lift[Task, Seq[(String, Option[ParameterValue[_]])], Process[Task, Value]] { params =>
-          runSelect[Value](select.on(params: _*))(session)
+          Task.delay(runSelect[Value](select.on(params: _*))(session))
         }
       }
 
@@ -50,7 +50,7 @@ object CassandraProcess {
 
       def selectWithKeyspace[Value](cluster: Cluster, select: Select[Value]): Channel[Task, (String, ParameterList), Process[Task, Value]] = {
         forClusterWithKeyspaceAux[ParameterList, Process[Task, Value]] { params => implicit session =>
-          runSelect[Value](select.on(params: _*))
+          Task.delay(runSelect[Value](select.on(params: _*)))
         }(cluster)
       }
     }
@@ -64,7 +64,7 @@ object CassandraProcess {
 
       def select[Key, Value](session: Session)(implicit selectable: Selectable[Key, Value]): Channel[Task, Key, Process[Task, Value]] = {
         channel.lift[Task, Key, Process[Task, Value]] { key =>
-          runSelect[Value](selectable.select(key))(session)
+          Task.delay(runSelect[Value](selectable.select(key))(session))
         }
       }
 
@@ -88,7 +88,7 @@ object CassandraProcess {
 
       def selectsWithKeyspace[Key, Value](cluster: Cluster)(implicit selectable: Selectable[Key, Value]): Channel[Task, (String, Key), Process[Task, Value]] = {
         forClusterWithKeyspaceAux[Key, Process[Task, Value]] { key => implicit session =>
-          runSelect[Value](selectable.select(key))
+          Task.delay(runSelect[Value](selectable.select(key)))
         }(cluster)
       }
     }
