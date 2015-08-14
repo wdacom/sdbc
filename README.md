@@ -72,7 +72,7 @@ Packages exist on Maven Central for Scala 2.10 and 2.11. The Scala 2.10 builds f
 
 ## Java 8 time notes
 
-| column type | column time zone | joda type |
+| column type | column time zone | java.time type |
 | --- | --- | --- |
 | timestamp or datetime | GMT | Instant |
 | timestamp or datetime | same as client | LocalDateTime |
