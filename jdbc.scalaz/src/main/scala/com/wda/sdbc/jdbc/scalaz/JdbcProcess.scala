@@ -8,6 +8,19 @@ import me.jeffshaw.scalaz.stream.IteratorConstructors._
 object JdbcProcess {
 
   object jdbc {
+    private def getConnection(pool: Pool) = Task.delay(pool.getConnection())
+
+    private def closeConnection(connection: Connection): Task[Unit] = Task.delay(connection.close())
+
+    private def withConnection[Key, T](task: Key => Connection => Task[T])(implicit pool: Pool): Channel[Task, Key, T] = {
+      channel.lift[Task, Key, T] { params =>
+        for {
+          connection <- getConnection(pool)
+          result <- task(params)(connection).onFinish(_ => closeConnection(connection))
+        } yield result
+      }
+    }
+
     def execute(execute: Execute)(implicit connection: Connection): Process[Task, Unit] = {
       Process.eval(Task.delay(execute.execute()))
     }
@@ -25,82 +38,63 @@ object JdbcProcess {
     }
 
     object params {
+
+
       def batch(batch: Batch)(implicit pool: Pool): Channel[Task, Traversable[ParameterList], Seq[Long]] = {
-        channel.lift { batches =>
-          for {
-            connection <- Task.delay(pool.getConnection())
-            result <- Task.delay(batches.foldLeft(batch){case (b, params) => b.addBatch(params: _*)}.seq()(connection)).onFinish(_ => Task.delay(connection.close()))
-          } yield result
+        withConnection[Traversable[ParameterList], Seq[Long]] { batches => implicit connection =>
+          Task.delay(batches.foldLeft(batch){case (b, params) => b.addBatch(params: _*)}.seq())
         }
       }
 
       def execute(execute: Execute)(implicit pool: Pool): Sink[Task, ParameterList] = {
-        sink.lift { params =>
-          for {
-            connection <- Task.delay(pool.getConnection())
-            _ <- Task.delay(execute.on(params: _*).execute()(connection)).onFinish(_ => Task.delay(connection.close()))
-          } yield ()
+        withConnection[ParameterList, Unit] { params => implicit connection =>
+          Task.delay(execute.on(params: _*).execute())
         }
       }
 
       def select[T](select: Select[T])(implicit pool: Pool): Channel[Task, ParameterList, Process[Task, T]] = {
-        channel.lift { params =>
-          for {
-            connection <- Task.delay(pool.getConnection())
-          } yield {
-            Process.iterator(Task.delay(select.on(params: _*).iterator()(connection))).onComplete(Process.eval_(Task.delay(connection.close())))
+        channel.lift[Task, ParameterList, Process[Task, T]] { params =>
+          Task.delay {
+            Process.await(getConnection(pool)) {implicit connection =>
+              Process.iterator(Task.delay(select.on(params: _*).iterator())).onComplete(Process.eval_(closeConnection(connection)))
+            }
           }
         }
       }
 
       def update(update: Update)(implicit pool: Pool): Channel[Task, ParameterList, Long] = {
-        channel.lift { params =>
-          for {
-            connection <- Task.delay(pool.getConnection())
-            updates <- Task.delay(update.update()(connection)).onFinish(_ => Task.delay(connection.close()))
-          } yield updates
+        withConnection[ParameterList, Long] { params => implicit connection =>
+          Task.delay(update.on(params: _*).update())
         }
       }
     }
 
     object keys {
-      private def getConnection(pool: Pool) = Task.delay(pool.getConnection())
-      private def closeConnection(connection: Connection): Task[Unit] = Task.delay(connection.close())
 
-      private def withConnection[Key, T](pool: Pool)(task: Key => Connection => Task[T]): Channel[Task, Key, T] = {
-        channel.lift { key =>
-          for {
-            connection <- getConnection(pool)
-            result <- task(key)(connection).onFinish(_ => closeConnection(connection))
-          } yield result
-        }
-      }
-
-
-      def batch[Key](pool: Pool)(implicit batchable: Batchable[Key]): Channel[Task, Key, Seq[Long]] = {
-        withConnection[Key, Seq[Long]](pool) { key => implicit connection =>
+      def batch[Key](implicit pool: Pool, batchable: Batchable[Key]): Channel[Task, Key, Seq[Long]] = {
+        withConnection { key => implicit connection =>
           Task.delay(batchable.batch(key).seq())
         }
       }
 
-      def execute[Key](pool: Pool)(implicit executable: Executable[Key]): Sink[Task, Key] = {
-        withConnection[Key, Unit](pool) { key => implicit connection =>
+      def execute[Key](implicit pool: Pool, executable: Executable[Key]): Sink[Task, Key] = {
+        withConnection[Key, Unit] { key => implicit connection =>
           Task.delay(Task.delay(executable.execute(key).execute()))
         }
       }
 
-      def select[Key, Value](pool: Pool)(implicit selectable: Selectable[Key, Value]): Channel[Task, Key, Process[Task, Value]] = {
-        channel.lift { key =>
-          for {
-            connection <- getConnection(pool)
-            select <- Task.delay(selectable.select(key))
-            results <- Task.delay(Process.iterator(Task.delay(select.iterator()(connection))).onComplete(Process.eval_(closeConnection(connection))))
-          } yield results
+      def select[Key, Value](implicit pool: Pool, selectable: Selectable[Key, Value]): Channel[Task, Key, Process[Task, Value]] = {
+        channel.lift[Task, Key, Process[Task, Value]] { key =>
+          Task.delay {
+            Process.await(getConnection(pool)) {implicit connection =>
+              Process.iterator(Task.delay(selectable.select(key).iterator())).onComplete(Process.eval_(closeConnection(connection)))
+            }
+          }
         }
       }
 
-      def update[Key](pool: Pool)(implicit updatable: Updatable[Key]): Channel[Task, Key, Long] = {
-        withConnection[Key, Long](pool) { key => implicit connection =>
+      def update[Key](implicit pool: Pool, updatable: Updatable[Key]): Channel[Task, Key, Long] = {
+        withConnection[Key, Long] { key => implicit connection =>
           Task.delay(updatable.update(key).update())
         }
       }

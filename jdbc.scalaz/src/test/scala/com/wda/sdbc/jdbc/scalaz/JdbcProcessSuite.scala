@@ -12,7 +12,7 @@ abstract class JdbcProcessSuite
   with BeforeAndAfterEach
   with BeforeAndAfterAll {
 
-  val pool = {
+  implicit val pool = {
     val poolConfig = new HikariConfig()
     poolConfig.setJdbcUrl("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1")
 
