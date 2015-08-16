@@ -1,6 +1,5 @@
 package com.wda.sdbc.cassandra
 
-import com.google.common.util.concurrent.{FutureCallback, Futures}
 import com.wda.Logging
 import com.wda.sdbc.base
 import com.wda.sdbc.base.CompiledStatement

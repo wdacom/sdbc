@@ -1,6 +1,6 @@
 package com.wda.sdbc.jdbc.scalaz
 
-import com.wda.sdbc.jdbc.Updatable
+import com.wda.sdbc.jdbc.{Updatable, Selectable}
 import com.wda.sdbc.h2.H2Suite
 import com.wda.sdbc.H2._
 import com.zaxxer.hikari.HikariConfig
@@ -11,6 +11,7 @@ abstract class JdbcProcessSuite
   extends H2Suite
   with BeforeAndAfterEach
   with BeforeAndAfterAll {
+  suite =>
 
   implicit val pool = {
     val poolConfig = new HikariConfig()
@@ -22,7 +23,7 @@ abstract class JdbcProcessSuite
   val expectedCount = 100L
 
   case class LongKey(key: Long)
-  
+
   implicit val LongInsertable = new Updatable[LongKey] {
     val update = Update("INSERT INTO tbl (i) VALUES ($i)")
     

@@ -18,40 +18,44 @@ object CassandraProcess {
     }
 
     object params {
-      def execute(session: Session, execute: Execute): Sink[Task, ParameterList] = {
+      def execute(execute: Execute)(implicit session: Session): Sink[Task, ParameterList] = {
         sink.lift[Task, Seq[(String, Option[ParameterValue[_]])]] { params =>
-          runExecute(execute.on(params: _*))(session)
+          runExecute(execute.on(params: _*))
         }
       }
 
-      def select[Value](session: Session, select: Select[Value]): Channel[Task, ParameterList, Process[Task, Value]] = {
+      def select[Value](select: Select[Value])(implicit session: Session): Channel[Task, ParameterList, Process[Task, Value]] = {
         channel.lift[Task, Seq[(String, Option[ParameterValue[_]])], Process[Task, Value]] { params =>
-          Task.delay(runSelect[Value](select.on(params: _*))(session))
+          Task.delay(runSelect[Value](select.on(params: _*)))
         }
       }
 
-      def execute(cluster: Cluster, execute: Execute, keyspace: Option[String] = None): Sink[Task, ParameterList] = {
+      def execute(execute: Execute, keyspace: Option[String] = None)(cluster: Cluster): Sink[Task, ParameterList] = {
         Process.await(connect(cluster, keyspace)) {implicit session =>
-          params.execute(session, execute).onComplete(Process.eval_(closeSession(session)))
+          params.execute(execute).onComplete(Process.eval_(closeSession(session)))
         }
       }
 
-      def executeWithKeyspace[Value](cluster: Cluster, execute: Execute): Sink[Task, (String, ParameterList)] = {
+      def executeWithKeyspace[Value](execute: Execute): Cluster => Sink[Task, (String, ParameterList)] = {
         forClusterWithKeyspaceAux[ParameterList, Unit] { params => implicit session =>
           runExecute(execute.on(params: _*))
-        }(cluster)
-      }
-
-      def select[Value](cluster: Cluster, select: Select[Value], keyspace: Option[String] = None): Channel[Task, ParameterList, Process[Task, Value]] = {
-        Process.await(connect(cluster, keyspace)) {implicit session =>
-          params.select[Value](session, select).onComplete(Process.eval_(closeSession(session)))
         }
       }
 
-      def selectWithKeyspace[Value](cluster: Cluster, select: Select[Value]): Channel[Task, (String, ParameterList), Process[Task, Value]] = {
+      def select[Value](
+        select: Select[Value],
+        keyspace: Option[String] = None
+      )(cluster: Cluster
+      ): Channel[Task, ParameterList, Process[Task, Value]] = {
+        Process.await(connect(cluster, keyspace)) {implicit session =>
+          params.select[Value](select).onComplete(Process.eval_(closeSession(session)))
+        }
+      }
+
+      def selectWithKeyspace[Value](cluster: Cluster)(select: Select[Value]): Cluster => Channel[Task, (String, ParameterList), Process[Task, Value]] = {
         forClusterWithKeyspaceAux[ParameterList, Process[Task, Value]] { params => implicit session =>
           Task.delay(runSelect[Value](select.on(params: _*)))
-        }(cluster)
+        }
       }
     }
 
@@ -80,13 +84,13 @@ object CassandraProcess {
         }(cluster)
       }
 
-      def selects[Key, Value](cluster: Cluster, keyspace: Option[String] = None)(implicit selectable: Selectable[Key, Value]): Channel[Task, Key, Process[Task, Value]] = {
+      def select[Key, Value](cluster: Cluster, keyspace: Option[String] = None)(implicit selectable: Selectable[Key, Value]): Channel[Task, Key, Process[Task, Value]] = {
         Process.await(connect(cluster, keyspace)) { session =>
           select(session).onComplete(Process.eval_(closeSession(session)))
         }
       }
 
-      def selectsWithKeyspace[Key, Value](cluster: Cluster)(implicit selectable: Selectable[Key, Value]): Channel[Task, (String, Key), Process[Task, Value]] = {
+      def selectWithKeyspace[Key, Value](cluster: Cluster)(implicit selectable: Selectable[Key, Value]): Channel[Task, (String, Key), Process[Task, Value]] = {
         forClusterWithKeyspaceAux[Key, Process[Task, Value]] { key => implicit session =>
           Task.delay(runSelect[Value](selectable.select(key)))
         }(cluster)

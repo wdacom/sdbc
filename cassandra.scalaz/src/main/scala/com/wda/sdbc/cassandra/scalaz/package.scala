@@ -135,7 +135,7 @@ package object scalaz {
    */
   private [scalaz] def forClusterWithKeyspaceAux[T, O](
     runner: T => Session => Task[O]
-  )(implicit cluster: Cluster
+  )(cluster: Cluster
   ): Channel[Task, (String, T), O] = {
 
     val sessionsRef = new AtomicReference(Map.empty[String, Session])

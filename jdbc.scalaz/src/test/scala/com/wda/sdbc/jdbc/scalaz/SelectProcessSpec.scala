@@ -9,7 +9,7 @@ class SelectProcessSpec
   test("Use a stream of Select to select rows using a connection pool.") { implicit connection =>
 
     val selectFuture = for {
-      _ <- inserts.toSource.through(Process.jdbc.keys.update).run
+      _ <- inserts.toSource.through(Process.jdbc.keys.update(pool)).run
       rows <- Process.jdbc.select(select).runLog
     } yield rows
 

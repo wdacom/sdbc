@@ -8,7 +8,7 @@ class UpdateProcessSpec
 
   test("Use a stream of Updates to insert rows using a connection pool.") { implicit connection =>
 
-    val insertCount = inserts.toSource.through(Process.jdbc.keys.update).runLog.runFor(5.seconds).sum
+    val insertCount = inserts.toSource.through(Process.jdbc.keys.update(pool)).runLog.runFor(5.seconds).sum
 
     assertResult(expectedCount, "The expected number of rows were not inserted.")(insertCount)
 
