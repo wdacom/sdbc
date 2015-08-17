@@ -14,6 +14,10 @@ abstract class DBMS
 
   type MutableRow = jdbc.MutableRow
 
+  type ParameterValue[+T] = jdbc.ParameterValue[T]
+
+  type ParameterList = jdbc.ParameterList
+
   type Select[T] = jdbc.Select[T]
 
   val Select = jdbc.Select
