@@ -1,6 +1,6 @@
 package com.wda.sdbc.jdbc
 
-import com.wda.sdbc.jdbc
+import com.wda.sdbc.{base, jdbc}
 import com.zaxxer.hikari.HikariDataSource
 
 abstract class DBMS
@@ -8,7 +8,11 @@ abstract class DBMS
   with HikariImplicits
   with OptionParameter
   with GetterImplicits
-  with UpdaterImplicits {
+  with UpdaterImplicits
+  with base.BatchableMethods[java.sql.Connection, Batch]
+  with base.UpdatableMethods[java.sql.Connection, Update]
+  with base.SelectableMethods[java.sql.Connection, Select]
+  with base.ExecutableMethods[java.sql.Connection, Execute]{
 
   type Row = jdbc.Row
 
@@ -20,11 +24,59 @@ abstract class DBMS
 
   type Batchable[Key] = jdbc.Batchable[Key]
 
+  override def batchIterator[Key](
+    key: Key
+  )(implicit batchable: Batchable[Key],
+    connection: Connection
+  ): Iterator[Long] = {
+    jdbc.batchIterator[Key](key)
+  }
+
   type Executable[Key] = jdbc.Executable[Key]
+
+  override def execute[Key](
+    key: Key
+  )(implicit ev: Executable[Key],
+    connection: Connection
+  ): Unit = {
+    jdbc.execute[Key](key)
+  }
 
   type Selectable[Key, Value] = jdbc.Selectable[Key, Value]
 
+  override def iterator[Key, Value](
+    key: Key
+  )(implicit selectable: Selectable[Key, Value],
+    connection: Connection
+  ): Iterator[Value] = {
+    jdbc.iterator[Key, Value](key)
+  }
+
+  override def option[Key, Value](
+    key: Key
+  )(implicit selectable: Selectable[Key, Value],
+    connection: Connection
+  ): Option[Value] = {
+    jdbc.option[Key, Value](key)
+  }
+
   type Updatable[Key] = jdbc.Updatable[Key]
+
+  override def updateIterator[Key](
+    key: Key
+  )(implicit updatable: Updatable[Key],
+    connection: Connection
+  ): Iterator[Long] = {
+    jdbc.updateIterator[Key](key)
+  }
+
+  override def update[Key](
+    key: Key
+  )(implicit updatable: Updatable[Key],
+    connection: Connection
+  ): Long = {
+    jdbc.update[Key](key)
+  }
 
   type Select[T] = jdbc.Select[T]
 

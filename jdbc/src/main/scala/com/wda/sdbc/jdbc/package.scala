@@ -83,6 +83,14 @@ package object jdbc
 
   type Connection = java.sql.Connection
 
+  type Batchable[Key] = base.Batchable[Key, Connection, Batch]
+
+  type Executable[Key] = base.Executable[Key, Connection, Execute]
+
+  type Selectable[Key, Value] = base.Selectable[Key, Value, Connection, Select[Value]]
+
+  type Updatable[Key] = base.Updatable[Key, Connection, Update]
+
   private [jdbc] def prepare(
     queryText: String,
     parameterValues: Map[String, Option[ParameterValue[_]]],
