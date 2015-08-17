@@ -35,6 +35,6 @@ class HasPostgreSqlPoolSpec
   }
 
   override protected def afterAll(): Unit = {
-    pgMasterPool.shutdown()
+    pgMasterPool.close()
   }
 }
