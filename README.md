@@ -8,7 +8,7 @@ It also provides support for connection pools using [HikariCP](https://github.co
 ## Requirements
 
 * Scala 2.11 or Scala 2.10
-* H2, PostgreSQL, or Microsoft SQL Server
+* Cassandra (2.11 only), H2, PostgreSQL, or Microsoft SQL Server
 
 Include an implementation of the [SLF4J](http://slf4j.org/) logging interface, turn on debug logging, and all your query executions will be logged with the query text and the parameter name-value map.
 
@@ -18,22 +18,28 @@ Packages exist on Maven Central for Scala 2.10 and 2.11. The Scala 2.10 builds f
 
 ### Java 8
 
+#### Cassandra
+
+```scala
+"com.wda.sdbc" %% "cassandra" % "1.0"
+```
+
 #### H2
 
 ```scala
-"com.wda.sdbc" %% "h2" % "0.9"
+"com.wda.sdbc" %% "h2" % "1.0"
 ```
 
 #### PostgreSql
 
 ```scala
-"com.wda.sdbc" %% "postgresql" % "0.9"
+"com.wda.sdbc" %% "postgresql" % "1.0"
 ```
 
 #### SQL Server
 
 ```scala
-"com.wda.sdbc" %% "sqlserver" % "0.9"
+"com.wda.sdbc" %% "sqlserver" % "1.0"
 ```
 
 ### Java 7
@@ -69,6 +75,7 @@ Packages exist on Maven Central for Scala 2.10 and 2.11. The Scala 2.10 builds f
 * Use named parameters with queries.
 * Query execution logging
 * Use Java 8's java.time library, or Joda time for Java 7 and below.
+* Scalaz streaming support.
 
 ## Java 8 time notes
 
@@ -265,7 +272,58 @@ val result = pool.withConnection { implicit connection =>
 }
 ```
 
+### Streaming parameter lists.
+
+Constructors for Processes are added to the Process object via implicit conversion to JdbcProcess.
+
+```scala
+import com.wda.sdbc.jdbc.H2._
+import scalaz.stream._
+import com.wda.sdbc.scalaz._
+
+val pool: Pool = ???
+
+val parameterListStream: Process[Task, ParameterList] = ???
+
+val update: Update = ???
+
+parameterListStream.through(Process.jdbc.params.update(pool)(update)).run.run
+```
+
+### Streaming with type class support.
+
+You can use one of the type classes for generating queries to create query streams from values.
+
+For JDBC the type classes are Batchable, Executable, Selectable, Updatable. For Cassandra they are Executable and Selectable.
+
+```scala
+import com.wda.sdbc.jdbc.H2._
+import scalaz.stream._
+import com.wda.sdbc.scalaz._
+
+val pool: Pool = ???
+
+implicit val SelectableIntKey = new Selectable[Int, String] {
+  val selectString = Select[String]("SELECT s FROM tbl WHERE id = $id")
+
+  override def select(id: Int): Select[String] = {
+    selectString.on("id" -> id)
+  }
+}
+
+val idStream: Process[Task, Int] = ???
+
+//print the strings retreived from H2 using the stream of ids.
+merge.mergeN(idStream.through(Process.jdbc.keys.select(pool))).to(io.stdOutLines)
+```
+
 ## Changelog
+
+### 1.0
+
+* Cassandra support for Scala 2.11 only
+* Scalaz streaming
+* Connections and other types are no longer path dependent.
 
 ### 0.10
 
