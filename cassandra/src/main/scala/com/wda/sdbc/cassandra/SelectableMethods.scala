@@ -1,7 +1,6 @@
 package com.wda.sdbc.cassandra
 
 import com.wda.sdbc.base
-import com.wda.sdbc.Cassandra.Session
 
 import scala.concurrent.{ExecutionContext, Future}
 

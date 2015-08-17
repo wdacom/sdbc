@@ -2,15 +2,17 @@ package com.wda.sdbc.base
 
 import com.wda.sdbc.base
 
-trait SelectableMethods[Connection, Select[Value] <: base.Select[Connection, Value]] {
+trait Selectable[Key, Value, Connection, Select <: base.Select[Connection, Value]] {
 
-  trait Selectable[Key, Value] {
-    def select(key: Key): Select[Value]
-  }
+  def select(key: Key): Select
+
+}
+
+trait SelectableMethods[Connection, Select[_] <: base.Select[Connection, _]] {
 
   def iterator[Key, Value](
     key: Key
-  )(implicit selectable: Selectable[Key, Value],
+  )(implicit selectable: Selectable[Key, Value, Connection, Select[Value]],
     connection: Connection
   ): Iterator[Value] = {
     selectable.select(key).iterator()
@@ -18,7 +20,7 @@ trait SelectableMethods[Connection, Select[Value] <: base.Select[Connection, Val
 
   def option[Key, Value](
     key: Key
-  )(implicit selectable: Selectable[Key, Value],
+  )(implicit selectable: Selectable[Key, Value, Connection, Select[Value]],
     connection: Connection
   ): Option[Value] = {
       iterator(key).toStream.headOption

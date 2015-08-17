@@ -1,15 +1,12 @@
 package com.wda.sdbc
 
 import com.datastax.driver.core
-//import com.datastax.driver.core.{Row => CRow, TupleValue, BoundStatement}
 import com.google.common.util.concurrent.{Futures, FutureCallback, ListenableFuture}
 import com.wda.sdbc.base.CompiledStatement
 
 import scala.concurrent.{Promise, Future, ExecutionContext}
 
-package object cassandra
-  extends SelectableMethods
-  with ExecutableMethods {
+package object cassandra {
 
   type ParameterizedQuery[Self <: ParameterizedQuery[Self]] = base.ParameterizedQuery[Self, core.BoundStatement, Int]
 
@@ -26,6 +23,10 @@ package object cassandra
   type Session = core.Session
 
   type Cluster = core.Cluster
+
+  type Executable[Key] = base.Executable[Key, Session, Execute]
+
+  type Selectable[Key, Value] = base.Selectable[Key, Value, Session, Select[Value]]
 
   private [cassandra] def prepare(
     select: ParameterizedQuery[_] with HasQueryOptions
