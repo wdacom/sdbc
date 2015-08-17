@@ -281,13 +281,27 @@ import com.wda.sdbc.jdbc.H2._
 import scalaz.stream._
 import com.wda.sdbc.scalaz._
 
-val pool: Pool = ???
-
 val parameterListStream: Process[Task, ParameterList] = ???
 
 val update: Update = ???
 
-parameterListStream.through(Process.jdbc.params.update(pool)(update)).run.run
+implicit val pool: Pool = ???
+
+parameterListStream.through(Process.jdbc.params.update(update)).run.run
+```
+
+Suppose you use K keys to get values of some type T, and then use T to update rows.
+
+```scala
+
+val keyStream: Process[Task, K]
+
+implicit val keySelectable = new Selectable[K, T] {...}
+
+implicit val updatable = new Updatable[T] {...}
+
+//Use the keys to select rows, and use the results to run an update.
+keyStream.through(Process.jdbc.keys.select(pool)).to(Process.jdbc.update(pool)).run.run
 ```
 
 ### Streaming with type class support.

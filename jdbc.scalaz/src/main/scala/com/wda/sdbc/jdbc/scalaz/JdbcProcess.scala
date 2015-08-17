@@ -12,7 +12,7 @@ object JdbcProcess {
 
     private def closeConnection(connection: Connection): Task[Unit] = Task.delay(connection.close())
 
-    private def withConnection[Key, T](task: Key => Connection => Task[T])(pool: Pool): Channel[Task, Key, T] = {
+    private def withConnection[Key, T](task: Key => Connection => Task[T])(implicit pool: Pool): Channel[Task, Key, T] = {
       channel.lift[Task, Key, T] { params =>
         for {
           connection <- getConnection(pool)
@@ -93,7 +93,7 @@ object JdbcProcess {
        * @param batch
        * @return
        */
-      def batch(batch: Batch): Pool => Channel[Task, Traversable[ParameterList], Seq[Long]] = {
+      def batch(batch: Batch)(implicit pool: Pool): Channel[Task, Traversable[ParameterList], Seq[Long]] = {
         withConnection[Traversable[ParameterList], Seq[Long]] { batches => implicit connection =>
           Task.delay(batches.foldLeft(batch){case (b, params) => b.addBatch(params: _*)}.seq())
         }
@@ -107,7 +107,7 @@ object JdbcProcess {
        * @param execute
        * @return
        */
-      def execute(execute: Execute): Pool => Sink[Task, ParameterList] = {
+      def execute(execute: Execute)(implicit pool: Pool): Sink[Task, ParameterList] = {
         withConnection[ParameterList, Unit] { params => implicit connection =>
           Task.delay(execute.on(params: _*).execute())
         }
@@ -128,7 +128,7 @@ object JdbcProcess {
        */
       def select[T](
         select: Select[T]
-      )(pool: Pool
+      )(implicit pool: Pool
       ): Channel[Task, ParameterList, Process[Task, T]] = {
         channel.lift[Task, ParameterList, Process[Task, T]] { params =>
           Task.delay {
@@ -148,7 +148,7 @@ object JdbcProcess {
        * @param update
        * @return
        */
-      def update(update: Update): Pool => Channel[Task, ParameterList, Long] = {
+      def update(update: Update)(implicit pool: Pool): Channel[Task, ParameterList, Long] = {
         withConnection[ParameterList, Long] { params => implicit connection =>
           Task.delay(update.on(params: _*).update())
         }
