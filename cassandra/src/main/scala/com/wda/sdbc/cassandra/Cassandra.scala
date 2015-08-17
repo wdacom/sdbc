@@ -14,9 +14,11 @@ abstract class Cassandra
   with TupleDataTypes
   with ParameterValueImplicits
   with TupleGetters
-  with PoolMethods
-  with SelectableMethods
-  with ExecutableMethods {
+  with PoolMethods {
+
+  type ParameterValue[+T] = cassandra.ParameterValue[T]
+
+  type ParameterList = cassandra.ParameterList
 
   val Select = cassandra.Select
 
@@ -25,5 +27,9 @@ abstract class Cassandra
   type Cluster = core.Cluster
 
   type Session = core.Session
+
+  type Selectable[Key, Value] = cassandra.Selectable[Key, Value]
+
+  type Executable[Key] = cassandra.Executable[Key]
 
 }

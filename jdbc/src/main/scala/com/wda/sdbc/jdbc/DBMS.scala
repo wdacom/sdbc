@@ -18,6 +18,14 @@ abstract class DBMS
 
   type ParameterList = jdbc.ParameterList
 
+  type Batchable[Key] = jdbc.Batchable[Key]
+
+  type Executable[Key] = jdbc.Executable[Key]
+
+  type Selectable[Key, Value] = jdbc.Selectable[Key, Value]
+
+  type Updatable[Key] = jdbc.Updatable[Key]
+
   type Select[T] = jdbc.Select[T]
 
   val Select = jdbc.Select
