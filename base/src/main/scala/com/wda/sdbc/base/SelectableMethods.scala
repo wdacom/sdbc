@@ -8,7 +8,7 @@ trait Selectable[Key, Value, Connection, Select <: base.Select[Connection, Value
 
 }
 
-trait SelectableMethods[Connection, Select[_] <: base.Select[Connection, _]] {
+trait SelectableMethods[Connection, Select[T] <: base.Select[Connection, T]] {
 
   def iterator[Key, Value](
     key: Key
