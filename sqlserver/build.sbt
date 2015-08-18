@@ -1,3 +1,5 @@
+organization := "com.wda.sdbc.jdbc"
+
 name := "sqlserver"
 
 description := "An implementation of WDA SDBC for accessing Microsoft SQL Server."

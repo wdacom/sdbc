@@ -33,8 +33,6 @@ lazy val root =
     examples
   )
 
-organization in ThisBuild := "com.wda.sdbc"
-
 scalaVersion in ThisBuild := "2.11.7"
 
 crossScalaVersions := Seq("2.10.5")

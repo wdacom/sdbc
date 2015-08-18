@@ -21,7 +21,7 @@ Packages exist on Maven Central for Scala 2.10 and 2.11. The Scala 2.10 builds f
 #### Cassandra
 
 ```scala
-"com.wda.sdbc" %% "cassandra" % "1.0"
+"com.wda.sdbc.cassandra" %% "datastax" % "1.0"
 ```
 
 #### H2

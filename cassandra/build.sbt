@@ -1,4 +1,6 @@
-name := "cassandra"
+organization := "com.wda.sdbc.cassandra"
+
+name := "datastax"
 
 description := "An implementation of WDA SDBC for accessing Apache Cassandra."
 

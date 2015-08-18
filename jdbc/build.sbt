@@ -1,4 +1,6 @@
-name := "jdbc"
+organization := "com.wda.sdbc.jdbc"
+
+name := "base"
 
 publishArtifact in Test := true
 

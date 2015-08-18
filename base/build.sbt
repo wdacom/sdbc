@@ -1,3 +1,5 @@
+organization := "com.wda.sdbc"
+
 name := "base"
 
 description := "SDBC is a database API for Scala."
