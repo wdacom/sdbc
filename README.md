@@ -27,19 +27,19 @@ Packages exist on Maven Central for Scala 2.10 and 2.11. The Scala 2.10 builds f
 #### H2
 
 ```scala
-"com.wda.sdbc" %% "h2" % "1.0"
+"com.wda.sdbc.jdbc" %% "h2" % "1.0"
 ```
 
 #### PostgreSql
 
 ```scala
-"com.wda.sdbc" %% "postgresql" % "1.0"
+"com.wda.sdbc.jdbc" %% "postgresql" % "1.0"
 ```
 
 #### SQL Server
 
 ```scala
-"com.wda.sdbc" %% "sqlserver" % "1.0"
+"com.wda.sdbc.jdbc" %% "sqlserver" % "1.0"
 ```
 
 ### Java 7
@@ -106,7 +106,7 @@ Packages exist on Maven Central for Scala 2.10 and 2.11. The Scala 2.10 builds f
 
 ```scala
 import java.sql.DriverManager
-import com.wda.sdbc.PostgreSql._
+import com.wda.sdbc.jdbc.PostgreSql._
 
 //The JDBC connection can be implicitly converted into a Renorm connection.
 val connection = DriverManager.getConnection("...")
@@ -123,7 +123,7 @@ val results =
 ```scala
 import java.sql.DriverManager
 import java.time.Instant
-import com.wda.sdbc.PostgreSql._
+import com.wda.sdbc.jdbc.PostgreSql._
 
 case class MyRow(
 	id: Int,
@@ -170,7 +170,7 @@ The query classes Select, SelectForUpdate, Update, and Batch are immutable. Addi
 import java.sql.DriverManager
 import java.time.Instant
 import java.time.temporal.ChronoUnit
-import com.wda.sdbc.PostgreSql._
+import com.wda.sdbc.jdbc.PostgreSql._
 
 val query =
     Select[Int]("SELECT id FROM tbl WHERE message = $message AND created_time >= $time").
@@ -200,7 +200,7 @@ val results = {
 ### Update
 ```scala
 import java.sql.DriverManager
-import com.wda.sdbc.PostgreSql._
+import com.wda.sdbc.jdbc.PostgreSql._
 
 implicit val connection: Connection = DriverManager.getConnection("...")
 
@@ -226,7 +226,7 @@ val updatedRowCount2 =
 ### Batch Update
 ```scala
 import java.sql.DriverManager
-import com.wda.sdbc.PostgreSql._
+import com.wda.sdbc.jdbc.PostgreSql._
 
 val batchUpdate =
 	Batch("UPDATE tbl SET x = $x WHERE id = $id").
@@ -246,7 +246,7 @@ val updatedRowCount = {
 ### Update rows in a result set
 ```scala
 import java.sql.DriverManager
-import com.wda.sdbc.PostgreSql._
+import com.wda.sdbc.jdbc.PostgreSql._
 
 implicit val connection: Connection = DriverManager.getConnection("...")
 
@@ -265,7 +265,7 @@ for (row <- SelectForUpdate("SELECT * FROM accounts").iterator()) {
 
 ```scala
 import com.typesafe.config.ConfigFactory
-import com.wda.sdbc.PostgreSql._
+import com.wda.sdbc.jdbc.PostgreSql._
 
 val pool = Pool(ConfigFactory.load())
 
@@ -281,7 +281,7 @@ Constructors for Processes are added to the Process object via implicit conversi
 ```scala
 import com.wda.sdbc.jdbc.H2._
 import scalaz.stream._
-import com.wda.sdbc.scalaz._
+import com.wda.sdbc.scalaz.jdbc._
 
 val parameterListStream: Process[Task, ParameterList] = ???
 
@@ -301,7 +301,7 @@ For JDBC the type classes are Batchable, Executable, Selectable, Updatable. For 
 ```scala
 import com.wda.sdbc.jdbc.H2._
 import scalaz.stream._
-import com.wda.sdbc.scalaz._
+import com.wda.sdbc.scalaz.jdbc._
 
 val pool: Pool = ???
 
@@ -338,8 +338,9 @@ keyStream.through(Process.jdbc.keys.select[K, T](pool)).to(Process.jdbc.update[T
 ### 1.0
 
 * Cassandra support for Scala 2.11 only
-* Scalaz streaming
+* Scalaz streaming helpers in com.wda.sdbc.scalaz.
 * Connections and other types are no longer path dependent.
+* Package paths are implementation dependent.
 
 ### 0.10
 
