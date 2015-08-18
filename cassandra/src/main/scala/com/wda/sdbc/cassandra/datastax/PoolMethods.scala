@@ -3,7 +3,7 @@ package com.wda.sdbc.cassandra.datastax
 import com.datastax.driver.core.{Row => CRow}
 
 trait PoolMethods {
-  self: Datastax =>
+  self: Cassandra$ =>
 
   implicit class PoolMethods(pool: Session) {
     def iterator[T](
