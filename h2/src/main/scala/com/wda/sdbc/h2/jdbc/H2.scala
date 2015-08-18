@@ -68,5 +68,3 @@ abstract class H2
     }
   }
 }
-
-case object H2 extends H2

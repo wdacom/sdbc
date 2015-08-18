@@ -56,5 +56,3 @@ abstract class SqlServer
     toFormatter
   }
 }
-
-case object SqlServer extends SqlServer

@@ -75,7 +75,7 @@ Packages exist on Maven Central for Scala 2.10 and 2.11. The Scala 2.10 builds f
 * Use named parameters with queries.
 * Query execution logging
 * Use Java 8's java.time library, or Joda time for Java 7 and below.
-* Scalaz streaming support.
+* Scalaz streaming support by adding constructors to scalaz.stream.Process.
 
 ## [Scaladoc](http://www.jeffshaw.me/sdbc/1.0)
 
@@ -106,7 +106,7 @@ Packages exist on Maven Central for Scala 2.10 and 2.11. The Scala 2.10 builds f
 
 ```scala
 import java.sql.DriverManager
-import com.wda.sdbc.jdbc.PostgreSql._
+import com.wda.sdbc.postgresql.jdbc._
 
 //The JDBC connection can be implicitly converted into a Renorm connection.
 val connection = DriverManager.getConnection("...")
@@ -123,7 +123,7 @@ val results =
 ```scala
 import java.sql.DriverManager
 import java.time.Instant
-import com.wda.sdbc.jdbc.PostgreSql._
+import com.wda.sdbc.postgresql.jdbc._
 
 case class MyRow(
 	id: Int,
@@ -170,7 +170,7 @@ The query classes Select, SelectForUpdate, Update, and Batch are immutable. Addi
 import java.sql.DriverManager
 import java.time.Instant
 import java.time.temporal.ChronoUnit
-import com.wda.sdbc.jdbc.PostgreSql._
+import com.wda.sdbc.postgresql.jdbc._
 
 val query =
     Select[Int]("SELECT id FROM tbl WHERE message = $message AND created_time >= $time").
@@ -200,7 +200,7 @@ val results = {
 ### Update
 ```scala
 import java.sql.DriverManager
-import com.wda.sdbc.jdbc.PostgreSql._
+import com.wda.sdbc.postgresql.jdbc._
 
 implicit val connection: Connection = DriverManager.getConnection("...")
 
@@ -226,7 +226,7 @@ val updatedRowCount2 =
 ### Batch Update
 ```scala
 import java.sql.DriverManager
-import com.wda.sdbc.jdbc.PostgreSql._
+import com.wda.sdbc.postgresql.jdbc._
 
 val batchUpdate =
 	Batch("UPDATE tbl SET x = $x WHERE id = $id").
@@ -246,7 +246,7 @@ val updatedRowCount = {
 ### Update rows in a result set
 ```scala
 import java.sql.DriverManager
-import com.wda.sdbc.jdbc.PostgreSql._
+import com.wda.sdbc.postgresql.jdbc._
 
 implicit val connection: Connection = DriverManager.getConnection("...")
 
@@ -265,7 +265,7 @@ for (row <- SelectForUpdate("SELECT * FROM accounts").iterator()) {
 
 ```scala
 import com.typesafe.config.ConfigFactory
-import com.wda.sdbc.jdbc.PostgreSql._
+import com.wda.sdbc.postgresql.jdbc._
 
 val pool = Pool(ConfigFactory.load())
 
@@ -279,7 +279,7 @@ val result = pool.withConnection { implicit connection =>
 Constructors for Processes are added to the Process object via implicit conversion to JdbcProcess.
 
 ```scala
-import com.wda.sdbc.jdbc.H2._
+import com.wda.sdbc.h2.jdbc._
 import scalaz.stream._
 import com.wda.sdbc.scalaz.jdbc._
 
@@ -299,7 +299,7 @@ You can use one of the type classes for generating queries to create query strea
 For JDBC the type classes are Batchable, Executable, Selectable, Updatable. For Cassandra they are Executable and Selectable.
 
 ```scala
-import com.wda.sdbc.jdbc.H2._
+import com.wda.sdbc.h2.jdbc._
 import scalaz.stream._
 import com.wda.sdbc.scalaz.jdbc._
 
