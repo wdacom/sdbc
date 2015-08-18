@@ -20,6 +20,7 @@ lazy val root =
   project.
   in(file(".")).
   settings(publishArtifact := false).
+  settings(unidocSettings: _*).
   aggregate(
     base,
     cassandra,
