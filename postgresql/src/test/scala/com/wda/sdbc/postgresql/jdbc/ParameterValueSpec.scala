@@ -9,7 +9,6 @@ import org.json4s.jackson.JsonMethods
 import org.postgresql.util.PGInterval
 
 import scalaz.Scalaz._
-import PostgreSql._
 
 class ParameterValueSpec
   extends PostgreSqlSuite {

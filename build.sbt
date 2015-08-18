@@ -73,3 +73,5 @@ scalacOptions in ThisBuild ++= Seq(
   "-Yno-adapted-args",
   "-Xfuture"
 )
+
+scalacOptions in (Compile, doc) ++= Seq("-doc-root-content", baseDirectory.value+"/rootdoc.txt")

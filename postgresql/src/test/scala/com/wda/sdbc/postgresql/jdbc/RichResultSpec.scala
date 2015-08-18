@@ -1,7 +1,5 @@
 package com.wda.sdbc.postgresql.jdbc
 
-import PostgreSql._
-
 import org.scalatest.BeforeAndAfterEach
 
 import scala.collection.immutable.Seq

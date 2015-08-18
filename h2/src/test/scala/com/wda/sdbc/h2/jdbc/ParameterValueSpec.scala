@@ -3,7 +3,6 @@ package com.wda.sdbc.h2.jdbc
 import java.sql.{Timestamp, Time, Date}
 import java.time._
 import java.util.UUID
-import com.wda.sdbc.jdbc.H2._
 
 import scalaz.Scalaz._
 

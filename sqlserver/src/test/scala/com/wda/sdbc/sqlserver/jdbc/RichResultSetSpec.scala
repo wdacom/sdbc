@@ -1,7 +1,5 @@
 package com.wda.sdbc.sqlserver.jdbc
 
-import com.wda.sdbc.jdbc.SqlServer._
-
 import org.scalatest.BeforeAndAfterEach
 
 import scala.collection.immutable.Seq

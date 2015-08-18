@@ -1,6 +1,5 @@
 package com.wda.sdbc.h2.jdbc
 
-import com.wda.sdbc.jdbc.H2._
 import org.scalatest.BeforeAndAfterEach
 
 import scala.collection.immutable.Seq

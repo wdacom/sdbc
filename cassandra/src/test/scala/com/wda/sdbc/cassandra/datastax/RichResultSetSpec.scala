@@ -2,7 +2,6 @@ package com.wda.sdbc.cassandra.datastax
 
 import org.scalacheck.Gen
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
-import com.wda.sdbc.cassandra.Datastax._
 import scala.reflect._
 
 class RichResultSetSpec

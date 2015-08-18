@@ -2,7 +2,6 @@ package com.wda.sdbc.postgresql.jdbc
 
 import org.scalatest.BeforeAndAfterAll
 import scalaz.Scalaz._
-import PostgreSql._
 
 class SeqParameterValueSpec
   extends PostgreSqlSuite

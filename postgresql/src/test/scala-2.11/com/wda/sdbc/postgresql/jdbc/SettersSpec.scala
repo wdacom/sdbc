@@ -1,8 +1,6 @@
 package com.wda.sdbc.postgresql.jdbc
 
-import com.wda.sdbc.base.jdbc.ParameterValue
 import org.scalatest._
-import PostgreSql._
 import java.math.{BigDecimal => JBigDecimal}
 
 class SettersSpec

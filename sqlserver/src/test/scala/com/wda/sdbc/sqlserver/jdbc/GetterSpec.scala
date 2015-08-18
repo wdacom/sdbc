@@ -1,7 +1,5 @@
 package com.wda.sdbc.sqlserver.jdbc
 
-import com.wda.sdbc.jdbc.SqlServer._
-
 import java.sql.{Date, Time, Timestamp}
 import java.time._
 import java.util.UUID
@@ -68,7 +66,7 @@ class GetterSpec
 
   testSelect[Instant]("SELECT CAST('2014-12-29 01:02:03.5 -4:00' AS datetimeoffset) --as Java 8 Instant", Instant.parse("2014-12-29T05:02:03.5Z").some)
 
-  testSelect[com.wda.sdbc.jdbc.SqlServer.HierarchyId]("SELECT CAST('/1/2/3/' AS hierarchyid).ToString()", HierarchyId(1, 2, 3).some)
+  testSelect[HierarchyId]("SELECT CAST('/1/2/3/' AS hierarchyid).ToString()", HierarchyId(1, 2, 3).some)
 
   testSelect[UUID](s"SELECT CAST('$uuid' AS uniqueidentifier)", uuid.some)
 

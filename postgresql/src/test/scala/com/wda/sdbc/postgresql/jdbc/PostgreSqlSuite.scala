@@ -4,10 +4,7 @@ import java.time.{Instant, OffsetDateTime}
 
 import com.typesafe.config.{ConfigFactory, Config}
 import com.wda.sdbc.config.TestingConfig
-import com.wda.sdbc.postgresql.jdbc.PgTestingConfig
 import org.scalatest._
-
-import PostgreSql._
 
 abstract class PostgreSqlSuite
   extends fixture.FunSuite

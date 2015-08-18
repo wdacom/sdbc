@@ -2,8 +2,6 @@ package com.wda.sdbc.sqlserver.jdbc
 
 import java.util.UUID
 
-import com.wda.sdbc.jdbc.SqlServer._
-
 class UUIDSpec
   extends SqlServerSuite {
 

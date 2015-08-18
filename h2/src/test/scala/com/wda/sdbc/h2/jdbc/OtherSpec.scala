@@ -1,7 +1,5 @@
 package com.wda.sdbc.h2.jdbc
 
-import com.wda.sdbc.jdbc.H2._
-
 class OtherSpec
   extends H2Suite {
 

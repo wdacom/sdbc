@@ -1,8 +1,5 @@
 package com.wda.sdbc.postgresql.jdbc
 
-import PostgreSql._
-import com.wda.sdbc.jdbc.config._
-
 trait HasPostgreSqlPool {
   this: PgTestingConfig =>
 

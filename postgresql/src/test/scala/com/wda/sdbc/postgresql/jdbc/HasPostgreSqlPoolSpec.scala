@@ -1,9 +1,7 @@
 package com.wda.sdbc.postgresql.jdbc
 
 import com.typesafe.config.{ConfigFactory, Config}
-import PostgreSql._
 import com.wda.sdbc.config.TestingConfig
-import com.wda.sdbc.postgresql.jdbc.PgTestingConfig
 import org.scalatest.{BeforeAndAfterAll, FunSuite}
 
 class HasPostgreSqlPoolSpec

@@ -1,6 +1,5 @@
 package com.wda.sdbc.h2.jdbc
 
-import com.wda.sdbc.jdbc.H2._
 import org.scalatest._
 
 abstract class H2Suite

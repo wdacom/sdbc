@@ -1,9 +1,7 @@
 package com.wda.sdbc.sqlserver.jdbc
 
 import com.typesafe.config.{ConfigFactory, Config}
-import com.wda.sdbc.jdbc.SqlServer._
 import com.wda.sdbc.config.TestingConfig
-import com.wda.sdbc.sqlserver.jdbc.SqlTestingConfig
 import org.scalatest.{BeforeAndAfterAll, FunSuite}
 
 class HasSqlServerPoolSpec

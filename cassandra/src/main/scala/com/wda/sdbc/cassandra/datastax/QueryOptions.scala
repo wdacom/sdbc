@@ -1,7 +1,7 @@
 package com.wda.sdbc.cassandra.datastax
 
 import com.datastax.driver.core.policies.{DefaultRetryPolicy, RetryPolicy}
-import com.datastax.driver.core.{QueryOptions => CQueryOptions, ConsistencyLevel}
+import com.datastax.driver.core.{ConsistencyLevel, QueryOptions => CQueryOptions}
 
 case class QueryOptions(
   consistencyLevel: ConsistencyLevel = CQueryOptions.DEFAULT_CONSISTENCY_LEVEL,

@@ -1,8 +1,5 @@
 package com.wda.sdbc.sqlserver.jdbc
 
-import com.wda.sdbc.jdbc.SqlServer._
-import com.wda.sdbc.jdbc.config._
-
 trait HasSqlServerPool {
   self: SqlTestingConfig =>
 

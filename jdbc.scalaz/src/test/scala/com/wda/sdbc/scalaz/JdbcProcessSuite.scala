@@ -1,8 +1,7 @@
 package com.wda.sdbc.scalaz
 
 import com.wda.sdbc.base.jdbc.Updatable
-import com.wda.sdbc.h2.jdbc.H2Suite
-import com.wda.sdbc.jdbc.H2._
+import com.wda.sdbc.h2.jdbc._
 import com.zaxxer.hikari.HikariConfig
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
 import scalaz.stream._

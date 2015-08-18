@@ -1,6 +1,6 @@
 package com.wda.sdbc.examples
 
-import com.wda.sdbc.jdbc.H2._
+import com.wda.sdbc.h2.jdbc._
 
 case class TestClass(
   id: Int,

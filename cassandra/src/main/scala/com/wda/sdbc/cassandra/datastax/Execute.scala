@@ -1,6 +1,6 @@
 package com.wda.sdbc.cassandra.datastax
 
-import com.datastax.driver.core
+import com.wda.sdbc.cassandra.datastax.implementation._
 import com.wda.Logging
 import com.wda.sdbc.base
 import com.wda.sdbc.base.CompiledStatement
@@ -20,13 +20,13 @@ case class Execute private (
 
   override def execute()(implicit session: Session): Unit = {
     logger.debug(s"""Executing "$originalQueryText" with parameters $parameterValues.""")
-    val prepared = datastax.prepare(statement, parameterValues, queryOptions)
+    val prepared = implementation.prepare(statement, parameterValues, queryOptions)
     session.execute(prepared)
   }
 
   def executeAsync()(implicit session: Session, ec: ExecutionContext): Future[Unit] = {
     logger.debug(s"""Asynchronously executing "$originalQueryText" with parameters $parameterValues.""")
-    val prepared = datastax.prepare(statement, parameterValues, queryOptions)
+    val prepared = implementation.prepare(statement, parameterValues, queryOptions)
 
     toScalaFuture[ResultSet](session.executeAsync(prepared)).map(Function.const(()))
   }

@@ -2,7 +2,6 @@ package com.wda.sdbc.sqlserver.jdbc
 
 import java.time.{OffsetDateTime, ZoneOffset}
 
-import com.wda.sdbc.jdbc.SqlServer._
 import org.scalatest.FunSuite
 
 class SqlServerSpec extends FunSuite {

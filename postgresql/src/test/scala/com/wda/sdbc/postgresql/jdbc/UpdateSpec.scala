@@ -1,6 +1,5 @@
 package com.wda.sdbc.postgresql.jdbc
 
-import PostgreSql._
 import org.scalatest.FunSuite
 
 class UpdateSpec extends FunSuite {

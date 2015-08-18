@@ -4,10 +4,7 @@ import java.time.{Instant, OffsetDateTime}
 
 import com.typesafe.config.{ConfigFactory, Config}
 import com.wda.sdbc.config.TestingConfig
-import com.wda.sdbc.sqlserver.jdbc.SqlTestingConfig
 import org.scalatest._
-
-import com.wda.sdbc.jdbc.SqlServer._
 
 abstract class SqlServerSuite
   extends fixture.FunSuite

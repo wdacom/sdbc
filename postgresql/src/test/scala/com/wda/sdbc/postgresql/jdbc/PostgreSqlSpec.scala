@@ -2,7 +2,6 @@ package com.wda.sdbc.postgresql.jdbc
 
 import java.time.{OffsetDateTime, ZoneOffset}
 
-import PostgreSql._
 import org.scalatest.FunSuite
 
 class PostgreSqlSpec extends FunSuite {

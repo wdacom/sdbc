@@ -40,13 +40,14 @@ object datastax {
   }
 
   private [scalaz] def prepareAsync(
-    query: ParameterizedQuery[_]
-  )(implicit session: Session): Task[PreparedStatement] = {
+    query: implementation.ParameterizedQuery[_]
+  )(implicit session: Session
+  ): Task[PreparedStatement] = {
     toTask(session.prepareAsync(query.queryText))
   }
 
   private [scalaz] def bind(
-    query: ParameterizedQuery[_] with HasQueryOptions,
+    query: implementation.ParameterizedQuery[_] with implementation.HasQueryOptions,
     statement: PreparedStatement
   ): BoundStatement = {
     val forBinding = statement.bind()
