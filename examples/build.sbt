@@ -1,4 +1,4 @@
-organization := "com.wda.sdbc"
+organization := "com.rocketfuel.sdbc"
 
 name := "examples"
 

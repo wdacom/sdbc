@@ -1,6 +1,6 @@
-organization := "com.wda.sdbc.jdbc"
+organization := "com.rocketfuel.sdbc.sqlserver"
 
-name := "sqlserver"
+name := "jdbc"
 
 description := "An implementation of WDA SDBC for accessing Microsoft SQL Server."
 

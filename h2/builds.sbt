@@ -1,6 +1,6 @@
-organization := "com.wda.sdbc.jdbc"
+organization := "com.rocketfuel.sdbc.h2"
 
-name := "h2"
+name := "jdbc"
 
 description := "An implementation of WDA SDBC for accessing H2."
 

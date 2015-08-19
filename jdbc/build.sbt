@@ -1,4 +1,4 @@
-organization := "com.wda.sdbc.jdbc"
+organization := "com.rocketfuel.sdbc.jdbc"
 
 name := "base"
 

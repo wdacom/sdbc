@@ -1,8 +1,8 @@
-organization := "com.wda.sdbc.cassandra"
+organization := "com.rocketfuel.sdbc.cassandra"
 
 name := "datastax"
 
-description := "An implementation of WDA SDBC for accessing Apache Cassandra."
+description := "An implementation of SDBC for accessing Apache Cassandra."
 
 libraryDependencies ++= Seq(
   "com.datastax.cassandra" % "cassandra-driver-core" % "2.1.7.1",

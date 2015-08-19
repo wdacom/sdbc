@@ -1,7 +1,7 @@
-# SDBC by WDA
+# SDBC by Rocketfuel
 
 ## Description
-SDBC is a minimalist database API for Scala in the spirit of [Anorm](https://www.playframework.com/documentation/2.4.x/ScalaAnorm). It currently supports [H2](http://www.h2database.com/), [Microsoft SQL Server](http://www.microsoft.com/en-us/server-cloud/products/sql-server/), and [PostgreSQL](http://www.postgresql.org/). Other databases can be supported by implementing com.wda.sdbc.DBMS.
+SDBC is a minimalist database API for Scala in the spirit of [Anorm](https://www.playframework.com/documentation/2.4.x/ScalaAnorm). It currently supports [Apache Cassandra](http://cassandra.apache.org/), [H2](http://www.h2database.com/), [Microsoft SQL Server](http://www.microsoft.com/en-us/server-cloud/products/sql-server/), and [PostgreSQL](http://www.postgresql.org/). Other databases can be supported by implementing com.wda.sdbc.DBMS.
 
 It also provides support for connection pools using [HikariCP](https://github.com/brettwooldridge/HikariCP). The pools can be created with a [HikariConfig](https://github.com/brettwooldridge/HikariCP) or [Typesafe Config](https://github.com/typesafehub/config) object.
 
@@ -21,25 +21,25 @@ Packages exist on Maven Central for Scala 2.10 and 2.11. The Scala 2.10 builds f
 #### Cassandra
 
 ```scala
-"com.wda.sdbc.cassandra" %% "datastax" % "1.0"
+"com.rocketfuel.sdbc.cassandra" %% "datastax" % "1.0"
 ```
 
 #### H2
 
 ```scala
-"com.wda.sdbc.jdbc" %% "h2" % "1.0"
+"com.rocketfuel.sdbc.h2" %% "jdbc" % "1.0"
 ```
 
 #### PostgreSql
 
 ```scala
-"com.wda.sdbc.jdbc" %% "postgresql" % "1.0"
+"com.rocketfuel.sdbc.postgresql" %% "jdbc" % "1.0"
 ```
 
 #### SQL Server
 
 ```scala
-"com.wda.sdbc.jdbc" %% "sqlserver" % "1.0"
+"com.rocketfuel.sdbc.sqlserver" %% "jdbc" % "1.0"
 ```
 
 ### Java 7
@@ -60,6 +60,20 @@ Packages exist on Maven Central for Scala 2.10 and 2.11. The Scala 2.10 builds f
 
 ```scala
 "com.wda.sdbc" %% "sqlserver-java7" % "0.10"
+```
+
+### Scalaz Streaming
+
+#### Cassandra
+
+```scala
+"com.rocketfuel.sdbc.scalaz" %% "datastax" % "1.0"
+```
+
+#### JDBC
+
+```scala
+"com.rocketfuel.sdbc.scalaz" %% "jdbc" % "1.0"
 ```
 
 ## License
@@ -106,7 +120,7 @@ Packages exist on Maven Central for Scala 2.10 and 2.11. The Scala 2.10 builds f
 
 ```scala
 import java.sql.DriverManager
-import com.wda.sdbc.postgresql.jdbc._
+import com.rocketfuel.sdbc.postgresql.jdbc._
 
 //The JDBC connection can be implicitly converted into a Renorm connection.
 val connection = DriverManager.getConnection("...")
@@ -123,7 +137,7 @@ val results =
 ```scala
 import java.sql.DriverManager
 import java.time.Instant
-import com.wda.sdbc.postgresql.jdbc._
+import com.rocketfuel.sdbc.postgresql.jdbc._
 
 case class MyRow(
 	id: Int,
@@ -170,7 +184,7 @@ The query classes Select, SelectForUpdate, Update, and Batch are immutable. Addi
 import java.sql.DriverManager
 import java.time.Instant
 import java.time.temporal.ChronoUnit
-import com.wda.sdbc.postgresql.jdbc._
+import com.rocketfuel.sdbc.postgresql.jdbc._
 
 val query =
     Select[Int]("SELECT id FROM tbl WHERE message = $message AND created_time >= $time").
@@ -200,7 +214,7 @@ val results = {
 ### Update
 ```scala
 import java.sql.DriverManager
-import com.wda.sdbc.postgresql.jdbc._
+import com.rocketfuel.sdbc.postgresql.jdbc._
 
 implicit val connection: Connection = DriverManager.getConnection("...")
 
@@ -226,7 +240,7 @@ val updatedRowCount2 =
 ### Batch Update
 ```scala
 import java.sql.DriverManager
-import com.wda.sdbc.postgresql.jdbc._
+import com.rocketfuel.sdbc.postgresql.jdbc._
 
 val batchUpdate =
 	Batch("UPDATE tbl SET x = $x WHERE id = $id").
@@ -246,7 +260,7 @@ val updatedRowCount = {
 ### Update rows in a result set
 ```scala
 import java.sql.DriverManager
-import com.wda.sdbc.postgresql.jdbc._
+import com.rocketfuel.sdbc.postgresql.jdbc._
 
 implicit val connection: Connection = DriverManager.getConnection("...")
 
@@ -265,7 +279,7 @@ for (row <- SelectForUpdate("SELECT * FROM accounts").iterator()) {
 
 ```scala
 import com.typesafe.config.ConfigFactory
-import com.wda.sdbc.postgresql.jdbc._
+import com.rocketfuel.sdbc.postgresql.jdbc._
 
 val pool = Pool(ConfigFactory.load())
 
@@ -279,9 +293,9 @@ val result = pool.withConnection { implicit connection =>
 Constructors for Processes are added to the Process object via implicit conversion to JdbcProcess.
 
 ```scala
-import com.wda.sdbc.h2.jdbc._
+import com.rocketfuel.sdbc.h2.jdbc._
 import scalaz.stream._
-import com.wda.sdbc.scalaz.jdbc._
+import com.rocketfuel.sdbc.scalaz.jdbc._
 
 val parameterListStream: Process[Task, ParameterList] = ???
 
@@ -299,9 +313,9 @@ You can use one of the type classes for generating queries to create query strea
 For JDBC the type classes are Batchable, Executable, Selectable, Updatable. For Cassandra they are Executable and Selectable.
 
 ```scala
-import com.wda.sdbc.h2.jdbc._
+import com.rocketfuel.sdbc.h2.jdbc._
 import scalaz.stream._
-import com.wda.sdbc.scalaz.jdbc._
+import com.rocketfuel.sdbc.scalaz.jdbc._
 
 val pool: Pool = ???
 
@@ -338,7 +352,7 @@ keyStream.through(Process.jdbc.keys.select[K, T](pool)).to(Process.jdbc.update[T
 ### 1.0
 
 * Cassandra support for Scala 2.11 only
-* Scalaz streaming helpers in com.wda.sdbc.scalaz.
+* Scalaz streaming helpers in com.rocketfuel.sdbc.scalaz.
 * Connections and other types are no longer path dependent.
 * Package paths are implementation dependent.
 

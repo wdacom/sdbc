@@ -1,6 +1,6 @@
-organization := "com.wda.sdbc.jdbc"
+organization := "com.rocketfuel.sdbc.postgresql"
 
-name := "postgresql"
+name := "jdbc"
 
 description := "An implementation of WDA SDBC for accessing PostgreSQL."
 

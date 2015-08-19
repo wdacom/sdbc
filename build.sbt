@@ -37,7 +37,7 @@ scalaVersion in ThisBuild := "2.11.7"
 
 crossScalaVersions := Seq("2.10.5")
 
-version in ThisBuild := "0.11-SNAPSHOT"
+version in ThisBuild := "1.0"
 
 licenses in ThisBuild := Seq("The BSD 3-Clause License" -> url("http://opensource.org/licenses/BSD-3-Clause"))
 
@@ -51,8 +51,8 @@ pomExtra in ThisBuild :=
       <name>Jeff Shaw</name>
       <id>shawjef3</id>
       <url>https://github.com/shawjef3/</url>
-      <organization>WDA</organization>
-      <organizationUrl>http://www.wda.com/</organizationUrl>
+      <organization>Rocketfuel</organization>
+      <organizationUrl>http://rocketfuel.com/</organizationUrl>
     </developer>
   </developers>
   <scm>
