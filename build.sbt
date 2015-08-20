@@ -1,20 +1,43 @@
-lazy val sdbc = project.in(file("sdbc"))
+lazy val base = project.in(file("base"))
 
-lazy val h2 = project.in(file("h2")).dependsOn(sdbc % "test->test;compile->compile")
+lazy val cassandra = project.in(file("cassandra")).dependsOn(base % "test->test;compile->compile")
 
-lazy val postgresql = project.in(file("postgresql")).dependsOn(sdbc % "test->test;compile->compile")
+lazy val cassandraScalaz = project.in(file("cassandra.scalaz")).dependsOn(cassandra % "test->test;compile->compile")
 
-lazy val sqlserver = project.in(file("sqlserver")).dependsOn(sdbc % "test->test;compile->compile")
+lazy val jdbc = project.in(file("jdbc")).dependsOn(base % "test->test;compile->compile")
 
-lazy val root = project.in(file(".")).settings(publishArtifact := false).aggregate(sdbc, h2, postgresql, sqlserver)
+lazy val h2 = project.in(file("h2")).dependsOn(jdbc % "test->test;compile->compile")
 
-organization in ThisBuild := "com.wda.sdbc"
+lazy val jdbcScalaz = project.in(file("jdbc.scalaz")).dependsOn(jdbc, h2 % "test->test")
+
+lazy val postgresql = project.in(file("postgresql")).dependsOn(jdbc % "test->test;compile->compile")
+
+lazy val sqlserver = project.in(file("sqlserver")).dependsOn(jdbc % "test->test;compile->compile")
+
+lazy val examples = project.in(file("examples")).dependsOn(h2 % "test->test;compile->compile")
+
+lazy val root =
+  project.
+  in(file(".")).
+  settings(publishArtifact := false).
+  settings(unidocSettings: _*).
+  aggregate(
+    base,
+    cassandra,
+    cassandraScalaz,
+    jdbc,
+    jdbcScalaz,
+    h2,
+    postgresql,
+    sqlserver,
+    examples
+  )
 
 scalaVersion in ThisBuild := "2.11.7"
 
 crossScalaVersions := Seq("2.10.5")
 
-version in ThisBuild := "0.10"
+version in ThisBuild := "1.0"
 
 licenses in ThisBuild := Seq("The BSD 3-Clause License" -> url("http://opensource.org/licenses/BSD-3-Clause"))
 
@@ -28,8 +51,8 @@ pomExtra in ThisBuild :=
       <name>Jeff Shaw</name>
       <id>shawjef3</id>
       <url>https://github.com/shawjef3/</url>
-      <organization>WDA</organization>
-      <organizationUrl>http://www.wda.com/</organizationUrl>
+      <organization>Rocketfuel</organization>
+      <organizationUrl>http://rocketfuel.com/</organizationUrl>
     </developer>
   </developers>
   <scm>
@@ -48,6 +71,7 @@ scalacOptions in ThisBuild ++= Seq(
   "-unchecked",
   "-Xfatal-warnings",
   "-Yno-adapted-args",
-  "-Ywarn-dead-code",        // N.B. doesn't work well with the ??? hole
   "-Xfuture"
 )
+
+scalacOptions in (Compile, doc) ++= Seq("-doc-root-content", baseDirectory.value+"/rootdoc.txt")

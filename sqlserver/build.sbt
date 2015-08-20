@@ -1,4 +1,6 @@
-name := "sqlserver-java7"
+organization := "com.rocketfuel.sdbc.sqlserver"
+
+name := "jdbc-java7"
 
 description := "An implementation of WDA SDBC for accessing Microsoft SQL Server."
 
