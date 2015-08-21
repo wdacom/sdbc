@@ -43,6 +43,10 @@ trait Setters
       preparedStatement.setString(parameterIndex, JsonMethods.compact(JsonMethods.render(value)))
     }
 
+    def withFormats(implicit newFormats: Formats): QJSON = {
+      QJSON(value)(newFormats)
+    }
+
   }
 
   def JSONToParameterValue(x: JValue)(implicit formats: Formats): ParameterValue[JValue] = {
