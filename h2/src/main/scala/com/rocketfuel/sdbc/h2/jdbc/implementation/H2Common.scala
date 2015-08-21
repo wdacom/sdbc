@@ -3,9 +3,9 @@ package com.rocketfuel.sdbc.h2.jdbc.implementation
 import java.nio.file.Path
 import java.sql.DriverManager
 
-import com.rocketfuel.sdbc.base.jdbc.DBMS
+import com.rocketfuel.sdbc.base.jdbc.{Index, DBMS}
 
-abstract class H2
+abstract class H2Common
   extends DBMS
   with Getters
   with Setters
@@ -67,5 +67,45 @@ abstract class H2
     } finally {
       connection.close()
     }
+  }
+
+  override implicit val parameterGetter: (Row, Index) => Option[ParameterValue[_]] = {
+    (row: Row, columnIndex: Index) =>
+      val ix = columnIndex(row)
+
+      val columnType = row.getMetaData.getColumnTypeName(ix)
+
+      columnType match {
+        case "INTEGER" =>
+          IntGetter(row, ix).map(QInt)
+        case "BOOLEAN" =>
+          BooleanGetter(row, ix).map(QBoolean)
+        case "TINYINT" =>
+          ByteGetter(row, ix).map(QByte)
+        case "SMALLINT" =>
+          ShortGetter(row, ix).map(QShort)
+        case "BIGINT" =>
+          LongGetter(row, ix).map(QLong)
+        case "DECIMAL" =>
+          ScalaBigDecimalGetter(row, ix).map(QDecimal)
+        case "REAL" =>
+          FloatGetter(row, ix).map(QFloat)
+        case "TIME" =>
+          TimeGetter(row, ix).map(QTime)
+        case "DATE" =>
+          DateGetter(row, ix).map(QDate)
+        case "TIMESTAMP" =>
+          TimestampGetter(row, ix).map(QTimestamp)
+        case "BLOB" | "VARBINARY" =>
+          BytesGetter(row, ix).map(QBytes)
+        case "OTHER" =>
+          SerializedGetter(row, ix).map(QSerialized)
+        case "CHAR" | "VARCHAR" | "VARCHAR_IGNORECASE" =>
+          StringGetter(row, ix).map(QString)
+        case "UUID" =>
+          UUIDGetter(row, ix).map(QUUID)
+        case "ARRAY" =>
+          throw new NotImplementedError("H2.parameterGetter for ARRAY")
+      }
   }
 }

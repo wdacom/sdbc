@@ -2,9 +2,9 @@ package com.rocketfuel.sdbc.base
 
 import com.rocketfuel.Logging
 
-abstract class Batch[UnderlyingConnection] extends Select[UnderlyingConnection, Long] {
+abstract class Batch[Connection] extends Select[Connection, Long] {
   self: Logging =>
 
-  override def iterator()(implicit connection: UnderlyingConnection): Iterator[Long]
+  override def iterator()(implicit connection: Connection): Iterator[Long]
 
 }

@@ -25,6 +25,8 @@ abstract class DBMS
 
   type Batchable[Key] = jdbc.Batchable[Key]
 
+  implicit val parameterGetter: (Row, Index) => Option[ParameterValue[_]]
+
   override def batchIterator[Key](
     key: Key
   )(implicit batchable: Batchable[Key],

@@ -165,7 +165,7 @@ trait DoubleParameter {
 
 trait DecimalParameter {
 
-  case class QDecimal(value: java.math.BigDecimal) extends ParameterValue[java.math.BigDecimal] {
+  case class QDecimal(value: scala.BigDecimal) extends ParameterValue[scala.BigDecimal] {
 
     override def set(
       preparedStatement: PreparedStatement,
@@ -173,15 +173,15 @@ trait DecimalParameter {
     ): Unit = {
       preparedStatement.setBigDecimal(
         parameterIndex,
-        value
+        value.underlying
       )
     }
 
   }
 
-  implicit def DecimalToParameterValue(x: java.math.BigDecimal): ParameterValue[java.math.BigDecimal] = QDecimal(x)
+  implicit def DecimalToParameterValue(x: java.math.BigDecimal): ParameterValue[scala.BigDecimal] = QDecimal(BigDecimal(x))
   
-  implicit def DecimalToParameterValue(x: scala.BigDecimal): ParameterValue[java.math.BigDecimal] = x.underlying
+  implicit def DecimalToParameterValue(x: scala.BigDecimal): ParameterValue[scala.BigDecimal] = QDecimal(x)
 
 }
 

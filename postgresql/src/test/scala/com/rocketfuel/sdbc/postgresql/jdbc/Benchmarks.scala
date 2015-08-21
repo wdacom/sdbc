@@ -238,10 +238,10 @@ class Benchmarks
   object TestTable {
 
     implicit def apply(row: Row): TestTable = {
-      val id = row[Long]("id").get
-      val str1 = row[String]("str1").get
-      val uuid = row[UUID]("uuid").get
-      val str2 = row[String]("str2").get
+      val id = row.get[Long]("id").get
+      val str1 = row.get[String]("str1").get
+      val uuid = row.get[UUID]("uuid").get
+      val str2 = row.get[String]("str2").get
 
       TestTable(id, str1, uuid, str2)
     }

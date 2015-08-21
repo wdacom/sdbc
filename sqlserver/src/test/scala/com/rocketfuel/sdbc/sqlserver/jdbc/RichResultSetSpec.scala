@@ -43,7 +43,7 @@ class RichResultSetSpec
     batch.iterator()
 
     for (row <- connection.iteratorForUpdate("SELECT x FROM tbl")) {
-      row("x") = row[Int]("x").map(_ + 1)
+      row("x") = row.get[Int]("x").map(_ + 1)
       row.updateRow()
     }
 

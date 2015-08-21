@@ -11,6 +11,11 @@ import java.util.Calendar
  * A class which wraps the read-only parts of a JDBC `ResultSet`.
  *
  * For an updatable version, see `SelectForUpdate`.
+ *
+ * There are two good ways to get information out of a Row. If you want to use
+ * generics, use [[get()]]. If you want to use pattern matching, use [[parameter()]].
+ * You can also use the various get methods that JDBC provides.
+ *
  * @param underlying
  */
 class Row private[jdbc] (
@@ -34,8 +39,22 @@ class Row private[jdbc] (
       underlying.isWrapperFor(iface: Class[_])
   }
 
-  def apply[T](columnIndex: Index)(implicit getter: Getter[T]): Option[T] = {
+  lazy val columnTypes: Map[Int, String] = {
+    val metadata = underlying.getMetaData
+
+    1.to(metadata.getColumnCount).foldLeft(Map.empty[Int, String]) {
+      case (accum, ix) =>
+        accum + (ix -> metadata.getColumnTypeName(ix))
+    }
+  }
+
+  def get[T](columnIndex: Index)(implicit getter: Getter[T]): Option[T] = {
     getter(this, columnIndex)
+  }
+
+  def parameter(columnIndex: Index)(implicit parameterGetter: (Row, String) => Option[ParameterValue[_]]): Option[ParameterValue[_]] = {
+    val ix = columnIndex(this)
+    parameterGetter(this, columnTypes(ix))
   }
 
   def getType: Int = underlying.getType()

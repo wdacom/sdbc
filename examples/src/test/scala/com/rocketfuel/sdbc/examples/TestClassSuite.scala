@@ -1,7 +1,6 @@
 package com.rocketfuel.sdbc.examples
 
-import com.rocketfuel.sdbc.h2.jdbc.H2Suite
-import com.rocketfuel.sdbc.jdbc.H2._
+import com.rocketfuel.sdbc.h2.jdbc._
 
 class TestClassSuite
  extends H2Suite {

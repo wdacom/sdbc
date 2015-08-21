@@ -4,9 +4,6 @@ import com.rocketfuel.sdbc.base.jdbc._
 import com.rocketfuel.sdbc.postgresql.jdbc
 import org.postgresql.PGConnection
 
-/**
- * Created by Jeff on 3/27/2015.
- */
 abstract class PostgreSqlCommon
   extends DBMS
   with Setters
@@ -34,4 +31,49 @@ abstract class PostgreSqlCommon
     connection.unwrap[PGConnection](classOf[PGConnection]).addDataType("ltree", classOf[jdbc.LTree])
   }
 
+  override implicit val parameterGetter: (Row, Index) => Option[ParameterValue[_]] = {
+    (row: Row, columnIndex: Index) =>
+      val ix = columnIndex(row)
+
+      val columnType = row.getMetaData.getColumnTypeName(ix)
+
+      columnType match {
+        case "int4" | "serial" =>
+          IntGetter(row, ix).map(QInt)
+        case "bool" =>
+          BooleanGetter(row, ix).map(QBoolean)
+        case "int2" =>
+          ShortGetter(row, ix).map(QShort)
+        case "int8" | "bigserial" =>
+          LongGetter(row, ix).map(QLong)
+        case "numeric" =>
+          ScalaBigDecimalGetter(row, ix).map(QDecimal)
+        case "float4" =>
+          FloatGetter(row, ix).map(QFloat)
+        case "float8" =>
+          DoubleGetter(row, ix).map(QDouble)
+        case "time" =>
+          TimeGetter(row, ix).map(QTime)
+        case "timetz" =>
+          OffsetTimeGetter(row, ix).map(QOffsetTime)
+        case "date" =>
+          DateGetter(row, ix).map(QDate)
+        case "timestamp" =>
+          TimestampGetter(row, ix).map(QTimestamp)
+        case "timestamptz" =>
+          OffsetDateTimeGetter(row, ix).map(QOffsetDateTime)
+        case "bytea" =>
+          BytesGetter(row, ix).map(QBytes)
+        case "varchar" | "bpchar" | "text" =>
+          StringGetter(row, ix).map(QString)
+        case "uuid" =>
+          UUIDGetter(row, ix).map(QUUID)
+        case "xml" =>
+          XMLGetter(row, ix).map(QXML)
+        case "json" | "jsonb" =>
+          JValueGetter(row, ix).map(j => QJSON(j)(org.json4s.DefaultFormats))
+        case array if array.startsWith("_") =>
+          throw new NotImplementedError("PostgreSql.parameterGetter for arrays")
+      }
+  }
 }

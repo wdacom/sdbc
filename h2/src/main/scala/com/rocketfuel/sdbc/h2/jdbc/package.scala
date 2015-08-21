@@ -11,6 +11,6 @@ package com.rocketfuel.sdbc.h2
  * pool.withConnection(_.iterator[Int]("SELECT 1").toSeq)
  * }}}
  */
-package object jdbc extends implementation.H2 {
+package object jdbc extends implementation.H2Common {
 
 }

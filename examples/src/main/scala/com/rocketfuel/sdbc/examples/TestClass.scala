@@ -10,7 +10,7 @@ case class TestClass(
 object TestClass {
 
   implicit def apply(row: Row): TestClass = {
-    TestClass(row[Int]("id").get, row[String]("value").get)
+    TestClass(row.get[Int]("id").get, row.get[String]("value").get)
   }
 
   implicit val selectableByValue = new Selectable[Value, TestClass] {
