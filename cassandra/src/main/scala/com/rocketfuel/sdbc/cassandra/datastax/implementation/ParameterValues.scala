@@ -1,5 +1,6 @@
 package com.rocketfuel.sdbc.cassandra.datastax.implementation
 
+import java.math.BigInteger
 import java.net.InetAddress
 import java.nio.ByteBuffer
 import java.util.{Date, UUID}
@@ -21,20 +22,8 @@ trait ParameterValues {
     BooleanParameter(value)
   }
 
-  case class BoxedBooleanParameter(value: java.lang.Boolean) extends ParameterValue[java.lang.Boolean] {
-    override def set(
-      statement: BoundStatement,
-      parameterIndex: Int
-    ): Unit = {
-      value match {
-        case null => statement.setToNull(parameterIndex)
-        case _ => statement.setBool(parameterIndex, value)
-      }
-    }
-  }
-
-  implicit def BoxedBooleanToParameter(value: java.lang.Boolean): ParameterValue[java.lang.Boolean] = {
-    BoxedBooleanToParameter(value)
+  implicit def BoxedBooleanToParameter(value: java.lang.Boolean): ParameterValue[Option[Boolean]] = {
+    OptionToParameter[Boolean](Option(value).map(_.booleanValue()))
   }
 
   case class ByteBufferParameter(value: ByteBuffer) extends ParameterValue[ByteBuffer] {
@@ -50,17 +39,21 @@ trait ParameterValues {
     ByteBufferParameter(value)
   }
 
-  case class IterableByteParameter(value: Iterable[Byte]) extends ParameterValue[Iterable[Byte]] {
+  case class ArrayByteParameter(value: Array[Byte]) extends ParameterValue[Array[Byte]] {
     override def set(
       statement: BoundStatement,
       parameterIndex: Int
     ): Unit = {
-      statement.setBytes(parameterIndex, ByteBuffer.wrap(value.toArray))
+      statement.setBytes(parameterIndex, ByteBuffer.wrap(value))
     }
   }
 
-  implicit def IterableByteToParameter(value: Iterable[Byte]): ParameterValue[Iterable[Byte]] = {
-    IterableByteParameter(value)
+  implicit def IterableByteToParameter(value: Iterable[Byte]): ParameterValue[Array[Byte]] = {
+    ArrayByteParameter(value.toArray)
+  }
+
+  implicit def ArrayByteToParameter(value: Array[Byte]): ParameterValue[Array[Byte]] = {
+    ArrayByteParameter(value)
   }
 
   case class DateParameter(value: Date) extends ParameterValue[Date] {
@@ -76,20 +69,7 @@ trait ParameterValues {
     DateParameter(value)
   }
 
-  case class DecimalParameter(value: BigDecimal) extends ParameterValue[BigDecimal] {
-    override def set(
-      statement: BoundStatement,
-      parameterIndex: Int
-    ): Unit = {
-      statement.setDecimal(parameterIndex, value.underlying())
-    }
-  }
-
-  implicit def BigDecimalToParameter(value: BigDecimal): ParameterValue[BigDecimal] = {
-    DecimalParameter(value)
-  }
-
-  case class JavaDecimalParameter(value: java.math.BigDecimal) extends ParameterValue[java.math.BigDecimal] {
+  case class BigDecimalParameter(value: java.math.BigDecimal) extends ParameterValue[java.math.BigDecimal] {
     override def set(
       statement: BoundStatement,
       parameterIndex: Int
@@ -98,8 +78,12 @@ trait ParameterValues {
     }
   }
 
-  implicit def JavaDecimalToParameter(value: java.math.BigDecimal): ParameterValue[java.math.BigDecimal] = {
-    JavaDecimalParameter(value)
+  implicit def BigDecimalToParameter(value: BigDecimal): ParameterValue[java.math.BigDecimal] = {
+    BigDecimalParameter(value.underlying())
+  }
+
+  implicit def JavaBigDecimalToParameter(value: java.math.BigDecimal): ParameterValue[java.math.BigDecimal] = {
+    BigDecimalParameter(value)
   }
 
   case class DoubleParameter(value: Double) extends ParameterValue[Double] {
@@ -115,20 +99,8 @@ trait ParameterValues {
     DoubleParameter(value)
   }
 
-  case class BoxedDoubleParameter(value: java.lang.Double) extends ParameterValue[java.lang.Double] {
-    override def set(
-      statement: BoundStatement,
-      parameterIndex: Int
-    ): Unit = {
-      value match {
-        case null => statement.setToNull(parameterIndex)
-        case _ => statement.setDouble(parameterIndex, value)
-      }
-    }
-  }
-
-  implicit def BoxedDoubleToParameter(value: java.lang.Double): ParameterValue[java.lang.Double] = {
-    BoxedDoubleParameter(value)
+  implicit def BoxedDoubleToParameter(value: java.lang.Double): ParameterValue[Option[Double]] = {
+    OptionToParameter[Double](Option(value).map(_.doubleValue()))
   }
 
   case class FloatParameter(value: Float) extends ParameterValue[Float] {
@@ -144,20 +116,8 @@ trait ParameterValues {
     FloatParameter(value)
   }
 
-  case class BoxedFloatParameter(value: java.lang.Float) extends ParameterValue[java.lang.Float] {
-    override def set(
-      statement: BoundStatement,
-      parameterIndex: Int
-    ): Unit = {
-      value match {
-        case null => statement.setToNull(parameterIndex)
-        case _ => statement.setFloat(parameterIndex, value)
-      }
-    }
-  }
-
-  implicit def BoxedFloatToParameter(value: java.lang.Float): ParameterValue[java.lang.Float] = {
-    BoxedFloatParameter(value)
+  implicit def BoxedFloatToParameter(value: java.lang.Float): ParameterValue[Option[Float]] = {
+    OptionToParameter[Float](Option(value).map(_.floatValue()))
   }
 
   case class InetAddressParameter(value: InetAddress) extends ParameterValue[InetAddress] {
@@ -186,20 +146,8 @@ trait ParameterValues {
     IntParameter(value)
   }
 
-  case class BoxedIntParameter(value: java.lang.Integer) extends ParameterValue[java.lang.Integer] {
-    override def set(
-      statement: BoundStatement,
-      parameterIndex: Int
-    ): Unit = {
-      value match {
-        case null => statement.setToNull(parameterIndex)
-        case _ => statement.setInt(parameterIndex, value)
-      }
-    }
-  }
-
-  implicit def BoxedIntToParameter(value: java.lang.Integer): ParameterValue[java.lang.Integer] = {
-    BoxedIntParameter(value)
+  implicit def BoxedIntToParameter(value: java.lang.Integer): ParameterValue[Option[Int]] = {
+    OptionToParameter[Int](Option(value).map(_.intValue()))
   }
 
   case class SeqParameter[T](value: Seq[T]) extends ParameterValue[Seq[T]] {
@@ -224,7 +172,7 @@ trait ParameterValues {
     }
   }
 
-  implicit def JavaListToParameter[T](value: Seq[T]): ParameterValue[java.util.List[T]] = {
+  implicit def JavaListToParameter[T](value: java.util.List[T]): ParameterValue[java.util.List[T]] = {
     JavaListParameter[T](value)
   }
 
@@ -241,20 +189,8 @@ trait ParameterValues {
     LongParameter(value)
   }
 
-  case class BoxedLongParameter(value: java.lang.Long) extends ParameterValue[java.lang.Long] {
-    override def set(
-      statement: BoundStatement,
-      parameterIndex: Int
-    ): Unit = {
-      value match {
-        case null => statement.setToNull(parameterIndex)
-        case _ => statement.setLong(parameterIndex, value)
-      }
-    }
-  }
-
-  implicit def BoxedLongToParameter(value: java.lang.Long): ParameterValue[java.lang.Long] = {
-    BoxedLongParameter(value)
+  implicit def BoxedLongToParameter(value: java.lang.Long): ParameterValue[Option[Long]] = {
+    OptionToParameter[Long](Option(value).map(_.longValue()))
   }
 
   case class JavaMapParameter[K, V](value: java.util.Map[K, V]) extends ParameterValue[java.util.Map[K, V]] {
@@ -283,8 +219,7 @@ trait ParameterValues {
     MapParameter[K, V](value)
   }
 
-
-  case class OptionParameter[T](value: Option[T])(implicit innerParameterValue: ParameterValue[T]) extends ParameterValue[Option[T]] {
+  case class OptionParameter[T](value: Option[T])(implicit innerParameterValue: T => ParameterValue[T]) extends ParameterValue[Option[T]] {
     override def set(
       statement: BoundStatement,
       parameterIndex: Int
@@ -293,16 +228,16 @@ trait ParameterValues {
         case None =>
           statement.setToNull(parameterIndex)
         case Some(innerValue) =>
-          innerParameterValue.set(statement, parameterIndex)
+          innerParameterValue(innerValue).set(statement, parameterIndex)
       }
     }
   }
 
-  implicit def OptionToParameter[T](value: Option[T])(implicit innerParameterValue: ParameterValue[T]): ParameterValue[Option[T]] = {
+  implicit def OptionToParameter[T](value: Option[T])(implicit innerParameterValue: T => ParameterValue[T]): ParameterValue[Option[T]] = {
     OptionParameter[T](value)
   }
 
-  case class SetParameter[T](value: Set[T]) extends ParameterValue[Set[T]] {
+  case class SetParameter[T](value: java.util.Set[T]) extends ParameterValue[java.util.Set[T]] {
     override def set(
       statement: BoundStatement,
       parameterIndex: Int
@@ -311,7 +246,11 @@ trait ParameterValues {
     }
   }
 
-  implicit def SetToParameter[T](value: Set[T]): ParameterValue[Set[T]] = {
+  implicit def SetToParameter[T](value: Set[T]): ParameterValue[java.util.Set[T]] = {
+    SetParameter[T](value)
+  }
+
+  implicit def JavaSetToParameter[T](value: java.util.Set[T]): ParameterValue[java.util.Set[T]] = {
     SetParameter[T](value)
   }
 
@@ -391,6 +330,16 @@ trait ParameterValues {
 
   implicit def UDTValueToParameter(value: UDTValue): ParameterValue[UDTValue] = {
     UDTParameter(value)
+  }
+
+  case class BigIntegerParameter(value: BigInteger) extends ParameterValue[BigInteger] {
+    override def set(statement: BoundStatement, parameterIndex: Int): Unit = {
+      statement.setVarint(parameterIndex, value)
+    }
+  }
+
+  implicit def BigIntegerToParameter(value: BigInteger): ParameterValue[BigInteger] = {
+    BigIntegerParameter(value)
   }
 
 }
