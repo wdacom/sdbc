@@ -1,5 +1,6 @@
 package com.rocketfuel.sdbc.postgresql.jdbc.implementation
 
+import com.rocketfuel.sdbc.base
 import com.rocketfuel.sdbc.base.jdbc._
 import com.rocketfuel.sdbc.postgresql.jdbc
 import org.postgresql.PGConnection
@@ -31,7 +32,7 @@ abstract class PostgreSqlCommon
     connection.unwrap[PGConnection](classOf[PGConnection]).addDataType("ltree", classOf[jdbc.LTree])
   }
 
-  override implicit val parameterGetter: (Row, Index) => Option[ParameterValue[_]] = {
+  override implicit val ParameterGetter: Getter[base.jdbc.ParameterValue[_]] = {
     (row: Row, columnIndex: Index) =>
       val ix = columnIndex(row)
 
@@ -76,4 +77,5 @@ abstract class PostgreSqlCommon
           throw new NotImplementedError("PostgreSql.parameterGetter for arrays")
       }
   }
+
 }

@@ -12,7 +12,7 @@ trait SelectableMethods[Connection, Select[T] <: base.Select[Connection, T]] {
 
   def iterator[Key, Value](
     key: Key
-  )(implicit selectable: Selectable[Key, Value, Connection, Select[Value]],
+  )(implicit selectable: base.Selectable[Key, Value, Connection, Select[Value]],
     connection: Connection
   ): Iterator[Value] = {
     selectable.select(key).iterator()
@@ -20,7 +20,7 @@ trait SelectableMethods[Connection, Select[T] <: base.Select[Connection, T]] {
 
   def option[Key, Value](
     key: Key
-  )(implicit selectable: Selectable[Key, Value, Connection, Select[Value]],
+  )(implicit selectable: base.Selectable[Key, Value, Connection, Select[Value]],
     connection: Connection
   ): Option[Value] = {
       iterator(key).toStream.headOption

@@ -8,10 +8,30 @@ import com.zaxxer.hikari.HikariConfig
 package object jdbc
   extends HikariImplicits
   with ResultSetImplicits
-  with base.BatchableMethods[java.sql.Connection, Batch]
-  with base.UpdatableMethods[java.sql.Connection, Update]
-  with base.SelectableMethods[java.sql.Connection, Select]
-  with base.ExecutableMethods[java.sql.Connection, Execute] {
+  with base.BatchableMethods[java.sql.Connection, jdbc.Batch]
+  with base.UpdatableMethods[java.sql.Connection, jdbc.Update]
+  with base.SelectableMethods[java.sql.Connection, jdbc.Select]
+  with base.ExecutableMethods[java.sql.Connection, jdbc.Execute] {
+
+  type ParameterizedQuery[Self <: ParameterizedQuery[Self]] = base.ParameterizedQuery[Self, PreparedStatement, Int]
+
+  type ParameterValue[+T] = base.ParameterValue[T, PreparedStatement, Int]
+
+  type ParameterList = Seq[(String, Option[ParameterValue[_]])]
+
+  type Index = PartialFunction[Row, Int]
+
+  type Getter[+T] = base.Getter[Row, Index, T]
+
+  type Connection = java.sql.Connection
+
+  type Batchable[Key] = base.Batchable[Key, Connection, jdbc.Batch]
+
+  type Executable[Key] = base.Executable[Key, Connection, jdbc.Execute]
+
+  type Selectable[Key, Value] = base.Selectable[Key, Value, Connection, jdbc.Select[Value]]
+
+  type Updatable[Key] = base.Updatable[Key, Connection, jdbc.Update]
 
   private val dataSources: collection.mutable.Map[String, DBMS] = collection.mutable.Map.empty
 
@@ -70,26 +90,6 @@ package object jdbc
   def of(r: java.sql.ResultSet): DBMS = {
     of(r.getStatement)
   }
-
-  type ParameterizedQuery[Self <: ParameterizedQuery[Self]] = base.ParameterizedQuery[Self, PreparedStatement, Int]
-
-  type ParameterValue[+T] = base.ParameterValue[T, PreparedStatement, Int]
-
-  type ParameterList = Seq[(String, Option[ParameterValue[_]])]
-
-  type Index = PartialFunction[Row, Int]
-
-  type Getter[+T] = base.Getter[Row, Index, T]
-
-  type Connection = java.sql.Connection
-
-  type Batchable[Key] = base.Batchable[Key, Connection, Batch]
-
-  type Executable[Key] = base.Executable[Key, Connection, Execute]
-
-  type Selectable[Key, Value] = base.Selectable[Key, Value, Connection, Select[Value]]
-
-  type Updatable[Key] = base.Updatable[Key, Connection, Update]
 
   private [jdbc] def prepare(
     queryText: String,

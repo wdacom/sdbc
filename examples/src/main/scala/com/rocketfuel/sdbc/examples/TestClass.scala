@@ -37,11 +37,21 @@ object TestClass {
     }
   }
 
-  implicit val insertById = new Updatable[Value] {
+  implicit val insertValue = new Updatable[Value] {
     val query = Update("INSERT INTO test_class (value) VALUES ($value)")
 
     override def update(key: Value): Update = {
       query.on("value" -> key.value)
+    }
+  }
+
+  implicit val updatableById = new Updatable[TestClass] {
+    val query = Update("UPDATE test_class SET value = $value WHERE id = $id")
+    override def update(key: TestClass): Update = {
+      query.on(
+        "id" -> key.id,
+        "value" -> key.value
+      )
     }
   }
 

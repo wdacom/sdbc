@@ -10,74 +10,26 @@ abstract class DBMS
   with OptionParameter
   with GetterImplicits
   with UpdaterImplicits
-  with base.BatchableMethods[java.sql.Connection, Batch]
-  with base.UpdatableMethods[java.sql.Connection, Update]
-  with base.SelectableMethods[java.sql.Connection, Select]
-  with base.ExecutableMethods[java.sql.Connection, Execute] {
+  with base.BatchableMethods[Connection, Batch]
+  with base.UpdatableMethods[Connection, Update]
+  with base.SelectableMethods[Connection, Select]
+  with base.ExecutableMethods[Connection, Execute] {
 
-  type Index = PartialFunction[Row, Int]
+  type Index = jdbc.Index
 
-  type Getter[+T] = base.Getter[Row, Index, T]
+  type Getter[+T] = jdbc.Getter[T]
 
   type ParameterValue[+T] = jdbc.ParameterValue[T]
 
   type ParameterList = jdbc.ParameterList
 
-  type Batchable[Key] = jdbc.Batchable[Key]
-
-  override def batchIterator[Key](
-    key: Key
-  )(implicit batchable: Batchable[Key],
-    connection: Connection
-  ): Iterator[Long] = {
-    jdbc.batchIterator[Key](key)
-  }
+  type Batchable[Key] = base.Batchable[Key, Connection, Batch]
 
   type Executable[Key] = jdbc.Executable[Key]
 
-  override def execute[Key](
-    key: Key
-  )(implicit ev: Executable[Key],
-    connection: Connection
-  ): Unit = {
-    jdbc.execute[Key](key)
-  }
-
   type Selectable[Key, Value] = jdbc.Selectable[Key, Value]
 
-  override def iterator[Key, Value](
-    key: Key
-  )(implicit selectable: Selectable[Key, Value],
-    connection: Connection
-  ): Iterator[Value] = {
-    jdbc.iterator[Key, Value](key)
-  }
-
-  override def option[Key, Value](
-    key: Key
-  )(implicit selectable: Selectable[Key, Value],
-    connection: Connection
-  ): Option[Value] = {
-    jdbc.option[Key, Value](key)
-  }
-
   type Updatable[Key] = jdbc.Updatable[Key]
-
-  override def updateIterator[Key](
-    key: Key
-  )(implicit updatable: Updatable[Key],
-    connection: Connection
-  ): Iterator[Long] = {
-    jdbc.updateIterator[Key](key)
-  }
-
-  override def update[Key](
-    key: Key
-  )(implicit updatable: Updatable[Key],
-    connection: Connection
-  ): Long = {
-    jdbc.update[Key](key)
-  }
 
   type Select[T] = jdbc.Select[T]
 
@@ -100,6 +52,10 @@ abstract class DBMS
   val Pool = jdbc.Pool
 
   type Connection = jdbc.Connection
+
+  type Row = jdbc.Row
+
+  type MutableRow = jdbc.MutableRow
 
   implicit def PoolToHikariPool(pool: Pool): HikariDataSource = {
     pool.underlying

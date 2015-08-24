@@ -3,7 +3,7 @@ package com.rocketfuel.sdbc.h2.jdbc.implementation
 import java.nio.file.Path
 import java.sql.DriverManager
 
-import com.rocketfuel.sdbc.base.jdbc.{Index, DBMS}
+import com.rocketfuel.sdbc.base.jdbc.DBMS
 
 abstract class H2Common
   extends DBMS
@@ -69,11 +69,9 @@ abstract class H2Common
     }
   }
 
-  override implicit val parameterGetter: (Row, Index) => Option[ParameterValue[_]] = {
-    (row: Row, columnIndex: Index) =>
-      val ix = columnIndex(row)
-
-      val columnType = row.getMetaData.getColumnTypeName(ix)
+  override implicit val ParameterGetter: Getter[ParameterValue[_]] = {
+    (row: Row, ix: Index) =>
+      val columnType = row.getMetaData.getColumnTypeName(ix(row))
 
       columnType match {
         case "INTEGER" =>
@@ -105,7 +103,8 @@ abstract class H2Common
         case "UUID" =>
           UUIDGetter(row, ix).map(QUUID)
         case "ARRAY" =>
-          throw new NotImplementedError("H2.parameterGetter for ARRAY")
+          throw new NotImplementedError("H2.ParameterGetter for ARRAY")
       }
   }
+
 }

@@ -1,16 +1,19 @@
 package com.rocketfuel.sdbc.postgresql.jdbc.implementation
 
+
 import java.net.InetAddress
-import java.sql.{SQLDataException, SQLException}
-import java.time.Duration
+import java.sql.{SQLException, SQLDataException}
 import java.util.UUID
+import java.util.concurrent.TimeUnit
 
 import com.rocketfuel.sdbc.base.jdbc._
-import com.rocketfuel.sdbc.postgresql.jdbc._
-import org.json4s._
+import com.rocketfuel.sdbc.postgresql.jdbc.LTree
+import org.json4s.JValue
 import org.json4s.jackson.JsonMethods
 import org.postgresql.util.PGInterval
 
+import java.time.{Duration => JavaDuration}
+import scala.concurrent.duration.{Duration => ScalaDuration}
 import scala.xml.{Elem, XML}
 
 trait Getters extends Java8DefaultGetters with IntervalImplicits {
@@ -34,15 +37,24 @@ trait Getters extends Java8DefaultGetters with IntervalImplicits {
     }
   }
 
-  implicit val DurationGetter = new Getter[Duration] {
-    override def apply(row: Row, ix: Index): Option[Duration] = {
+  implicit val JavaDurationGetter = new Getter[JavaDuration] {
+    override def apply(row: Row, ix: Index): Option[JavaDuration] = {
       Option(row.getObject(ix(row))).map {
         case pgInterval: PGInterval =>
-          val asDuration: Duration = pgInterval
+          val asDuration: JavaDuration = pgInterval
           asDuration
         case _ =>
           throw new SQLException("column does not contain a PGInterval")
       }
+    }
+  }
+
+  implicit val ScalaDurationGetter = new Getter[ScalaDuration] {
+    override def apply(
+      row: Row,
+      ix: Index
+    ): Option[ScalaDuration] = {
+      JavaDurationGetter(row, ix).map(i => ScalaDuration(i.toMillis, TimeUnit.MILLISECONDS))
     }
   }
 

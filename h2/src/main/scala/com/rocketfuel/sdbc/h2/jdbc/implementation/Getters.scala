@@ -7,4 +7,7 @@ trait Getters
   with LocalDateGetter
   with LocalDateTimeGetter
   with LocalTimeGetter
-  with InstantGetter
+  with InstantGetter {
+  self: SerializedParameter =>
+
+}

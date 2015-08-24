@@ -2,7 +2,7 @@ package com.rocketfuel.sdbc.sqlserver.jdbc.implementation
 
 import java.time.format.{DateTimeFormatter, DateTimeFormatterBuilder}
 
-import com.rocketfuel.sdbc.base.jdbc.{Index, DBMS, HasOffsetDateTimeFormatter, HasOffsetTimeFormatter}
+import com.rocketfuel.sdbc.base.jdbc._
 import com.rocketfuel.sdbc.sqlserver.jdbc.HierarchyId
 
 /*
@@ -56,8 +56,8 @@ abstract class SqlServer
     toFormatter
   }
 
-  override implicit val parameterGetter: (Row, Index) => Option[ParameterValue[_]] = {
-    (row: Row, columnIndex: Index) =>
+  override implicit val ParameterGetter: Getter[ParameterValue[_]] = {
+    case (row: Row, ix: Index) =>
       ???
   }
 }

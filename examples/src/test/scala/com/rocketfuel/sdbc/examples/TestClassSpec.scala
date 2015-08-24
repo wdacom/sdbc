@@ -2,7 +2,7 @@ package com.rocketfuel.sdbc.examples
 
 import com.rocketfuel.sdbc.h2.jdbc._
 
-class TestClassSuite
+class TestClassSpec
  extends H2Suite {
 
   test("insert and select works") { implicit connection =>
