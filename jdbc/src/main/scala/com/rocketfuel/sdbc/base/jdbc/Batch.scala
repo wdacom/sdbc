@@ -6,7 +6,7 @@ import com.rocketfuel.Logging
 import com.rocketfuel.sdbc.base
 import com.rocketfuel.sdbc.base.CompiledStatement
 
-case class Batch private (
+case class Batch private [jdbc] (
   statement: CompiledStatement,
   parameterValues: Map[String, Option[ParameterValue[_]]],
   parameterValueBatches: Seq[Map[String, Option[ParameterValue[_]]]]

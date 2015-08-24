@@ -30,9 +30,8 @@ trait Updaters
   with InstantUpdater
   with LocalDateUpdater
   with LocalTimeUpdater
-  with OffsetDateTimeGetter
-  with OffsetTimeGetter {
-  self: HasOffsetDateTimeFormatter with HasOffsetTimeFormatter =>
+  with OffsetDateTimeGetter {
+  self: HasOffsetDateTimeFormatter =>
 
   implicit val UUIDUpdater: Updater[UUID] = new Updater[UUID] {
     override def update(row: MutableRow, columnIndex: Int, x: UUID): Unit = {

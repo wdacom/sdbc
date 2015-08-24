@@ -4,8 +4,9 @@ import java.math.BigInteger
 import java.net.InetAddress
 import java.nio.ByteBuffer
 import java.util.{Date, UUID}
-import com.datastax.driver.core.{BoundStatement, Token, TupleValue, UDTValue}
+import com.datastax.driver.core._
 import scala.collection.convert.wrapAsJava._
+import scala.reflect.runtime.universe._
 
 trait ParameterValues {
 
@@ -254,19 +255,6 @@ trait ParameterValues {
     SetParameter[T](value)
   }
 
-  case class JavaSetParameter[T](value: java.util.Set[T]) extends ParameterValue[java.util.Set[T]] {
-    override def set(
-      statement: BoundStatement,
-      parameterIndex: Int
-    ): Unit = {
-      statement.setSet[T](parameterIndex, value)
-    }
-  }
-
-  implicit def SeqToParameter[T](value: java.util.Set[T]): ParameterValue[java.util.Set[T]] = {
-    JavaSetParameter[T](value)
-  }
-
   case class StringParameter(value: String) extends ParameterValue[String] {
     override def set(
       statement: BoundStatement,
@@ -340,6 +328,24 @@ trait ParameterValues {
 
   implicit def BigIntegerToParameter(value: BigInteger): ParameterValue[BigInteger] = {
     BigIntegerParameter(value)
+  }
+
+  implicit def Tuple0ToParameter(_: Unit): ParameterValue[Unit] = new ParameterValue[Unit] {
+    override val value: Unit = ()
+
+    override def set(statement: BoundStatement, parameterIndex: Int): Unit = {
+      val tpe = new TupleType()
+      val tupleValue = tpe.newValue()
+      statement.setTupleValue(parameterIndex, tupleValue)
+    }
+  }
+
+  implicit def TUple1ToParameter[T0](a: (T0))(implicit aTag: TypeTag[T0]): ParameterValue[(T0)] = new ParameterValue[(T0)] {
+    override val value: (T0) = (a)
+
+    override def set(statement: BoundStatement, parameterIndex: Int): Unit = {
+      val tpe = new TupleType(DataType.)
+    }
   }
 
 }

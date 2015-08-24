@@ -29,13 +29,18 @@ trait Setters
   with LocalDateParameter
   with LocalTimeParameter
   with LocalDateTimeParameter
-  with OffsetDateTimeParameter
-  with OffsetTimeParameter {
-  self: HasOffsetDateTimeFormatter with HasOffsetTimeFormatter =>
+  with OffsetDateTimeParameter {
+  self: HasOffsetDateTimeFormatter =>
 
   case class QUUID(value: UUID) extends ParameterValue[UUID] {
     override def set(statement: PreparedStatement, parameterIndex: Int): Unit = {
       statement.setString(parameterIndex, value.toString)
+    }
+  }
+
+  object QUUID extends ToParameter {
+    override val toParameter: PartialFunction[Any, ParameterValue[_]] = {
+      case u: UUID => u
     }
   }
 
@@ -49,6 +54,12 @@ trait Setters
     }
   }
 
+  object QHierarchyId extends ToParameter {
+    override val toParameter: PartialFunction[Any, ParameterValue[_]] = {
+      case h: HierarchyId => h
+    }
+  }
+
   implicit def HierarchyIdToParameterValue(x: HierarchyId): ParameterValue[HierarchyId] = {
     QHierarchyId(x)
   }
@@ -59,8 +70,39 @@ trait Setters
     }
   }
 
+  object QXML extends ToParameter {
+    override val toParameter: PartialFunction[Any, ParameterValue[_]] = {
+      case x: Node => XMLToParameterValue(x)
+    }
+  }
+
   implicit def XMLToParameterValue(x: Node): ParameterValue[Node] = {
     QXML(x)
   }
+
+  val toSqlServerParameter =
+    QBoolean.toParameter orElse
+      QByte.toParameter orElse
+      QBytes.toParameter orElse
+      QDate.toParameter orElse
+      QDecimal.toParameter orElse
+      QDouble.toParameter orElse
+      QFloat.toParameter orElse
+      QInt.toParameter orElse
+      QLong.toParameter orElse
+      QShort.toParameter orElse
+      QString.toParameter orElse
+      QTime.toParameter orElse
+      QTimestamp.toParameter orElse
+      QReader.toParameter orElse
+      QInputStream.toParameter orElse
+      toInstantParameter orElse
+      toLocalDateParameter orElse
+      toLocalTimeParameter orElse
+      toLocalDateTimeParameter orElse
+      toOffsetDateTimeParameter orElse
+      QUUID.toParameter orElse
+      QHierarchyId.toParameter orElse
+      QXML.toParameter
 
 }

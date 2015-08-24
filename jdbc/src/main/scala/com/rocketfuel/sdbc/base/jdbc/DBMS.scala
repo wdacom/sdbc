@@ -13,7 +13,8 @@ abstract class DBMS
   with base.BatchableMethods[Connection, Batch]
   with base.UpdatableMethods[Connection, Update]
   with base.SelectableMethods[Connection, Select]
-  with base.ExecutableMethods[Connection, Execute] {
+  with base.ExecutableMethods[Connection, Execute]
+  with StringContextMethods {
 
   type Index = jdbc.Index
 

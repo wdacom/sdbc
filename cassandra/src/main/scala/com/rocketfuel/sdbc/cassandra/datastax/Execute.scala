@@ -9,7 +9,7 @@ import com.rocketfuel.sdbc.cassandra.datastax
 
 import scala.concurrent.{ExecutionContext, Future}
 
-case class Execute private (
+case class Execute private [cassandra] (
   override val statement: CompiledStatement,
   override val parameterValues: Map[String, Option[ParameterValue[_]]],
   override val queryOptions: QueryOptions

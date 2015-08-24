@@ -7,7 +7,7 @@ import com.datastax.driver.core.{Row => CRow, _}
 import scala.concurrent._
 import scala.collection.convert.decorateAsScala._
 
-case class Select[T] private (
+case class Select[T] private [cassandra] (
   override val statement: CompiledStatement,
   override val parameterValues: Map[String, Option[ParameterValue[_]]],
   override val queryOptions: QueryOptions

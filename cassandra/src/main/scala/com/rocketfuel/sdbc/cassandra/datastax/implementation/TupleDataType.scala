@@ -6,11 +6,16 @@ import java.util.UUID
 
 import com.datastax.driver.core.DataType
 
+import scala.reflect.runtime.universe._
 import scala.reflect.ClassTag
 
 case class TupleDataType[T](dataType: DataType)
 
 trait TupleDataTypes {
+
+  implicit def TypeTagToDataType(ctag: TypeTag[_]): DataType = {
+    
+  }
 
   implicit val intDataType = TupleDataType[Int](DataType.cint())
 

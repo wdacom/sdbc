@@ -3,6 +3,7 @@ package com.rocketfuel.sdbc.h2.jdbc.implementation
 import java.nio.file.Path
 import java.sql.DriverManager
 
+import com.rocketfuel.sdbc.base.jdbc
 import com.rocketfuel.sdbc.base.jdbc.DBMS
 
 abstract class H2Common
@@ -75,36 +76,46 @@ abstract class H2Common
 
       columnType match {
         case "INTEGER" =>
-          IntGetter(row, ix).map(QInt)
+          IntGetter(row, ix).map(QInt.apply)
         case "BOOLEAN" =>
-          BooleanGetter(row, ix).map(QBoolean)
+          BooleanGetter(row, ix).map(QBoolean.apply)
         case "TINYINT" =>
-          ByteGetter(row, ix).map(QByte)
+          ByteGetter(row, ix).map(QByte.apply)
         case "SMALLINT" =>
-          ShortGetter(row, ix).map(QShort)
+          ShortGetter(row, ix).map(QShort.apply)
         case "BIGINT" =>
-          LongGetter(row, ix).map(QLong)
+          LongGetter(row, ix).map(QLong.apply)
         case "DECIMAL" =>
-          ScalaBigDecimalGetter(row, ix).map(QDecimal)
+          JavaBigDecimalGetter(row, ix).map(QDecimal.apply)
         case "REAL" =>
-          FloatGetter(row, ix).map(QFloat)
+          FloatGetter(row, ix).map(QFloat.apply)
         case "TIME" =>
-          TimeGetter(row, ix).map(QTime)
+          TimeGetter(row, ix).map(QTime.apply)
         case "DATE" =>
-          DateGetter(row, ix).map(QDate)
+          DateGetter(row, ix).map(QDate.apply)
         case "TIMESTAMP" =>
-          TimestampGetter(row, ix).map(QTimestamp)
+          TimestampGetter(row, ix).map(QTimestamp.apply)
         case "BLOB" | "VARBINARY" =>
-          BytesGetter(row, ix).map(QBytes)
+          BytesGetter(row, ix).map(QBytes.apply)
         case "OTHER" =>
           SerializedGetter(row, ix).map(QSerialized)
         case "CHAR" | "VARCHAR" | "VARCHAR_IGNORECASE" =>
-          StringGetter(row, ix).map(QString)
+          StringGetter(row, ix).map(QString.apply)
         case "UUID" =>
-          UUIDGetter(row, ix).map(QUUID)
+          UUIDGetter(row, ix).map(QUUID.apply)
         case "ARRAY" =>
           throw new NotImplementedError("H2.ParameterGetter for ARRAY")
       }
   }
 
+  override def toParameter(a: Any): Option[jdbc.ParameterValue[_]] = {
+    a match {
+      case Some(a) =>
+        Some(toH2Parameter(a))
+      case None =>
+        None
+      case a =>
+        Option(toH2Parameter(a))
+    }
+  }
 }

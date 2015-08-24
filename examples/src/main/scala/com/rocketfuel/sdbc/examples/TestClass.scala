@@ -45,16 +45,6 @@ object TestClass {
     }
   }
 
-  implicit val updatableById = new Updatable[TestClass] {
-    val query = Update("UPDATE test_class SET value = $value WHERE id = $id")
-    override def update(key: TestClass): Update = {
-      query.on(
-        "id" -> key.id,
-        "value" -> key.value
-      )
-    }
-  }
-
   final case class Value(value: String)
 
   final case class Id(id: Int)

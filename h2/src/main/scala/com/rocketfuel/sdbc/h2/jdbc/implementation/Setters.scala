@@ -7,4 +7,13 @@ trait Setters
   with LocalDateParameter
   with LocalDateTimeParameter
   with LocalTimeParameter
-  with InstantParameter
+  with InstantParameter {
+
+  val toH2Parameter =
+    toDefaultParameter orElse
+      toLocalDateParameter orElse
+      toLocalDateTimeParameter orElse
+      toLocalTimeParameter orElse
+      toInstantParameter
+
+}

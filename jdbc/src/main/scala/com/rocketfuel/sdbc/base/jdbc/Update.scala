@@ -4,7 +4,7 @@ import com.rocketfuel.Logging
 import com.rocketfuel.sdbc.base
 import com.rocketfuel.sdbc.base.CompiledStatement
 
-case class Update private (
+case class Update private [jdbc] (
   statement: CompiledStatement,
   parameterValues: Map[String, Option[ParameterValue[_]]]
 ) extends base.Update[Connection]

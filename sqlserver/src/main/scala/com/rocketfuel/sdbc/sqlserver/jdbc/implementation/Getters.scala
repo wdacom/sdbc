@@ -9,8 +9,14 @@ import com.rocketfuel.sdbc.sqlserver.jdbc.HierarchyId
 
 import scala.xml.{Node, XML}
 
-trait Getters extends Java8DefaultGetters {
-  self: HasOffsetDateTimeFormatter with HasOffsetTimeFormatter =>
+trait Getters
+  extends DefaultGetters
+  with InstantGetter
+  with LocalDateGetter
+  with LocalDateTimeGetter
+  with LocalTimeGetter
+  with OffsetDateTimeGetter {
+  self: HasOffsetDateTimeFormatter =>
 
   override implicit val UUIDGetter: Getter[UUID] = new Parser[UUID] {
     override def parse(asString: String): UUID = {

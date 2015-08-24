@@ -40,37 +40,37 @@ abstract class PostgreSqlCommon
 
       columnType match {
         case "int4" | "serial" =>
-          IntGetter(row, ix).map(QInt)
+          IntGetter(row, ix).map(QInt.apply)
         case "bool" =>
-          BooleanGetter(row, ix).map(QBoolean)
+          BooleanGetter(row, ix).map(QBoolean.apply)
         case "int2" =>
-          ShortGetter(row, ix).map(QShort)
+          ShortGetter(row, ix).map(QShort.apply)
         case "int8" | "bigserial" =>
-          LongGetter(row, ix).map(QLong)
+          LongGetter(row, ix).map(QLong.apply)
         case "numeric" =>
-          ScalaBigDecimalGetter(row, ix).map(QDecimal)
+          JavaBigDecimalGetter(row, ix).map(QDecimal.apply)
         case "float4" =>
-          FloatGetter(row, ix).map(QFloat)
+          FloatGetter(row, ix).map(QFloat.apply)
         case "float8" =>
-          DoubleGetter(row, ix).map(QDouble)
+          DoubleGetter(row, ix).map(QDouble.apply)
         case "time" =>
-          TimeGetter(row, ix).map(QTime)
+          TimeGetter(row, ix).map(QTime.apply)
         case "timetz" =>
           OffsetTimeGetter(row, ix).map(QOffsetTime)
         case "date" =>
-          DateGetter(row, ix).map(QDate)
+          DateGetter(row, ix).map(QDate.apply)
         case "timestamp" =>
-          TimestampGetter(row, ix).map(QTimestamp)
+          TimestampGetter(row, ix).map(QTimestamp.apply)
         case "timestamptz" =>
           OffsetDateTimeGetter(row, ix).map(QOffsetDateTime)
         case "bytea" =>
-          BytesGetter(row, ix).map(QBytes)
+          BytesGetter(row, ix).map(QBytes.apply)
         case "varchar" | "bpchar" | "text" =>
-          StringGetter(row, ix).map(QString)
+          StringGetter(row, ix).map(QString.apply)
         case "uuid" =>
-          UUIDGetter(row, ix).map(QUUID)
+          UUIDGetter(row, ix).map(QUUID.apply)
         case "xml" =>
-          XMLGetter(row, ix).map(QXML)
+          XMLGetter(row, ix).map(QXML.apply)
         case "json" | "jsonb" =>
           JValueGetter(row, ix).map(j => QJSON(j)(org.json4s.DefaultFormats))
         case array if array.startsWith("_") =>
@@ -78,4 +78,14 @@ abstract class PostgreSqlCommon
       }
   }
 
+  override def toParameter(a: Any): Option[base.jdbc.ParameterValue[_]] = {
+    a match {
+      case Some(a) =>
+        Some(toPostgresqlParameter(a))
+      case None =>
+        None
+      case a =>
+        Option(toPostgresqlParameter(a))
+    }
+  }
 }

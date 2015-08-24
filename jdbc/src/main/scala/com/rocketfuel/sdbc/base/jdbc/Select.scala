@@ -6,7 +6,7 @@ import com.rocketfuel.Logging
 import com.rocketfuel.sdbc.base
 import com.rocketfuel.sdbc.base.CompiledStatement
 
-case class Select[T] private (
+case class Select[T] private [jdbc] (
   override val statement: CompiledStatement,
   override val parameterValues: Map[String, Option[ParameterValue[_]]]
 )(implicit val converter: Row => T)

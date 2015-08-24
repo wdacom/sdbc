@@ -21,12 +21,32 @@ object CompiledStatement {
     }
   }
 
+  /**
+   * Since the original variable names can't be gotten from
+   * the string context (they're replaced by empty strings),
+   * use numbers to represent the parameter names, starting
+   * from 0.
+   * @param sc
+   * @return
+   */
+  def apply(sc: StringContext): CompiledStatement = {
+    val partsWithArgs = sc.parts.foldLeft((Vector.empty[String], 0)) {
+      case ((accum, ix), "") =>
+        (accum :+ s"@`$ix`", ix + 1)
+      case ((accum, ix), s) =>
+        (accum :+ s, ix)
+    }._1
+    val queryText = partsWithArgs.mkString
+
+    apply(queryText)
+  }
+
   //http://www.postgresql.org/docs/9.4/static/sql-syntax-lexical.html
-  //We use '$' to signal the beginning of named parameter.
-  //Parameters are optionally quoted by backticks.
-  //Two '$' in a row are ignored.
+  //We use '@' to signal the beginning of named parameter.
+  //Parameters are optionally quoted by backticks. Quoted parameters can not contain backticks.
+  //Two '@' in a row are ignored.
   private val parameterMatcher =
-    """(?U)\$(?<!\$\$)(?:`([^`]+)`|([\p{L}_][\p{L}\p{N}_$]*))""".r
+    """(?U)@(?<!\@\@)(?:`([^`]+)`|([\p{L}_][\p{L}\p{N}_$]*))""".r
 
   /**
    * Split the string into its parts up to and including the first

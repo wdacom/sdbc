@@ -5,6 +5,10 @@ import java.sql.{Array => _, _}
 import java.time.{OffsetTime, OffsetDateTime}
 import java.util.UUID
 
+trait ToParameter {
+  val toParameter: PartialFunction[Any, ParameterValue[_]]
+}
+
 trait OptionParameter {
 
   implicit def ParameterValueToOptionParameterValue[T](value: T)(implicit toParam: T => ParameterValue[_]): Option[ParameterValue[_]] = {
@@ -32,6 +36,13 @@ trait LongParameter {
     }
   }
 
+  object QLong extends ToParameter {
+    override val toParameter: PartialFunction[Any, ParameterValue[_]] = {
+      case l: Long => l
+      case l: java.lang.Long => l
+    }
+  }
+
   implicit def LongToParameterValue(x: Long): ParameterValue[Long] = QLong(x)
 
   implicit def BigDecimalToParameterValue(x: java.lang.Long): ParameterValue[Long] = Long.unbox(x)
@@ -53,8 +64,15 @@ trait IntParameter {
     }
   }
 
+  object QInt extends ToParameter {
+    override val toParameter: PartialFunction[Any, ParameterValue[_]] = {
+      case i: Int => i
+      case i: java.lang.Integer => i
+    }
+  }
+
   implicit def IntToParameterValue(x: Int): ParameterValue[Int] = QInt(x)
-  
+
   implicit def BoxedIntToParameterValue(x: java.lang.Integer): ParameterValue[Int] = Int.unbox(x)
 
 }
@@ -71,6 +89,13 @@ trait ShortParameter {
         parameterIndex,
         value
       )
+    }
+  }
+
+  object QShort extends ToParameter {
+    override val toParameter: PartialFunction[Any, ParameterValue[_]] = {
+      case s: Short => s
+      case s: java.lang.Short => s
     }
   }
 
@@ -92,6 +117,13 @@ trait ByteParameter {
         parameterIndex,
         value
       )
+    }
+  }
+
+  object QByte extends ToParameter {
+    override val toParameter: PartialFunction[Any, ParameterValue[_]] = {
+      case b: Byte => b
+      case b: java.lang.Byte => b
     }
   }
   
@@ -116,8 +148,17 @@ trait BytesParameter {
     }
   }
 
+  object QBytes extends ToParameter {
+    override val toParameter: PartialFunction[Any, ParameterValue[_]] = {
+      case b: Array[Byte] => b
+      case b: Array[java.lang.Byte] => b.map(_.byteValue())
+    }
+  }
+
   implicit def BytesToParameterValue(x: Array[Byte]): ParameterValue[Array[Byte]] = QBytes(x)
-  
+
+  implicit def BoxedBytesToParameterValue(x: Array[java.lang.Byte]): ParameterValue[Array[Byte]] = QBytes(x.map(_.byteValue()))
+
 }
 
 trait FloatParameter {
@@ -132,6 +173,13 @@ trait FloatParameter {
         parameterIndex,
         value
       )
+    }
+  }
+
+  object QFloat extends ToParameter {
+    override val toParameter: PartialFunction[Any, ParameterValue[_]] = {
+      case f: Float => f
+      case f: java.lang.Float => f
     }
   }
 
@@ -157,6 +205,13 @@ trait DoubleParameter {
   
   }
 
+  object QDouble extends ToParameter {
+    override val toParameter: PartialFunction[Any, ParameterValue[_]] = {
+      case d: Double => d
+      case d: java.lang.Double => d
+    }
+  }
+
   implicit def DoubleToParameterValue(x: Double): ParameterValue[Double] = QDouble(x)
   
   implicit def BoxedDoubleToParameterValue(x: java.lang.Double): ParameterValue[Double] = Double.unbox(x)
@@ -165,7 +220,7 @@ trait DoubleParameter {
 
 trait DecimalParameter {
 
-  case class QDecimal(value: scala.BigDecimal) extends ParameterValue[scala.BigDecimal] {
+  case class QDecimal(value: java.math.BigDecimal) extends ParameterValue[java.math.BigDecimal] {
 
     override def set(
       preparedStatement: PreparedStatement,
@@ -173,15 +228,22 @@ trait DecimalParameter {
     ): Unit = {
       preparedStatement.setBigDecimal(
         parameterIndex,
-        value.underlying
+        value
       )
     }
 
   }
 
-  implicit def DecimalToParameterValue(x: java.math.BigDecimal): ParameterValue[scala.BigDecimal] = QDecimal(BigDecimal(x))
-  
-  implicit def DecimalToParameterValue(x: scala.BigDecimal): ParameterValue[scala.BigDecimal] = QDecimal(x)
+  object QDecimal extends ToParameter {
+    override val toParameter: PartialFunction[Any, ParameterValue[_]] = {
+      case d: BigDecimal => d
+      case d: java.math.BigDecimal => d
+    }
+  }
+
+  implicit def DecimalToParameterValue(x: java.math.BigDecimal): ParameterValue[java.math.BigDecimal] = QDecimal(x)
+
+  implicit def DecimalToParameterValue(x: scala.BigDecimal): ParameterValue[java.math.BigDecimal] = QDecimal(x.underlying)
 
 }
 
@@ -199,6 +261,12 @@ trait TimestampParameter {
       )
     }
 
+  }
+
+  object QTimestamp extends ToParameter {
+    override val toParameter: PartialFunction[Any, ParameterValue[_]] = {
+      case t: Timestamp => t
+    }
   }
 
   implicit def TimestampToParameterValue(x: Timestamp): ParameterValue[Timestamp] = QTimestamp(x)
@@ -219,8 +287,17 @@ trait DateParameter {
     }
   }
 
+  object QDate extends ToParameter {
+    override val toParameter: PartialFunction[Any, ParameterValue[_]] = {
+      case d: Date => d
+      case d: java.util.Date => d
+    }
+  }
+
   implicit def DateToParameterValue(x: Date): ParameterValue[Date] = QDate(x)
-  
+
+  implicit def JavaDateToParameterValue(x: java.util.Date): ParameterValue[Date] = QDate(new Date(x.getTime))
+
 }
 
 trait TimeParameter {
@@ -235,6 +312,12 @@ trait TimeParameter {
         parameterIndex,
         value
       )
+    }
+  }
+
+  object QTime extends ToParameter {
+    override val toParameter: PartialFunction[Any, ParameterValue[_]] = {
+      case t: Time => t
     }
   }
 
@@ -257,8 +340,15 @@ trait BooleanParameter {
     }
   }
 
+  object QBoolean extends ToParameter {
+    override val toParameter: PartialFunction[Any, ParameterValue[_]] = {
+      case b: Boolean => b
+      case b: java.lang.Boolean => b
+    }
+  }
+
   implicit def BooleanToParameterValue(x: Boolean): ParameterValue[Boolean] = QBoolean(x)
-  
+
   implicit def BoxedBooleanToParameterValue(x: java.lang.Boolean): ParameterValue[Boolean] = Boolean.unbox(x)
 
 }
@@ -278,6 +368,12 @@ trait StringParameter {
     }
   }
 
+  object QString extends ToParameter {
+    override val toParameter: PartialFunction[Any, ParameterValue[_]] = {
+      case s: String => s
+    }
+  }
+
   implicit def StringToParameterValue(x: String): ParameterValue[String] = QString(x)
   
 }
@@ -290,6 +386,12 @@ trait ReaderParameter {
     }
   }
 
+  object QReader extends ToParameter {
+    override val toParameter: PartialFunction[Any, ParameterValue[_]] = {
+      case r: Reader => r
+    }
+  }
+
   implicit def ReaderToParameterValue(x: Reader): ParameterValue[Reader] = QReader(x)
 
 }
@@ -299,6 +401,12 @@ trait InputStreamParameter {
   case class QInputStream(value: InputStream) extends ParameterValue[InputStream] {
     override def set(query: PreparedStatement, parameterIndex: Int): Unit = {
       query.setBinaryStream(parameterIndex, value)
+    }
+  }
+
+  object QInputStream extends ToParameter {
+    override val toParameter: PartialFunction[Any, ParameterValue[_]] = {
+      case i: InputStream => i
     }
   }
 
@@ -315,6 +423,12 @@ trait UUIDParameter {
       parameterIndex: Int
     ): Unit = {
       preparedStatement.setObject(parameterIndex, value)
+    }
+  }
+
+  object QUUID extends ToParameter {
+    override val toParameter: PartialFunction[Any, ParameterValue[_]] = {
+      case u: UUID => u
     }
   }
 
@@ -341,12 +455,20 @@ trait AnyRefParameter {
 trait InstantParameter {
   self: TimestampParameter =>
 
+  val toInstantParameter: PartialFunction[Any, ParameterValue[_]] = {
+    case i: java.time.Instant => i
+  }
+
   implicit def InstantToParameterValue(x: java.time.Instant): ParameterValue[Timestamp] = Timestamp.from(x)
 
 }
 
 trait LocalDateParameter {
   self: DateParameter =>
+
+  val toLocalDateParameter: PartialFunction[Any, ParameterValue[_]] = {
+    case l: java.time.LocalDate => l
+  }
 
   implicit def LocalDateToParameterValue(x: java.time.LocalDate): ParameterValue[Date] = Date.valueOf(x)
 
@@ -355,11 +477,20 @@ trait LocalDateParameter {
 trait LocalTimeParameter {
   self: TimeParameter =>
 
+  val toLocalTimeParameter: PartialFunction[Any, ParameterValue[_]] = {
+    case l: java.time.LocalTime => l
+  }
+
   implicit def LocalTimeToParameterValue(x: java.time.LocalTime): ParameterValue[Time] = Time.valueOf(x)
 
 }
+
 trait LocalDateTimeParameter {
   self: TimestampParameter =>
+
+  val toLocalDateTimeParameter: PartialFunction[Any, ParameterValue[_]] = {
+    case l: java.time.LocalDateTime => l
+  }
 
   implicit def LocalDateTimeToParameterValue(x: java.time.LocalDateTime): ParameterValue[Timestamp] = Timestamp.valueOf(x)
 
@@ -376,6 +507,10 @@ trait OffsetDateTimeParameter {
 
   }
 
+  val toOffsetDateTimeParameter: PartialFunction[Any, ParameterValue[_]] = {
+    case o: OffsetDateTime => o
+  }
+
   implicit def OffsetDateTimeToParameterValue(x: OffsetDateTime): ParameterValue[OffsetDateTime] = QOffsetDateTime(x)
   
 }
@@ -389,6 +524,10 @@ trait OffsetTimeParameter {
       preparedStatement.setString(parameterIndex, offsetTimeFormatter.format(value))
     }
 
+  }
+
+  val toOffsetTimeParameter: PartialFunction[Any, ParameterValue[_]] = {
+    case o: OffsetTime => o
   }
 
   implicit def OffsetTimeToParameterValue(x: OffsetTime): ParameterValue[OffsetTime] = QOffsetTime(x)
