@@ -19,6 +19,7 @@ trait DefaultGetters
   with TimeGetter
   with TimestampGetter
   with UUIDGetter
+  with ParameterGetter
 
 trait Java8DefaultGetters
   extends DefaultGetters

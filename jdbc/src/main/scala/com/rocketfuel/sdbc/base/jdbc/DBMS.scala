@@ -13,19 +13,17 @@ abstract class DBMS
   with base.BatchableMethods[java.sql.Connection, Batch]
   with base.UpdatableMethods[java.sql.Connection, Update]
   with base.SelectableMethods[java.sql.Connection, Select]
-  with base.ExecutableMethods[java.sql.Connection, Execute]{
+  with base.ExecutableMethods[java.sql.Connection, Execute] {
 
-  type Row = jdbc.Row
+  type Index = PartialFunction[Row, Int]
 
-  type MutableRow = jdbc.MutableRow
+  type Getter[+T] = base.Getter[Row, Index, T]
 
   type ParameterValue[+T] = jdbc.ParameterValue[T]
 
   type ParameterList = jdbc.ParameterList
 
   type Batchable[Key] = jdbc.Batchable[Key]
-
-  implicit val parameterGetter: (Row, Index) => Option[ParameterValue[_]]
 
   override def batchIterator[Key](
     key: Key

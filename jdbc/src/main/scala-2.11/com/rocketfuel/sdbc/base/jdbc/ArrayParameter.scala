@@ -95,5 +95,4 @@ trait ArrayParameter {
       GetterToSeqOptionGetter(getter)(row, ix).map(_.map(_.get))
   }
 
-
 }

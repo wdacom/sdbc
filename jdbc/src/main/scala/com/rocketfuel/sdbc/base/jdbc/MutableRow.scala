@@ -3,6 +3,7 @@ package com.rocketfuel.sdbc.base.jdbc
 import java.io.{InputStream, Reader}
 import java.math.BigDecimal
 import java.sql.{Array => JdbcArray, _}
+
 class MutableRow private[jdbc] (underlying: ResultSet)
   extends Row(underlying) {
 

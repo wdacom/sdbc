@@ -240,6 +240,10 @@ trait ReaderGetter {
 
 }
 
+trait ParameterGetter {
+  implicit val ParameterGetter: Getter[ParameterValue[_]]
+}
+
 trait AnyRefGetter {
 
   val AnyRefGetter = new Getter[AnyRef] {

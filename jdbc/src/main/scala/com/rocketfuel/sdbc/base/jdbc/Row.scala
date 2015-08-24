@@ -13,14 +13,13 @@ import java.util.Calendar
  * For an updatable version, see `SelectForUpdate`.
  *
  * There are two good ways to get information out of a Row. If you want to use
- * generics, use [[get()]]. If you want to use pattern matching, use [[parameter()]].
+ * generics, use [[get()]]. If you want to use pattern matching, use [[get[ParameterValue[_]()]].
  * You can also use the various get methods that JDBC provides.
  *
  * @param underlying
  */
-class Row private[jdbc] (
-  protected[jdbc] val underlying: ResultSet
-) extends Closeable
+class Row private[jdbc](protected[jdbc] val underlying: ResultSet)
+  extends Closeable
   with Wrapper {
 
   override def unwrap[T](iface: Class[T]): T = {
@@ -39,22 +38,29 @@ class Row private[jdbc] (
       underlying.isWrapperFor(iface: Class[_])
   }
 
-  lazy val columnTypes: Map[Int, String] = {
+  lazy val columnTypes: IndexedSeq[String] = {
     val metadata = underlying.getMetaData
 
-    1.to(metadata.getColumnCount).foldLeft(Map.empty[Int, String]) {
-      case (accum, ix) =>
-        accum + (ix -> metadata.getColumnTypeName(ix))
-    }
+    IndexedSeq.tabulate(metadata.getColumnCount)(ix => metadata.getColumnTypeName(ix + 1))
   }
 
   def get[T](columnIndex: Index)(implicit getter: Getter[T]): Option[T] = {
     getter(this, columnIndex)
   }
 
-  def parameter(columnIndex: Index)(implicit parameterGetter: (Row, String) => Option[ParameterValue[_]]): Option[ParameterValue[_]] = {
-    val ix = columnIndex(this)
-    parameterGetter(this, columnTypes(ix))
+  def getParametersByName(implicit getter: Getter[ParameterValue[_]]): Map[String, Option[ParameterValue[_]]] = {
+    val metadata = underlying.getMetaData
+    getParameters.zipWithIndex.foldLeft(Map.empty[String, Option[ParameterValue[_]]]) {
+      case (accum, (parameter, ix)) =>
+        val columnName = metadata.getColumnName(ix + 1)
+        accum + (columnName -> parameter)
+    }
+  }
+
+  def getParameters(implicit getter: Getter[ParameterValue[_]]): IndexedSeq[Option[ParameterValue[_]]] = {
+    IndexedSeq.tabulate(underlying.getMetaData.getColumnCount) { ix =>
+      get[ParameterValue[_]](IntIndex(ix))
+    }
   }
 
   def getType: Int = underlying.getType()
@@ -228,3 +234,4 @@ class Row private[jdbc] (
   def getString(columnLabel: String): String = underlying.getString(columnLabel: String)
 
 }
+
