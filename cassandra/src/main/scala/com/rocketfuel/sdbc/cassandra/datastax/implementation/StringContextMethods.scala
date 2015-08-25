@@ -7,13 +7,15 @@ import com.datastax.driver.core.{Row => CRow, _}
 import com.rocketfuel.sdbc.base.CompiledStatement
 import com.rocketfuel.sdbc.cassandra.datastax.QueryOptions
 import com.rocketfuel.sdbc.cassandra.datastax._
+import scodec.bits.ByteVector
 
 trait StringContextMethods {
 
   implicit class CassandraStringContextMethods(sc: StringContext) {
-    private def byNumberName(args: Any*): Map[String, Option[ParameterValue[_]]] = {
+    private def byNumberName(args: Seq[Any]): Map[String, Option[ParameterValue[_]]] = {
       val argNames = 0.until(sc.parts.count(_.isEmpty)).map(_.toString)
-      argNames.zip(args.map(toParameter)).toMap
+      val parameters = argNames.zip(args.map(toParameter)).toMap
+      parameters
     }
 
     private val compiled = CompiledStatement(sc)
@@ -22,15 +24,16 @@ trait StringContextMethods {
       Execute(compiled, byNumberName(args), QueryOptions.default)
     }
 
-    def select[T](args: Any*)(implicit converter: CRow => T): Select[T] = {
-      Select[T](compiled, byNumberName(args), QueryOptions.default)
+    def select(args: Any*): Select[CRow] = {
+      Select[CRow](compiled, byNumberName(args), QueryOptions.default)
     }
   }
 
-  private def toParameterRaw(a: Any): implementation.ParameterValue[_] = {
+  private def toParameterNonOption(a: Any): implementation.ParameterValue[_] = {
     a match {
       case b: Boolean => b
       case b: java.lang.Boolean => b
+      case b: ByteVector => b
       case b: ByteBuffer => b
       case a: Array[Byte] => a
       case d: java.sql.Date => d
@@ -72,7 +75,7 @@ trait StringContextMethods {
       case Some(a) =>
         Some(toParameter(a)).flatten
       case _ =>
-        Some(toParameterRaw(a))
+        Some(toParameterNonOption(a))
     }
   }
 

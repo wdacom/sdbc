@@ -1,5 +1,6 @@
 package com.rocketfuel.sdbc.sqlserver.jdbc
 
+import java.nio.ByteBuffer
 import java.sql.{Date, Time, Timestamp}
 import java.time._
 import java.util.UUID
@@ -26,7 +27,7 @@ class GetterSpec
 
   testSelect[String]("SELECT 'hello'", "hello".some)
 
-  testSelect[Array[Byte]]("SELECT 0x0001ffa0", Array(0, 1, -1, -96).map(_.toByte).some)
+  testSelect[ByteBuffer]("SELECT 0x0001ffa0", ByteBuffer.wrap(Array(0, 1, -1, -96).map(_.toByte)).some)
 
   testSelect[Float]("SELECT CAST(3.14159 AS real)", 3.14159F.some)
 

@@ -86,7 +86,7 @@ abstract class H2Common
         case "BIGINT" =>
           LongGetter(row, ix).map(QLong.apply)
         case "DECIMAL" =>
-          JavaBigDecimalGetter(row, ix).map(QDecimal.apply)
+          JavaBigDecimalGetter(row, ix).map(QBigDecimal.apply)
         case "REAL" =>
           FloatGetter(row, ix).map(QFloat.apply)
         case "TIME" =>
@@ -96,7 +96,7 @@ abstract class H2Common
         case "TIMESTAMP" =>
           TimestampGetter(row, ix).map(QTimestamp.apply)
         case "BLOB" | "VARBINARY" =>
-          BytesGetter(row, ix).map(QBytes.apply)
+          ByteVectorGetter(row, ix).map(bv => QBytes(bv.toArray))
         case "OTHER" =>
           SerializedGetter(row, ix).map(QSerialized)
         case "CHAR" | "VARCHAR" | "VARCHAR_IGNORECASE" =>

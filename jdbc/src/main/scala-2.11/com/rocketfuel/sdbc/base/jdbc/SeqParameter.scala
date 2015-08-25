@@ -6,7 +6,7 @@ import com.rocketfuel.sdbc.base
 
 import scala.reflect.runtime.universe._
 
-trait ArrayParameter {
+trait SeqParameter {
   self: DBMS =>
 
   def typeName[T](implicit tag: TypeTag[T]): String = {
@@ -20,7 +20,7 @@ trait ArrayParameter {
     typeName(innerType)
   }
 
-  case class QArray[+T](
+  case class QSeq[+T](
     override val value: Seq[Option[ParameterValue[T]]]
   )(implicit t: TypeTag[T]
   ) extends ParameterValue[Seq[Option[ParameterValue[T]]]] {
@@ -45,14 +45,14 @@ trait ArrayParameter {
   )(implicit conversion: T => ParameterValue[S],
     ttag: TypeTag[S]
   ): Option[ParameterValue[Seq[Option[ParameterValue[S]]]]] = {
-    Some(QArray(v.map(conversion andThen Some.apply)))
+    Some(QSeq(v.map(conversion andThen Some.apply)))
   }
 
   implicit def OptionSeqToOptionParameterValue[T, S](
     vOpt: Option[Seq[T]]
   )(implicit conversion: T => ParameterValue[S], ttag: TypeTag[S]
   ): Option[ParameterValue[Seq[Option[ParameterValue[S]]]]] = {
-    vOpt.map(v => QArray(v.map(conversion andThen Some.apply)))
+    vOpt.map(v => QSeq(v.map(conversion andThen Some.apply)))
   }
 
   implicit def SeqOptionToOptionParameterValue[T, S](
@@ -60,7 +60,7 @@ trait ArrayParameter {
   )(implicit conversion: T => ParameterValue[S],
     ttag: TypeTag[S]
   ): Option[ParameterValue[Seq[Option[ParameterValue[S]]]]] = {
-    Some(QArray(v.map(_.map(conversion))))
+    Some(QSeq(v.map(_.map(conversion))))
   }
 
   implicit def OptionOptionSeqToOptionParameterValue[T, S](
@@ -68,12 +68,17 @@ trait ArrayParameter {
   )(implicit conversion: T => ParameterValue[S],
     ttag: TypeTag[S]
   ): Option[ParameterValue[Seq[Option[ParameterValue[S]]]]] = {
-    vOpt.map(v => QArray(v.map(_.map(conversion))))
+    vOpt.map(v => QSeq(v.map(_.map(conversion))))
   }
 
   implicit def GetterToSeqOptionGetter[T](implicit getter: Getter[T]): Getter[Seq[Option[T]]] = {
     (row: Row, ix: Index) =>
-      Option(row.getArray(ix(row))).map(_.getResultSet().iterator().map(_.get[T](IntIndex(1))).toVector)
+      for {
+        a <- Option(row.getArray(ix(row)))
+      } yield {
+        val arrayIterator = a.getResultSet().iterator()
+        arrayIterator.map(_.get[T](IntIndex(1))).toVector
+      }
   }
 
   implicit def GetterToSeqGetter[T](implicit getter: Getter[T]): Getter[Seq[T]] = {

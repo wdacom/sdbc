@@ -1,13 +1,13 @@
 package com.rocketfuel.sdbc.base.jdbc
 
 import com.rocketfuel.sdbc.base
-import com.rocketfuel.sdbc.base.jdbc
+import com.rocketfuel.sdbc.base.{ParameterValueImplicits, jdbc}
 import com.zaxxer.hikari.HikariDataSource
 
 abstract class DBMS
   extends IndexImplicits
   with HikariImplicits
-  with OptionParameter
+  with ParameterValueImplicits
   with GetterImplicits
   with UpdaterImplicits
   with base.BatchableMethods[Connection, Batch]

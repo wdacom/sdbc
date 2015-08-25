@@ -5,7 +5,7 @@ trait DefaultSetters
   with ByteParameter
   with BytesParameter
   with DateParameter
-  with DecimalParameter
+  with BigDecimalParameter
   with DoubleParameter
   with FloatParameter
   with IntParameter
@@ -18,20 +18,22 @@ trait DefaultSetters
   with InputStreamParameter
   with UUIDParameter {
 
-  val toDefaultParameter =
+  val toDefaultParameter: PartialFunction[Any, ParameterValue[_]] =
     QBoolean.toParameter orElse
       QByte.toParameter orElse
       QBytes.toParameter orElse
+      //Timestamp must come before Date, or else all Timestamps become Dates.
+      QTimestamp.toParameter orElse
+      //Time must come before Date, or else all Times become Dates.
+      QTime.toParameter orElse
       QDate.toParameter orElse
-      QDecimal.toParameter orElse
+      QBigDecimal.toParameter orElse
       QDouble.toParameter orElse
       QFloat.toParameter orElse
       QInt.toParameter orElse
       QLong.toParameter orElse
       QShort.toParameter orElse
       QString.toParameter orElse
-      QTime.toParameter orElse
-      QTimestamp.toParameter orElse
       QReader.toParameter orElse
       QInputStream.toParameter orElse
       QUUID.toParameter

@@ -26,8 +26,8 @@ trait Java8DefaultUpdaters
   with InstantUpdater
   with LocalDateUpdater
   with LocalTimeUpdater
-  with OffsetDateTimeGetter
-  with OffsetTimeGetter {
+  with OffsetDateTimeUpdater
+  with OffsetTimeUpdater {
   self: HasOffsetDateTimeFormatter with HasOffsetTimeFormatter =>
 
 }

@@ -5,6 +5,7 @@ import java.net.InetAddress
 import java.nio.ByteBuffer
 import java.util.{Date, UUID}
 import com.datastax.driver.core._
+import scodec.bits.ByteVector
 import scala.collection.convert.wrapAsJava._
 
 trait ParameterValues {
@@ -26,34 +27,21 @@ trait ParameterValues {
     OptionToParameter[Boolean](Option(value).map(_.booleanValue()))
   }
 
-  case class ByteBufferParameter(value: ByteBuffer) extends ParameterValue[ByteBuffer] {
+  case class ByteVectorParameter(value: ByteVector) extends ParameterValue[ByteVector] {
     override def set(
       statement: BoundStatement,
       parameterIndex: Int
     ): Unit = {
-      statement.setBytes(parameterIndex, value)
+      statement.setBytes(parameterIndex, value.toByteBuffer)
     }
   }
 
-  implicit def ByteBufferToParameter(value: ByteBuffer): ParameterValue[ByteBuffer] = {
-    ByteBufferParameter(value)
+  implicit def ByteBufferToParameter(value: ByteBuffer): ParameterValue[ByteVector] = {
+    ByteVectorParameter(ByteVector(value))
   }
 
-  case class ArrayByteParameter(value: Array[Byte]) extends ParameterValue[Array[Byte]] {
-    override def set(
-      statement: BoundStatement,
-      parameterIndex: Int
-    ): Unit = {
-      statement.setBytes(parameterIndex, ByteBuffer.wrap(value))
-    }
-  }
-
-  implicit def IterableByteToParameter(value: Iterable[Byte]): ParameterValue[Array[Byte]] = {
-    ArrayByteParameter(value.toArray)
-  }
-
-  implicit def ArrayByteToParameter(value: Array[Byte]): ParameterValue[Array[Byte]] = {
-    ArrayByteParameter(value)
+  implicit def ArrayByteToParameter(value: Array[Byte]): ParameterValue[ByteVector] = {
+    ByteVectorParameter(ByteVector(value))
   }
 
   case class DateParameter(value: Date) extends ParameterValue[Date] {
@@ -237,7 +225,7 @@ trait ParameterValues {
     OptionParameter[T](value)
   }
 
-  case class SetParameter[T](value: java.util.Set[T]) extends ParameterValue[java.util.Set[T]] {
+  case class SetParameter[T](value: Set[T]) extends ParameterValue[Set[T]] {
     override def set(
       statement: BoundStatement,
       parameterIndex: Int
@@ -246,12 +234,21 @@ trait ParameterValues {
     }
   }
 
-  implicit def SetToParameter[T](value: Set[T]): ParameterValue[java.util.Set[T]] = {
+  implicit def SetToParameter[T](value: Set[T]): ParameterValue[Set[T]] = {
     SetParameter[T](value)
   }
 
+  case class JavaSetParameter[T](value: java.util.Set[T]) extends ParameterValue[java.util.Set[T]] {
+    override def set(
+    statement: BoundStatement,
+    parameterIndex: Int
+    ): Unit = {
+      statement.setSet[T](parameterIndex, value)
+    }
+  }
+
   implicit def JavaSetToParameter[T](value: java.util.Set[T]): ParameterValue[java.util.Set[T]] = {
-    SetParameter[T](value)
+    JavaSetParameter[T](value)
   }
 
   case class StringParameter(value: String) extends ParameterValue[String] {

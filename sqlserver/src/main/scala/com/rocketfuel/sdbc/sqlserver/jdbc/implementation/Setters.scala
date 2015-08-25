@@ -14,7 +14,7 @@ trait Setters
   with ByteParameter
   with BytesParameter
   with DateParameter
-  with DecimalParameter
+  with BigDecimalParameter
   with DoubleParameter
   with FloatParameter
   with IntParameter
@@ -85,7 +85,7 @@ trait Setters
       QByte.toParameter orElse
       QBytes.toParameter orElse
       QDate.toParameter orElse
-      QDecimal.toParameter orElse
+      QBigDecimal.toParameter orElse
       QDouble.toParameter orElse
       QFloat.toParameter orElse
       QInt.toParameter orElse

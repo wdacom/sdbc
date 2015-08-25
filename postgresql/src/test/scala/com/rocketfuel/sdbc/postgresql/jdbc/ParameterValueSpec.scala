@@ -1,5 +1,6 @@
 package com.rocketfuel.sdbc.postgresql.jdbc
 
+import java.nio.ByteBuffer
 import java.sql.{Array => _, _}
 import java.time._
 import java.util.UUID
@@ -32,7 +33,7 @@ class ParameterValueSpec
 
   testSelect[String]("SELECT 'hello'::text", "hello".some)
 
-  testSelect[Array[Byte]]("SELECT E'\\\\x0001ffa0'::bytea", Array(0, 1, -1, -96).map(_.toByte).some)
+  testSelect[ByteBuffer]("SELECT E'\\\\x0001ffa0'::bytea", ByteBuffer.wrap(Array[Byte](0, 1, -1, -96)).some)
 
   testSelect[Float]("SELECT 3.14159::real", 3.14159F.some)
 

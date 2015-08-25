@@ -32,4 +32,3 @@ trait Java8DefaultGetters
   self: HasOffsetDateTimeFormatter with HasOffsetTimeFormatter =>
 
 }
-

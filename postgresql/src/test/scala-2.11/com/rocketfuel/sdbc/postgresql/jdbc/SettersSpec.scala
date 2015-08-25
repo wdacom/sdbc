@@ -10,6 +10,10 @@ class SettersSpec
     assertCompiles("val _: Option[ParameterValue[_]] = Seq(1,2,3)")
   }
 
+  test("implicit Seq[String] conversion works") {
+    assertCompiles("val _: Option[ParameterValue[_]] = Seq(\"\")")
+  }
+
   test("implicit Seq[java.math.BigDecimal] conversion works") {
     assertCompiles("val _: Option[ParameterValue[_]] = Seq(1L,2L,3L).map(JBigDecimal.valueOf)")
   }

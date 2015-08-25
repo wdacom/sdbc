@@ -1,5 +1,6 @@
 package com.rocketfuel.sdbc.h2.jdbc
 
+import java.nio.ByteBuffer
 import java.sql.{Timestamp, Time, Date}
 import java.time._
 import java.util.UUID
@@ -23,7 +24,7 @@ class ParameterValueSpec
 
   testSelect[String]("SELECT 'hello'", "hello".some)
 
-  testSelect[Array[Byte]]("SELECT 0x0001ffa0", Array(0, 1, -1, -96).map(_.toByte).some)
+  testSelect[ByteBuffer]("SELECT 0x0001ffa0", ByteBuffer.wrap(Array[Byte](0, 1, -1, -96)).some)
 
   testSelect[Float]("SELECT CAST(3.14159 AS real)", 3.14159F.some)
 

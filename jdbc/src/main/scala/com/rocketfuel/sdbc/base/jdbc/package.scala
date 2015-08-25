@@ -19,6 +19,8 @@ package object jdbc
 
   type ParameterList = Seq[(String, Option[ParameterValue[_]])]
 
+  type ToParameter = base.ToParameter[PreparedStatement, Int]
+
   type Index = PartialFunction[Row, Int]
 
   type Getter[+T] = base.Getter[Row, Index, T]

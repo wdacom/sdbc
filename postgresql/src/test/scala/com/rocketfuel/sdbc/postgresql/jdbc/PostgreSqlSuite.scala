@@ -21,8 +21,6 @@ abstract class PostgreSqlSuite
     test(query) { implicit connection =>
       val result = Select[Option[T]](query).option().get
       (expectedValue, result) match {
-        case (Some(expectedArray: Array[Byte]), Some(resultArray: Array[Byte])) =>
-          assert(expectedArray.sameElements(resultArray))
         case (Some(expectedOffset: OffsetDateTime), Some(resultOffset: OffsetDateTime)) =>
           assertResult(expectedOffset.toInstant)(resultOffset.toInstant)
         case (Some(expectedInstant: Instant), Some(resultInstant: Instant)) =>

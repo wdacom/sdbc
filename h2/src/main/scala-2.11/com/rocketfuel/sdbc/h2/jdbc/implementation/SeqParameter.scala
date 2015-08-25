@@ -8,7 +8,7 @@ import com.rocketfuel.sdbc.base.jdbc
 
 import scala.reflect.runtime.universe._
 
-trait ArrayParameter extends jdbc.ArrayParameter {
+trait SeqParameter extends jdbc.SeqParameter {
   self: H2Common =>
 
   override def typeName(tpe: Type): String = {
@@ -36,7 +36,7 @@ trait ArrayParameter extends jdbc.ArrayParameter {
       case t if t =:= typeOf[java.lang.Boolean] => "BOOLEAN"
       case t if t =:= typeOf[String] => "VARCHAR"
       case t if t =:= typeOf[UUID] => "UUID"
-      case t if t <:< typeOf[QArray[_]] =>
+      case t if t <:< typeOf[QSeq[_]] =>
         innerTypeName(t)
       case t if t <:< typeOf[Seq[_]] =>
         innerTypeName(t)

@@ -1,25 +1,13 @@
 package com.rocketfuel.sdbc.base.jdbc
 
 import java.io.{InputStream, Reader}
+import java.nio.ByteBuffer
 import java.sql.{Array => _, _}
 import java.time.{OffsetTime, OffsetDateTime}
+import java.util
 import java.util.UUID
 
-trait ToParameter {
-  val toParameter: PartialFunction[Any, ParameterValue[_]]
-}
-
-trait OptionParameter {
-
-  implicit def ParameterValueToOptionParameterValue[T](value: T)(implicit toParam: T => ParameterValue[_]): Option[ParameterValue[_]] = {
-    Some(toParam(value))
-  }
-
-  implicit def OptionToOptionParameterValue[T](value: Option[T])(implicit toParam: T => ParameterValue[_]): Option[ParameterValue[_]] = {
-    value.map(toParam)
-  }
-
-}
+import scodec.bits.ByteVector
 
 trait LongParameter {
 
@@ -146,18 +134,32 @@ trait BytesParameter {
         value
       )
     }
+
+    override def hashCode(): Int = {
+      util.Arrays.hashCode(value)
+    }
+
+    override def equals(obj: scala.Any): Boolean = {
+      obj.isInstanceOf[QBytes] && value.sameElements(obj.asInstanceOf[QBytes].value)
+    }
   }
 
   object QBytes extends ToParameter {
     override val toParameter: PartialFunction[Any, ParameterValue[_]] = {
       case b: Array[Byte] => b
-      case b: Array[java.lang.Byte] => b.map(_.byteValue())
+      case b: Array[java.lang.Byte] => b
+      case b: ByteBuffer => b
+      case b: ByteVector => b
     }
   }
 
-  implicit def BytesToParameterValue(x: Array[Byte]): ParameterValue[Array[Byte]] = QBytes(x)
+  implicit def ArrayByteToParameterValue(x: Array[Byte]): ParameterValue[Array[Byte]] = QBytes(x)
 
-  implicit def BoxedBytesToParameterValue(x: Array[java.lang.Byte]): ParameterValue[Array[Byte]] = QBytes(x.map(_.byteValue()))
+  implicit def ArrayBoxedByteToParameterValue(x: Array[java.lang.Byte]): ParameterValue[Array[Byte]] = QBytes(x.map(_.byteValue()))
+
+  implicit def ByteBufferToParameterValue(x: ByteBuffer): ParameterValue[Array[Byte]] = QBytes(ByteVector(x).toArray)
+
+  implicit def ByteVectorToParameterValue(x: ByteVector): ParameterValue[Array[Byte]] = QBytes(x.toArray)
 
 }
 
@@ -218,9 +220,9 @@ trait DoubleParameter {
 
 }
 
-trait DecimalParameter {
+trait BigDecimalParameter {
 
-  case class QDecimal(value: java.math.BigDecimal) extends ParameterValue[java.math.BigDecimal] {
+  case class QBigDecimal(value: java.math.BigDecimal) extends ParameterValue[java.math.BigDecimal] {
 
     override def set(
       preparedStatement: PreparedStatement,
@@ -234,16 +236,16 @@ trait DecimalParameter {
 
   }
 
-  object QDecimal extends ToParameter {
+  object QBigDecimal extends ToParameter {
     override val toParameter: PartialFunction[Any, ParameterValue[_]] = {
       case d: BigDecimal => d
       case d: java.math.BigDecimal => d
     }
   }
 
-  implicit def DecimalToParameterValue(x: java.math.BigDecimal): ParameterValue[java.math.BigDecimal] = QDecimal(x)
+  implicit def JavaBigDecimalToParameterValue(x: java.math.BigDecimal): ParameterValue[java.math.BigDecimal] = QBigDecimal(x)
 
-  implicit def DecimalToParameterValue(x: scala.BigDecimal): ParameterValue[java.math.BigDecimal] = QDecimal(x.underlying)
+  implicit def ScalaBigDecimalToParameterValue(x: scala.BigDecimal): ParameterValue[java.math.BigDecimal] = QBigDecimal(x.underlying)
 
 }
 

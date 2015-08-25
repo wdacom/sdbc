@@ -2,7 +2,7 @@ package com.rocketfuel.sdbc.postgresql.jdbc.implementation
 
 import java.net.InetAddress
 
-import com.rocketfuel.sdbc.base.jdbc.{Java8DefaultUpdaters, MutableRow, Updater}
+import com.rocketfuel.sdbc.base.jdbc._
 import com.rocketfuel.sdbc.postgresql.jdbc.LTree
 import org.json4s.JValue
 import org.json4s.jackson.JsonMethods
@@ -10,7 +10,31 @@ import org.postgresql.util.PGInterval
 
 import scala.xml.Node
 
-trait Updaters extends Java8DefaultUpdaters {
+//PostgreSQL doesn't support Byte, so we don't use the default updaters.
+trait Updaters
+  extends AnyRefUpdater
+  with LongUpdater
+  with IntUpdater
+  with ShortUpdater
+  with BytesUpdater
+  with DoubleUpdater
+  with FloatUpdater
+  with JavaBigDecimalUpdater
+  with ScalaBigDecimalUpdater
+  with TimestampUpdater
+  with DateUpdater
+  with TimeUpdater
+  with BooleanUpdater
+  with StringUpdater
+  with UUIDUpdater
+  with InputStreamUpdater
+  with UpdateReader
+  with LocalDateTimeUpdater
+  with InstantUpdater
+  with LocalDateUpdater
+  with LocalTimeUpdater
+  with OffsetDateTimeUpdater
+  with OffsetTimeUpdater {
   self: HasOffsetDateTimeFormatter with HasOffsetTimeFormatter =>
 
   implicit val InetAddressUpdater = new Updater[InetAddress] {

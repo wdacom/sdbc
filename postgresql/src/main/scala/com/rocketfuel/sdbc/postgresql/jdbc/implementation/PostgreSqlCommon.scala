@@ -48,7 +48,7 @@ abstract class PostgreSqlCommon
         case "int8" | "bigserial" =>
           LongGetter(row, ix).map(QLong.apply)
         case "numeric" =>
-          JavaBigDecimalGetter(row, ix).map(QDecimal.apply)
+          JavaBigDecimalGetter(row, ix).map(QBigDecimal.apply)
         case "float4" =>
           FloatGetter(row, ix).map(QFloat.apply)
         case "float8" =>
@@ -64,7 +64,7 @@ abstract class PostgreSqlCommon
         case "timestamptz" =>
           OffsetDateTimeGetter(row, ix).map(QOffsetDateTime)
         case "bytea" =>
-          BytesGetter(row, ix).map(QBytes.apply)
+          ByteVectorGetter(row, ix).map(bv => QBytes(bv.toArray))
         case "varchar" | "bpchar" | "text" =>
           StringGetter(row, ix).map(QString.apply)
         case "uuid" =>
@@ -78,7 +78,7 @@ abstract class PostgreSqlCommon
       }
   }
 
-  override protected def toParameter(a: Any): Option[base.jdbc.ParameterValue[_]] = {
+  override def toParameter(a: Any): Option[base.jdbc.ParameterValue[_]] = {
     a match {
       case null | None | Some(null) =>
         None

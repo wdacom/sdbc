@@ -5,6 +5,7 @@ import java.nio.ByteBuffer
 import java.util.UUID
 
 import com.datastax.driver.core.DataType
+import scodec.bits.ByteVector
 
 import scala.reflect.ClassTag
 
@@ -23,6 +24,8 @@ trait TupleDataTypes {
   implicit val arrayByteDataType = TupleDataType[Array[Byte]](DataType.blob())
 
   implicit val byteBufferDataType = TupleDataType[ByteBuffer](DataType.blob())
+
+  implicit val byteVectorDataType = TupleDataType[ByteVector](DataType.blob())
 
   implicit val booleanDataType = TupleDataType[Boolean](DataType.cboolean())
 

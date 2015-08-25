@@ -4,6 +4,8 @@ import java.math.BigInteger
 import java.net.InetAddress
 import java.nio.ByteBuffer
 import java.util.{UUID, Date}
+import scodec.bits.ByteVector
+
 import scala.collection.convert.wrapAsScala._
 import com.datastax.driver.core.{Row => CRow, UDTValue, TupleValue}
 import com.google.common.reflect.TypeToken
@@ -17,7 +19,7 @@ trait RowGetters {
 
   implicit val BoxedBooleanRowGetter: RowGetter[java.lang.Boolean] = RowGetters[java.lang.Boolean](row => ix => row.getBool(ix))
 
-  implicit val BytesRowGetter: RowGetter[ByteBuffer] = RowGetters[ByteBuffer](row => ix => row.getBytes(ix))
+  implicit val ByteVectorRowGetter: RowGetter[ByteVector] = RowGetters[ByteVector](row => ix => ByteVector(row.getBytes(ix)))
 
   implicit val DateRowGetter: RowGetter[Date] = RowGetters[Date](row => ix => row.getDate(ix))
 

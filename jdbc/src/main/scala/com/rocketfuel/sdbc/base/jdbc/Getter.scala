@@ -1,11 +1,12 @@
 package com.rocketfuel.sdbc.base.jdbc
 
 import java.io.{InputStream, Reader}
+import java.nio.ByteBuffer
 import java.sql.{SQLException, Date, Time, Timestamp}
 import java.time._
 import java.util.UUID
 
-import com.rocketfuel.sdbc.base
+import scodec.bits.ByteVector
 
 object Getter {
   def fromValGetter[T <: AnyVal](valGetter: Row => Int => T): Getter[T] = {
@@ -54,28 +55,39 @@ trait ByteGetter {
 
   implicit val ByteGetter =
     Getter.fromValGetter[Byte]{ row => ix => row.getByte(ix) }
+
 }
 
 trait BytesGetter {
 
-  implicit val BytesGetter =
-    new Getter[Array[Byte]] {
-      override def apply(row: Row, ix: Index): Option[Array[Byte]] = {
-        Option(row.getBytes(ix(row)))
+  implicit val ByteBufferGetter =
+    new Getter[ByteBuffer] {
+      override def apply(row: Row, ix: Index): Option[ByteBuffer] = {
+        Option(row.getBytes(ix(row))).map(ByteBuffer.wrap)
       }
     }
+
+  implicit val ByteVectorGetter =
+    new Getter[ByteVector] {
+      override def apply(row: Row, ix: Index): Option[ByteVector] = {
+        Option(row.getBytes(ix(row))).map(ByteVector.apply)
+      }
+    }
+
 }
 
 trait FloatGetter {
 
   implicit val FloatGetter =
     Getter.fromValGetter[Float]{ row => ix => row.getFloat(ix) }
+
 }
 
 trait DoubleGetter {
 
   implicit val DoubleGetter =
     Getter.fromValGetter[Double]{ row => ix => row.getDouble(ix) }
+
 }
 
 trait JavaBigDecimalGetter {
@@ -89,11 +101,13 @@ trait JavaBigDecimalGetter {
 }
 
 trait ScalaBigDecimalGetter {
+
   implicit val ScalaBigDecimalGetter = new Getter[BigDecimal] {
     override def apply(row: Row, ix: Index): Option[BigDecimal] = {
       Option(row.getBigDecimal(ix(row))).map(x => x)
     }
   }
+
 }
 
 trait TimestampGetter {
@@ -103,6 +117,7 @@ trait TimestampGetter {
       Option(row.getTimestamp(ix(row)))
     }
   }
+
 }
 
 trait DateGetter {
@@ -112,6 +127,7 @@ trait DateGetter {
       Option(row.getDate(ix(row)))
     }
   }
+
 }
 
 trait TimeGetter {

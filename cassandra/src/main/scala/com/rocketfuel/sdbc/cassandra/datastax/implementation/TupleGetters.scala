@@ -5,6 +5,7 @@ import java.nio.ByteBuffer
 import java.util.{Date, UUID}
 import com.datastax.driver.core.{TupleValue, UDTValue}
 import com.google.common.reflect.TypeToken
+import scodec.bits.ByteVector
 import scala.collection.convert.wrapAsScala._
 
 trait TupleGetters {
@@ -14,7 +15,11 @@ trait TupleGetters {
 
   implicit val BoxedBooleanTupleGetter: TupleGetter[java.lang.Boolean] = TupleGetters[java.lang.Boolean](row => ix => row.getBool(ix))
 
-  implicit val BytesTupleGetter: TupleGetter[ByteBuffer] = TupleGetters[ByteBuffer](row => ix => row.getBytes(ix))
+  implicit val ByteVectorTupleGetter: TupleGetter[ByteVector] = TupleGetters[ByteVector](row => ix => ByteVector(row.getBytes(ix)))
+
+  implicit val ByteBufferTupleGetter: TupleGetter[ByteBuffer] = TupleGetters[ByteBuffer](row => ix => row.getBytes(ix))
+
+  implicit val ArrayByteTupleGetter: TupleGetter[Array[Byte]] = TupleGetters[Array[Byte]](row => ix => ByteVector(row.getBytes(ix)).toArray)
 
   implicit val DateTupleGetter: TupleGetter[Date] = TupleGetters[Date](row => ix => row.getDate(ix))
 

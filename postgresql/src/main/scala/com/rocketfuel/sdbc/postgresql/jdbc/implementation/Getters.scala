@@ -16,7 +16,32 @@ import java.time.{Duration => JavaDuration}
 import scala.concurrent.duration.{Duration => ScalaDuration}
 import scala.xml.{Elem, XML}
 
-trait Getters extends Java8DefaultGetters with IntervalImplicits {
+//PostgreSQL doesn't support Byte, so we don't use the default getters.
+trait Getters extends AnyRefGetter
+  with BooleanGetter
+  with BytesGetter
+  with DateGetter
+  with DoubleGetter
+  with FloatGetter
+  with InputStreamGetter
+  with IntGetter
+  with JavaBigDecimalGetter
+  with LongGetter
+  with ReaderGetter
+  with ScalaBigDecimalGetter
+  with ShortGetter
+  with StringGetter
+  with TimeGetter
+  with TimestampGetter
+  with UUIDGetter
+  with ParameterGetter
+  with InstantGetter
+  with LocalDateGetter
+  with LocalDateTimeGetter
+  with LocalTimeGetter
+  with OffsetDateTimeGetter
+  with OffsetTimeGetter
+  with IntervalImplicits {
   self: HasOffsetDateTimeFormatter with HasOffsetTimeFormatter =>
 
   implicit val LTreeGetter = new Getter[LTree] {

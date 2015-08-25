@@ -6,12 +6,13 @@ import java.time.{Duration, LocalDateTime, OffsetDateTime, OffsetTime}
 import java.util.UUID
 
 import com.rocketfuel.sdbc.base.jdbc
+import com.rocketfuel.sdbc.base.jdbc.Index
 import com.rocketfuel.sdbc.postgresql.jdbc.LTree
 import org.json4s._
 
 import scala.reflect.runtime.universe._
 
-trait ArrayParameter extends jdbc.ArrayParameter {
+trait SeqParameter extends jdbc.SeqParameter {
   self: PostgreSqlCommon =>
 
   def typeName(tpe: Type): String = {
@@ -44,7 +45,7 @@ trait ArrayParameter extends jdbc.ArrayParameter {
       case t if t =:= typeOf[LTree] => "ltree"
       case t if t =:= typeOf[UUID] => "uuid"
       case t if t =:= typeOf[InetAddress] => "inet"
-      case t if t <:< typeOf[QArray[_]] =>
+      case t if t <:< typeOf[QSeq[_]] =>
         innerTypeName(t)
       case t if t <:< typeOf[Seq[_]] =>
         innerTypeName(t)
@@ -52,5 +53,12 @@ trait ArrayParameter extends jdbc.ArrayParameter {
     }
   }
 
+  //Override what would be the inferred Seq[Byte] getter, because you can't use ResultSet#getArray
+  //to get the bytes.
+  implicit val SeqByteGetter = new Getter[Seq[Byte]] {
+    override def apply(row: Row, ix: Index): Option[Seq[Byte]] = {
+      Option(row.getBytes(ix(row))).map(_.toSeq)
+    }
+  }
 
 }
