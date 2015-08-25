@@ -78,14 +78,14 @@ abstract class PostgreSqlCommon
       }
   }
 
-  override def toParameter(a: Any): Option[base.jdbc.ParameterValue[_]] = {
+  override protected def toParameter(a: Any): Option[base.jdbc.ParameterValue[_]] = {
     a match {
-      case Some(a) =>
-        Some(toPostgresqlParameter(a))
-      case None =>
+      case null | None | Some(null) =>
         None
-      case a =>
-        Option(toPostgresqlParameter(a))
+      case Some(a) =>
+        Some(toParameter(a)).flatten
+      case _ =>
+        Some(toPostgresqlParameter(a))
     }
   }
 }

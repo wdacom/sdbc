@@ -108,14 +108,14 @@ abstract class H2Common
       }
   }
 
-  override def toParameter(a: Any): Option[jdbc.ParameterValue[_]] = {
+  override protected def toParameter(a: Any): Option[jdbc.ParameterValue[_]] = {
     a match {
-      case Some(a) =>
-        Some(toH2Parameter(a))
-      case None =>
+      case null | None | Some(null) =>
         None
+      case Some(a) =>
+        Some(toParameter(a)).flatten
       case a =>
-        Option(toH2Parameter(a))
+        Some(toH2Parameter(a))
     }
   }
 }

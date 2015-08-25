@@ -52,12 +52,12 @@ abstract class SqlServer
 
   override def toParameter(a: Any): Option[jdbc.ParameterValue[_]] = {
     a match {
-      case Some(a) =>
-        Some(toSqlServerParameter(a))
-      case None =>
+      case null | None | Some(null) =>
         None
-      case a =>
-        Option(toSqlServerParameter(a))
+      case Some(a) =>
+        Some(toParameter(a)).flatten
+      case _ =>
+        Some(toSqlServerParameter(a))
     }
   }
 

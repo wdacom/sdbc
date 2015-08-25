@@ -29,6 +29,12 @@ trait StringContextMethods {
     }
   }
 
-  def toParameter(a: Any): Option[ParameterValue[_]]
+  /**
+   * This method is for creating parameters out of values used in
+   * a StringContext.
+   * @param a
+   * @return
+   */
+  protected def toParameter(a: Any): Option[ParameterValue[_]]
 
 }
