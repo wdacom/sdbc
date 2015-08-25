@@ -2,6 +2,8 @@ package com.rocketfuel.sdbc.base.jdbc
 
 import java.sql.PreparedStatement
 
+import com.rocketfuel.sdbc.base
+
 import scala.reflect.runtime.universe._
 
 trait ArrayParameter {
@@ -28,7 +30,7 @@ trait ArrayParameter {
      * @return
      */
     def asJava: Array[AnyRef] = {
-      value.map(_.map(v => QArray.box(v.value)).orNull).toArray
+      value.map(_.map(v => base.box(v.value)).orNull).toArray
     }
 
     override def set(preparedStatement: PreparedStatement, parameterIndex: Int): Unit = {
@@ -36,22 +38,6 @@ trait ArrayParameter {
       preparedStatement.setArray(parameterIndex, array)
     }
 
-  }
-
-  object QArray {
-    def box(v: Any): AnyRef = {
-      v match {
-        case a: AnyRef => a
-        case b: Boolean => Boolean.box(b)
-        case b: Byte => Byte.box(b)
-        case c: Char => Char.box(c)
-        case s: Short => Short.box(s)
-        case i: Int => Int.box(i)
-        case l: Long => Long.box(l)
-        case f: Float => Float.box(f)
-        case d: Double => Double.box(d)
-      }
-    }
   }
 
   implicit def SeqToOptionParameterValue[T, S](

@@ -6,32 +6,35 @@ import java.util.UUID
 
 import com.datastax.driver.core.DataType
 
-import scala.reflect.runtime.universe._
 import scala.reflect.ClassTag
 
 case class TupleDataType[T](dataType: DataType)
 
 trait TupleDataTypes {
 
-  implicit def TypeTagToDataType(ctag: TypeTag[_]): DataType = {
-    
-  }
-
   implicit val intDataType = TupleDataType[Int](DataType.cint())
 
+  implicit val boxedIntDataType = TupleDataType[java.lang.Integer](DataType.cint())
+
   implicit val longDataType = TupleDataType[Long](DataType.bigint())
+
+  implicit val boxedLongDataType = TupleDataType[java.lang.Long](DataType.bigint())
 
   implicit val arrayByteDataType = TupleDataType[Array[Byte]](DataType.blob())
 
   implicit val byteBufferDataType = TupleDataType[ByteBuffer](DataType.blob())
 
-  implicit val iterableByteDataType = TupleDataType[Iterable[Byte]](DataType.blob())
-
   implicit val booleanDataType = TupleDataType[Boolean](DataType.cboolean())
+
+  implicit val boxedBooleanDataType = TupleDataType[java.lang.Boolean](DataType.cboolean())
 
   implicit val doubleDataType = TupleDataType[Double](DataType.cdouble())
 
+  implicit val boxedDoubleDataType = TupleDataType[java.lang.Double](DataType.cdouble())
+
   implicit val floatDataType = TupleDataType[Float](DataType.cfloat())
+
+  implicit val boxedFloatDataType = TupleDataType[java.lang.Float](DataType.cfloat())
 
   implicit val inetDataType = TupleDataType[InetAddress](DataType.inet())
 

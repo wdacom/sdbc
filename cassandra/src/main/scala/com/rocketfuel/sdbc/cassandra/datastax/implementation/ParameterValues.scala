@@ -6,7 +6,6 @@ import java.nio.ByteBuffer
 import java.util.{Date, UUID}
 import com.datastax.driver.core._
 import scala.collection.convert.wrapAsJava._
-import scala.reflect.runtime.universe._
 
 trait ParameterValues {
 
@@ -328,24 +327,6 @@ trait ParameterValues {
 
   implicit def BigIntegerToParameter(value: BigInteger): ParameterValue[BigInteger] = {
     BigIntegerParameter(value)
-  }
-
-  implicit def Tuple0ToParameter(_: Unit): ParameterValue[Unit] = new ParameterValue[Unit] {
-    override val value: Unit = ()
-
-    override def set(statement: BoundStatement, parameterIndex: Int): Unit = {
-      val tpe = new TupleType()
-      val tupleValue = tpe.newValue()
-      statement.setTupleValue(parameterIndex, tupleValue)
-    }
-  }
-
-  implicit def TUple1ToParameter[T0](a: (T0))(implicit aTag: TypeTag[T0]): ParameterValue[(T0)] = new ParameterValue[(T0)] {
-    override val value: (T0) = (a)
-
-    override def set(statement: BoundStatement, parameterIndex: Int): Unit = {
-      val tpe = new TupleType(DataType.)
-    }
   }
 
 }

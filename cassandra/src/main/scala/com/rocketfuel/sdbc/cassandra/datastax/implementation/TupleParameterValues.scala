@@ -1,6 +1,7 @@
 package com.rocketfuel.sdbc.cassandra.datastax.implementation
 
 import com.datastax.driver.core.{BoundStatement, TupleType}
+import com.rocketfuel.sdbc.base
 import com.rocketfuel.sdbc.cassandra.datastax.implementation.TupleParameterValues.boxOption
 import shapeless._
 import shapeless.poly._
@@ -1389,21 +1390,7 @@ trait TupleParameterValues {
 
 object TupleParameterValues {
   def boxOption(v: Option[Any]): AnyRef = {
-    v.map(box).orNull
-  }
-
-  def box(v: Any): AnyRef = {
-    v match {
-      case a: AnyRef => a
-      case b: Boolean => Boolean.box(b)
-      case b: Byte => Byte.box(b)
-      case c: Char => Char.box(c)
-      case s: Short => Short.box(s)
-      case i: Int => Int.box(i)
-      case l: Long => Long.box(l)
-      case f: Float => Float.box(f)
-      case d: Double => Double.box(d)
-    }
+    v.map(base.box).orNull
   }
 
   def createInstance(arity: Int): String = {
