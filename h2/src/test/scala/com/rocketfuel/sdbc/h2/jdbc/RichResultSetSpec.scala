@@ -17,7 +17,7 @@ class RichResultSetSpec
     val randoms = Seq.fill(10)(util.Random.nextInt())
     Execute("CREATE TABLE tbl (x int)").execute()
 
-    val batch = randoms.foldLeft(Batch("INSERT INTO tbl (x) VALUES ($x)")) {
+    val batch = randoms.foldLeft(Batch("INSERT INTO tbl (x) VALUES (@x)")) {
       case (batch, r) =>
         batch.addBatch("x" -> r)
     }
@@ -36,7 +36,7 @@ class RichResultSetSpec
 
     Execute("CREATE TABLE tbl (id identity PRIMARY KEY, x int)").execute()
 
-    val batch = randoms.foldLeft(Batch("INSERT INTO tbl (x) VALUES ($x)")) {
+    val batch = randoms.foldLeft(Batch("INSERT INTO tbl (x) VALUES (@x)")) {
       case (batch, r) =>
         batch.addBatch("x" -> r)
     }

@@ -283,7 +283,7 @@ class Benchmarks
         """INSERT INTO TEST
           |(str1, uuid, str2)
           |VALUES
-          |($str1, $uuid, $str2)
+          |(@str1, @uuid, @str2)
         """.stripMargin
       Batch(queryText)
     }
