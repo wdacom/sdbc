@@ -30,13 +30,19 @@ object CompiledStatement {
    * @return
    */
   def apply(sc: StringContext): CompiledStatement = {
-    val partsWithArgs = sc.parts.foldLeft((Vector.empty[String], 0)) {
-      case ((accum, ix), "") =>
-        (accum :+ s"@`$ix`", ix + 1)
-      case ((accum, ix), s) =>
-        (accum :+ s, ix)
-    }._1
-    val queryText = partsWithArgs.mkString
+    val builder = new StringBuilder()
+    val parts = sc.parts.iterator
+    var i = 0
+
+    builder.append(StringContext.treatEscapes(parts.next()))
+
+    while(parts.hasNext) {
+      builder.append(s"@`$i`")
+      i += 1
+      builder.append(StringContext.treatEscapes(parts.next()))
+    }
+
+    val queryText = builder.toString
 
     apply(queryText)
   }

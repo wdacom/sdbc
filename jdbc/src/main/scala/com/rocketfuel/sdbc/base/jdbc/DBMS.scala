@@ -36,6 +36,10 @@ abstract class DBMS
 
   val Select = jdbc.Select
 
+  type SelectForUpdate = jdbc.SelectForUpdate
+
+  val SelectForUpdate = jdbc.SelectForUpdate
+
   type Update = jdbc.Update
 
   val Update = jdbc.Update

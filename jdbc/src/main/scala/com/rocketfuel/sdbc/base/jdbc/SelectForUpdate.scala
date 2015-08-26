@@ -6,7 +6,7 @@ import com.rocketfuel.Logging
 import com.rocketfuel.sdbc.base
 import com.rocketfuel.sdbc.base.CompiledStatement
 
-case class SelectForUpdate private (
+case class SelectForUpdate private[jdbc] (
   statement: CompiledStatement,
   parameterValues: Map[String, Option[ParameterValue[_]]]
 ) extends base.Select[Connection, MutableRow]
@@ -17,6 +17,8 @@ case class SelectForUpdate private (
   override def iterator()(implicit connection: Connection): Iterator[MutableRow] = {
     logger.debug(s"""Retrieving an iterator of updatable rows using "$originalQueryText" with parameters $parameterValues.""")
     val preparedStatement = connection.prepareStatement(queryText, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE)
+    bind(preparedStatement, parameterValues, parameterPositions)
+
     preparedStatement.executeQuery().mutableIterator()
   }
 

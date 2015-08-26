@@ -6,8 +6,9 @@ trait StringContextMethods {
 
   implicit class JdbcStringContextMethods(sc: StringContext) {
     private def byNumberName(args: Seq[Any]): Map[String, Option[ParameterValue[_]]] = {
-      val argNames = 0.until(sc.parts.count(_.isEmpty)).map(_.toString)
-      argNames.zip(args.map(toParameter)).toMap
+      val argNames = 0.until(sc.parts.size - 1).map(_.toString)
+      val compiled = argNames.zip(args.map(toParameter)).toMap
+      compiled
     }
 
     private val compiled = CompiledStatement(sc)
@@ -27,9 +28,15 @@ trait StringContextMethods {
       Update(compiled, byNumberName(args))
     }
 
-    def select[T](args: Any*)(implicit converter: Row => T): Select[T] = {
+    def select(args: Any*): Select[Row] = {
       sc.checkLengths(args)
-      Select[T](compiled, byNumberName(args))
+      Select[Row](compiled, byNumberName(args))
+    }
+
+    def selectForUpdate(args: Any*): SelectForUpdate = {
+      sc.checkLengths(args)
+      val argsByName = byNumberName(args)
+      SelectForUpdate(compiled, argsByName)
     }
   }
 

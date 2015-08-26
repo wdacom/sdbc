@@ -10,7 +10,7 @@ trait Setters
   with InstantParameter {
 
   val toH2Parameter =
-    toParameter orElse
+    toDefaultParameter orElse
       toLocalDateParameter orElse
       toLocalDateTimeParameter orElse
       toLocalTimeParameter orElse

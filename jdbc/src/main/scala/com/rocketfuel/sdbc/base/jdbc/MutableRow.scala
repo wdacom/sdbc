@@ -93,7 +93,15 @@ class MutableRow private[jdbc] (underlying: ResultSet)
   def updateRef(columnLabel: String, x: java.sql.Ref): Unit = underlying.updateRef(columnLabel, x)
 
   def updateRow(): Unit = underlying.updateRow()
+  def rowUpdated(): Boolean = underlying.rowUpdated()
+
   def insertRow(): Unit = underlying.insertRow()
+  def rowInserted(): Boolean = underlying.rowInserted()
+
+  def deleteRow(): Unit = underlying.deleteRow()
+  def rowDeleted(): Boolean = underlying.rowDeleted()
+
+  def cancelRowUpdates(): Unit = underlying.cancelRowUpdates()
 
   def updateRowId(columnIndex: Int, x: RowId): Unit = underlying.updateRowId(columnIndex, x)
   def updateRowId(columnLabel: String, x: RowId): Unit = underlying.updateRowId(columnLabel, x)
