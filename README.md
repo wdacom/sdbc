@@ -146,9 +146,10 @@ case class MyRow(
 )
 
 implicit def RowToMyRow(row: Row): MyRow = {
-    val id = row[Int]("id")
-    val createdTime = row[Instant]("created_time")
-    val message = row.option[String]("message")
+    //Row#get[T] gives Option[T], so use Option#get on the result if the column is NOT NULL.
+    val id = row.get[Int]("id").get
+    val createdTime = row.get[Instant]("created_time").get
+    val message = row.get[String]("message")
 
     MyRow(
         id,
@@ -164,7 +165,8 @@ val query =
 val myRow = {
     /* If you are using a Select, SelectForUpdate, Update, or Batch value,
      * you don't need the connection until you call .iterator(),
-     * .seq(), .option, .single(), or one of the execute methods.
+     * .option() (jdbc only), iteratorAsync() (cassandra only), update(),
+     * or batch().
      */
 	implicit val connection: Connection = DriverManager.getConnection("...")
 	try {
@@ -196,7 +198,7 @@ If you want to set the "id" value in the above query to a different value, you u
 select"SELECT * FROM table WHERE id = $id".on("0" -> 3)
 ```
 
-You can also mix string-interpolated parameters with named parameters.
+You can use interpolated parameters and named parameters in the same query.
 
 ```scala
 select"SELECT * FROM table WHERE id = $id AND something = @something".on("something" -> "hello")
@@ -228,7 +230,7 @@ val results = {
 	val results =
         try {
             minTimes.map(minTime =>
-                minTime -> query.on("time" -> minTime).seq()
+                minTime -> query.on("time" -> minTime).iterator().toSeq
             )
         } finally {
             connection.close()
@@ -293,8 +295,8 @@ implicit val connection: Connection = DriverManager.getConnection("...")
 val actionLogger = Update("INSERT INTO action_log (account_id, action) VALUES (@account_id, @action)")
 
 for (row <- SelectForUpdate("SELECT * FROM accounts").iterator()) {
-	val accountId = row[Int]("account_id")
-	if (accountId == 314) {
+	val accountId = row.get[Int]("account_id")
+	if (accountId == Some(314)) {
 		row("gold_nuggets") = row[Int]("gold_nuggets") + 159
 		actionLogger.on("account_id" -> 314, "action" -> "added 159 gold nuggets").execute()
 	}
