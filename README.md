@@ -187,19 +187,19 @@ implicit val connection: Connection = ???
 
 val id = 1
 
-update"SELECT * FROM table WHERE id = $id".update()
+select"SELECT * FROM table WHERE id = $id".update()
 ```
 
 If you want to set the "id" value in the above query to a different value, you use the parameter "0".
 
 ```scala
-update"SELECT * FROM table WHERE id = $id".on("0" -> 3)
+select"SELECT * FROM table WHERE id = $id".on("0" -> 3)
 ```
 
 You can also mix string-interpolated parameters with named parameters.
 
 ```scala
-update"SELECT * FROM table WHERE id = $id AND something = @something".on("something" -> "hello")
+select"SELECT * FROM table WHERE id = $id AND something = @something".on("something" -> "hello")
 ```
 
 ### Reuse a query with different parameter values
