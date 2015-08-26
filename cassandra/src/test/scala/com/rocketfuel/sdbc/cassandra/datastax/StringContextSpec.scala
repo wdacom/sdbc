@@ -4,28 +4,18 @@ import org.scalatest.FunSuite
 
 class StringContextSpec extends FunSuite {
 
-  test("Int interpolation works") {
+  test("Execute interpolation works") {
     val i = 3
-    val j = 4
-    val s = execute"$i$i$j"
+    val s = execute"$i"
 
-    assertResult(Map("0" -> Some(IntParameter(3)), "1" -> Some(IntParameter(3)), "2" -> Some(IntParameter(4))))(s.parameterValues)
+    assertResult(Map("0" -> Some(IntParameter(i))))(s.parameterValues)
   }
 
-  test("Set interpolation works") {
-    val i = Set(3)
-    val j = Set(4)
-    val s = execute"$i$i$j"
-
-    assertResult(Map("0" -> Some(SetParameter(Set(3))), "1" -> Some(SetParameter(Set(3))), "2" -> Some(SetParameter(Set(4)))))(s.parameterValues)
-  }
-
-  test("Int interpolation works with select") {
+  test("Select interpolation works") {
     val i = 3
-    val j = 4
-    val s = select"$i$i$j"
+    val s = select"$i"
 
-    assertResult(Map("0" -> Some(IntParameter(3)), "1" -> Some(IntParameter(3)), "2" -> Some(IntParameter(4))))(s.parameterValues)
+    assertResult(Map("0" -> Some(IntParameter(i))))(s.parameterValues)
   }
 
 }
