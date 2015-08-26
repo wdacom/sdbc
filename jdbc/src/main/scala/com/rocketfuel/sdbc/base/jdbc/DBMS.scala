@@ -58,9 +58,11 @@ abstract class DBMS
 
   type Connection = jdbc.Connection
 
-  type Row = jdbc.Row
+  type Row = jdbc.MutableRow
 
-  type MutableRow = jdbc.MutableRow
+  type MutableRow = jdbc.UpdatableRow
+
+  type ImmutableRow = jdbc.ImmutableRow
 
   implicit def PoolToHikariPool(pool: Pool): HikariDataSource = {
     pool.underlying

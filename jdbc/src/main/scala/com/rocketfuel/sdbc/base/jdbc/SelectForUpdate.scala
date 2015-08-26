@@ -9,17 +9,17 @@ import com.rocketfuel.sdbc.base.CompiledStatement
 case class SelectForUpdate private[jdbc] (
   statement: CompiledStatement,
   parameterValues: Map[String, Option[ParameterValue[_]]]
-) extends base.Select[Connection, MutableRow]
+) extends base.Select[Connection, UpdatableRow]
   with ParameterizedQuery[SelectForUpdate]
   with ResultSetImplicits
   with Logging {
 
-  override def iterator()(implicit connection: Connection): Iterator[MutableRow] = {
+  override def iterator()(implicit connection: Connection): Iterator[UpdatableRow] = {
     logger.debug(s"""Retrieving an iterator of updatable rows using "$originalQueryText" with parameters $parameterValues.""")
     val preparedStatement = connection.prepareStatement(queryText, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE)
     bind(preparedStatement, parameterValues, parameterPositions)
 
-    preparedStatement.executeQuery().mutableIterator()
+    preparedStatement.executeQuery().updatableIterator()
   }
 
   override def subclassConstructor(

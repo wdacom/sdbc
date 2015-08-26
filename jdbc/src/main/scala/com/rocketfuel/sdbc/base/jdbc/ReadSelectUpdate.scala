@@ -3,7 +3,7 @@ package com.rocketfuel.sdbc.base.jdbc
 trait ReadSelect {
   self: com.rocketfuel.Resources =>
 
-  def readSelect[T](name: String, hasParameters: Boolean = true)(implicit getter: Row => T): Select[T] = {
+  def readSelect[T](name: String, hasParameters: Boolean = true)(implicit getter: MutableRow => T): Select[T] = {
     val queryText = readResource("queries", name + ".sql")
     Select[T](queryText, hasParameters)
   }

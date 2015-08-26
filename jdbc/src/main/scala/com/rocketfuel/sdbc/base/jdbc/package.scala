@@ -23,7 +23,7 @@ package object jdbc
 
   type Index = PartialFunction[Row, Int]
 
-  type Getter[+T] = base.Getter[Row, Index, T]
+  type Getter[+T] = base.Getter[MutableRow, Index, T]
 
   type Connection = java.sql.Connection
 

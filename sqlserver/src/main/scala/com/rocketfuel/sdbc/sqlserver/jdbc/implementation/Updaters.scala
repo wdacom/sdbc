@@ -34,19 +34,19 @@ trait Updaters
   self: HasOffsetDateTimeFormatter =>
 
   implicit val UUIDUpdater: Updater[UUID] = new Updater[UUID] {
-    override def update(row: MutableRow, columnIndex: Int, x: UUID): Unit = {
+    override def update(row: UpdatableRow, columnIndex: Int, x: UUID): Unit = {
       row.updateString(columnIndex, x.toString)
     }
   }
 
   implicit val HierarchyUpdater: Updater[HierarchyId] = new Updater[HierarchyId] {
-    override def update(row: MutableRow, columnIndex: Int, x: jdbc.HierarchyId): Unit = {
+    override def update(row: UpdatableRow, columnIndex: Int, x: jdbc.HierarchyId): Unit = {
       row.updateString(columnIndex, x.toString)
     }
   }
 
   implicit val XmlUpdater: Updater[Node] = new Updater[Node] {
-    override def update(row: MutableRow, columnIndex: Int, x: Node): Unit = {
+    override def update(row: UpdatableRow, columnIndex: Int, x: Node): Unit = {
       row.updateString(columnIndex, x.toString)
     }
   }

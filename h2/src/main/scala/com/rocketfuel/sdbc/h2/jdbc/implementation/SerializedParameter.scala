@@ -34,14 +34,14 @@ trait SerializedParameter {
 
   implicit val SerializedUpdater: Updater[Serialized] =
     new Updater[Serialized] {
-      override def update(row: MutableRow, columnIndex: Int, x: Serialized): Unit = {
+      override def update(row: UpdatableRow, columnIndex: Int, x: Serialized): Unit = {
         row.updateObject(columnIndex, x.value, Types.JAVA_OBJECT)
       }
     }
 
   implicit val SerializedGetter: Getter[Serialized] =
     new Getter[Serialized] {
-      override def apply(row: Row, index: Index): Option[Serialized] = {
+      override def apply(row: MutableRow, index: Index): Option[Serialized] = {
         Option(row.getObject(index(row))).map(o => Serialized(o.asInstanceOf[AnyRef with java.io.Serializable]))
       }
     }

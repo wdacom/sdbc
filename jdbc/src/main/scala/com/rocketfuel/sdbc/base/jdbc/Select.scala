@@ -9,7 +9,7 @@ import com.rocketfuel.sdbc.base.CompiledStatement
 case class Select[T] private [jdbc] (
   override val statement: CompiledStatement,
   override val parameterValues: Map[String, Option[ParameterValue[_]]]
-)(implicit val converter: Row => T)
+)(implicit val converter: MutableRow => T)
   extends base.Select[Connection, T]
   with ParameterizedQuery[Select[T]]
   with ResultSetImplicits
@@ -28,7 +28,7 @@ case class Select[T] private [jdbc] (
   }
 
   /**
-   * Retrieve a result set as an iterator of values. You can close the iterator at any time.
+   * Retrieve a result set as an iterator of values.
    * The iterator will close the underlying ResultSet after retrieving the final row.
    * @param connection
    * @return
@@ -73,7 +73,7 @@ object Select {
   def apply[T](
     queryText: String,
     hasParameters: Boolean = true
-  )(implicit converter: Row => T
+  )(implicit converter: MutableRow => T
   ): Select[T] = {
     Select[T](
       statement = CompiledStatement(queryText, hasParameters),

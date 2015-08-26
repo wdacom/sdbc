@@ -86,4 +86,6 @@ class StringContextSpec
 
   }
 
+  implicit val ParameterGetter: Getter[ParameterValue[_]] = ???
+
 }

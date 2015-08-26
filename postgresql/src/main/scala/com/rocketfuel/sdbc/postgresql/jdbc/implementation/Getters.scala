@@ -45,7 +45,7 @@ trait Getters extends AnyRefGetter
   self: HasOffsetDateTimeFormatter with HasOffsetTimeFormatter =>
 
   implicit val LTreeGetter = new Getter[LTree] {
-    override def apply(row: Row, ix: Index): Option[LTree] = {
+    override def apply(row: MutableRow, ix: Index): Option[LTree] = {
       Option(row.getObject(ix(row))).map {
         case l: LTree => l
         case _ => throw new SQLDataException("column does not contain an LTree value")
@@ -54,7 +54,7 @@ trait Getters extends AnyRefGetter
   }
 
   implicit val PGIntervalGetter = new Getter[PGInterval] {
-    override def apply(row: Row, ix: Index): Option[PGInterval] = {
+    override def apply(row: MutableRow, ix: Index): Option[PGInterval] = {
       Option(row.getObject(ix(row))).map {
         case pgInterval: PGInterval => pgInterval
         case _ => throw new SQLDataException("column does not contain a PGInterval")
@@ -63,7 +63,7 @@ trait Getters extends AnyRefGetter
   }
 
   implicit val JavaDurationGetter = new Getter[JavaDuration] {
-    override def apply(row: Row, ix: Index): Option[JavaDuration] = {
+    override def apply(row: MutableRow, ix: Index): Option[JavaDuration] = {
       Option(row.getObject(ix(row))).map {
         case pgInterval: PGInterval =>
           val asDuration: JavaDuration = pgInterval
@@ -76,7 +76,7 @@ trait Getters extends AnyRefGetter
 
   implicit val ScalaDurationGetter = new Getter[ScalaDuration] {
     override def apply(
-      row: Row,
+      row: MutableRow,
       ix: Index
     ): Option[ScalaDuration] = {
       JavaDurationGetter(row, ix).map(i => ScalaDuration(i.toMillis, TimeUnit.MILLISECONDS))
@@ -96,7 +96,7 @@ trait Getters extends AnyRefGetter
   }
 
   override implicit val UUIDGetter: Getter[UUID] = new Getter[UUID] {
-    override def apply(row: Row, ix: Index): Option[UUID] = {
+    override def apply(row: MutableRow, ix: Index): Option[UUID] = {
       Option(row.getObject(ix(row))).map {
         case uuid: UUID => uuid
         case _ => throw new SQLDataException("column does not contain a UUID")
@@ -112,7 +112,7 @@ trait Getters extends AnyRefGetter
   }
 
   implicit val MapGetter: Getter[Map[String, String]] = new Getter[Map[String, String]] {
-    override def apply(row: Row, ix: Index): Option[Map[String, String]] = {
+    override def apply(row: MutableRow, ix: Index): Option[Map[String, String]] = {
       Option(row.getObject(ix(row))).map {
         case m: java.util.Map[_, _] =>
           import scala.collection.convert.decorateAsScala._

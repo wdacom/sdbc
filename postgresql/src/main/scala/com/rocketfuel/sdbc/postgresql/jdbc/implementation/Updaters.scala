@@ -38,14 +38,14 @@ trait Updaters
   self: HasOffsetDateTimeFormatter with HasOffsetTimeFormatter =>
 
   implicit val InetAddressUpdater = new Updater[InetAddress] {
-    override def update(row: MutableRow, columnIndex: Int, x: InetAddress): Unit = {
+    override def update(row: UpdatableRow, columnIndex: Int, x: InetAddress): Unit = {
       row.updateObject(columnIndex, x)
     }
   }
 
   implicit val PGIntervalUpdater = new Updater[PGInterval] {
     override def update(
-      row: MutableRow,
+      row: UpdatableRow,
       columnIndex: Int,
       x: PGInterval
     ): Unit = {
@@ -55,7 +55,7 @@ trait Updaters
 
   implicit val JsonUpdater = new Updater[JValue] {
     override def update(
-      row: MutableRow,
+      row: UpdatableRow,
       columnIndex: Int,
       x: JValue
     ): Unit = {
@@ -65,7 +65,7 @@ trait Updaters
 
   implicit val LTreeUpdater = new Updater[LTree] {
     override def update(
-      row: MutableRow,
+      row: UpdatableRow,
       columnIndex: Int,
       x: LTree
     ): Unit = {
@@ -75,7 +75,7 @@ trait Updaters
 
   implicit val XmlUpdater = new Updater[Node] {
     override def update(
-      row: MutableRow,
+      row: UpdatableRow,
       columnIndex: Int,
       x: Node
     ): Unit = {

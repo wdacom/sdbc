@@ -14,11 +14,15 @@ trait ResultSetImplicits {
      * If you want another iterator, execute the select statement again.
      * @return
      */
-    def iterator(): Iterator[Row] = {
+    def iterator(): Iterator[MutableRow] with Closeable = {
 
-      new Iterator[Row] {
+      new Iterator[MutableRow] with Closeable {
 
-        val row = new Row(underlying)
+        val row = new MutableRow(underlying)
+
+        override def close(): Unit = {
+          underlying.close()
+        }
 
         override def hasNext: Boolean = {
           val result = underlying.next()
@@ -28,7 +32,7 @@ trait ResultSetImplicits {
           result
         }
 
-        override def next(): Row = {
+        override def next(): MutableRow = {
           row
         }
 
@@ -43,29 +47,21 @@ trait ResultSetImplicits {
      * If you want another iterator, execute the select statement again.
      * @return
      */
-    def mutableIterator(): Iterator[MutableRow] with Closeable = {
+    def updatableIterator(): Iterator[UpdatableRow] = {
 
-      if ((underlying.getConcurrency & ResultSet.CONCUR_UPDATABLE) == 0) {
-        throw new IllegalStateException("The ResultSet's concurrency is not CONCUR_UPDATABLE.")
-      }
+      new Iterator[UpdatableRow] {
 
-      new Iterator[MutableRow] with Closeable {
-
-        val row = new MutableRow(underlying)
-
-        override def close(): Unit = {
-          underlying.close()
-        }
+        val row = new UpdatableRow(underlying)
 
         override def hasNext: Boolean = {
           val result = underlying.next()
           if (!result) {
-            close()
+            row.close()
           }
           result
         }
 
-        override def next(): MutableRow = {
+        override def next(): UpdatableRow = {
           row
         }
 

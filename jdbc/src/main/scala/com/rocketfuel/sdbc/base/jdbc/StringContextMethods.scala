@@ -28,9 +28,9 @@ trait StringContextMethods {
       Update(compiled, byNumberName(args))
     }
 
-    def select(args: Any*): Select[Row] = {
+    def select(args: Any*)(implicit getter: Getter[ParameterValue[_]]): Select[ImmutableRow] = {
       sc.checkLengths(args)
-      Select[Row](compiled, byNumberName(args))
+      Select[ImmutableRow](compiled, byNumberName(args))
     }
 
     def selectForUpdate(args: Any*): SelectForUpdate = {
