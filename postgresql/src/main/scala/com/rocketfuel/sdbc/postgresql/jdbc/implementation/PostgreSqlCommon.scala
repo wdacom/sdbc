@@ -36,7 +36,7 @@ abstract class PostgreSqlCommon
     (row: Row, columnIndex: Index) =>
       val ix = columnIndex(row)
 
-      val columnType = row.getMetaData.getColumnTypeName(ix)
+      val columnType = row.getMetaData.getColumnTypeName(ix + 1)
 
       columnType match {
         case "int4" | "serial" =>

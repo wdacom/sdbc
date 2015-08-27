@@ -2,6 +2,8 @@ package com.rocketfuel.sdbc.base.jdbc
 
 import java.sql.ResultSetMetaData
 
+import com.rocketfuel.CaseInsensitiveOrdering
+
 abstract class Row {
 
   def columnTypes: IndexedSeq[String]
@@ -9,7 +11,7 @@ abstract class Row {
   def columnNames: IndexedSeq[String]
 
   def columnIndex(columnName: String): Index = {
-    IntIndex(columnNames.indexOf(columnName))
+    IntIndex(findColumn(columnName))
   }
 
   def asStringMap(implicit getter: Getter[ParameterValue[_]]): Map[String, Option[ParameterValue[_]]] = {
@@ -31,7 +33,12 @@ abstract class Row {
   def getMetaData: ResultSetMetaData
 
   def findColumn(columnLabel: String): Int = {
-    columnNames.indexOf(columnLabel)
+    for (i <- columnNames.indices) {
+      if (CaseInsensitiveOrdering.compare(columnNames(i), columnLabel) == 0) {
+        return i
+      }
+    }
+    -1
   }
 
 }

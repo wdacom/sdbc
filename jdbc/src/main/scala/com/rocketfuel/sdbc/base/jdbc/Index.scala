@@ -7,7 +7,7 @@ case class IntIndex(columnIndex: Int) extends Index {
     columnIndex < row.getMetaData.getColumnCount
   }
 
-  override def apply(row: Row): Int = columnIndex + 1
+  override def apply(row: Row): Int = columnIndex
 }
 
 case class StringIndex(columnLabel: String) extends Index {

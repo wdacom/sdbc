@@ -72,7 +72,7 @@ class MutableRow private[jdbc] (
 
   def isBeforeFirst: Boolean = underlying.isBeforeFirst()
 
-  def getTimestamp(columnIndex: Int): Timestamp = underlying.getTimestamp(columnIndex: Int)
+  def getTimestamp(columnIndex: Int): Timestamp = underlying.getTimestamp(columnIndex + 1)
 
   def getTimestamp(columnLabel: String): Timestamp = underlying.getTimestamp(columnLabel: String)
 
@@ -84,55 +84,55 @@ class MutableRow private[jdbc] (
 
   def isAfterLast: Boolean = underlying.isAfterLast()
 
-  def getBinaryStream(columnIndex: Int): InputStream = underlying.getBinaryStream(columnIndex: Int)
+  def getBinaryStream(columnIndex: Int): InputStream = underlying.getBinaryStream(columnIndex + 1)
 
   def getBinaryStream(columnLabel: String): InputStream = underlying.getBinaryStream(columnLabel: String)
 
   def isLast: Boolean = underlying.isLast()
 
-  def getNClob(columnIndex: Int): NClob = underlying.getNClob(columnIndex: Int)
+  def getNClob(columnIndex: Int): NClob = underlying.getNClob(columnIndex + 1)
 
   def getNClob(columnLabel: String): NClob = underlying.getNClob(columnLabel: String)
 
-  def getCharacterStream(columnIndex: Int): Reader = underlying.getCharacterStream(columnIndex: Int)
+  def getCharacterStream(columnIndex: Int): Reader = underlying.getCharacterStream(columnIndex + 1)
 
   def getCharacterStream(columnLabel: String): Reader = underlying.getCharacterStream(columnLabel: String)
 
-  def getDouble(columnIndex: Int): Double = underlying.getDouble(columnIndex: Int)
+  def getDouble(columnIndex: Int): Double = underlying.getDouble(columnIndex + 1)
 
   def getDouble(columnLabel: String): Double = underlying.getDouble(columnLabel: String)
 
-  def getArray(columnIndex: Int): JdbcArray = underlying.getArray(columnIndex: Int)
+  def getArray(columnIndex: Int): JdbcArray = underlying.getArray(columnIndex + 1)
 
   def getArray(columnLabel: String): JdbcArray = underlying.getArray(columnLabel: String)
 
   def isFirst: Boolean = underlying.isFirst()
 
-  def getURL(columnIndex: Int): URL = underlying.getURL(columnIndex: Int)
+  def getURL(columnIndex: Int): URL = underlying.getURL(columnIndex + 1)
 
   def getURL(columnLabel: String): URL = underlying.getURL(columnLabel: String)
 
   override def getMetaData: ResultSetMetaData = underlying.getMetaData()
 
-  def getRowId(columnIndex: Int): RowId = underlying.getRowId(columnIndex: Int)
+  def getRowId(columnIndex: Int): RowId = underlying.getRowId(columnIndex + 1)
 
   def getRowId(columnLabel: String): RowId = underlying.getRowId(columnLabel: String)
 
-  def getBigDecimal(columnIndex: Int): BigDecimal = underlying.getBigDecimal(columnIndex: Int)
+  def getBigDecimal(columnIndex: Int): BigDecimal = underlying.getBigDecimal(columnIndex + 1)
 
   def getBigDecimal(columnLabel: String): BigDecimal = underlying.getBigDecimal(columnLabel: String)
 
-  def getFloat(columnIndex: Int): Float = underlying.getFloat(columnIndex: Int)
+  def getFloat(columnIndex: Int): Float = underlying.getFloat(columnIndex + 1)
 
   def getFloat(columnLabel: String): Float = underlying.getFloat(columnLabel: String)
 
-  def getClob(columnIndex: Int): Clob = underlying.getClob(columnIndex: Int)
+  def getClob(columnIndex: Int): Clob = underlying.getClob(columnIndex + 1)
 
   def getClob(columnLabel: String): Clob = underlying.getClob(columnLabel: String)
 
   override def getRow: Int = underlying.getRow()
 
-  def getLong(columnIndex: Int): Long = underlying.getLong(columnIndex: Int)
+  def getLong(columnIndex: Int): Long = underlying.getLong(columnIndex + 1)
 
   def getLong(columnLabel: String): Long = underlying.getLong(columnLabel: String)
 
@@ -140,7 +140,7 @@ class MutableRow private[jdbc] (
 
   def refreshRow(): Unit = underlying.refreshRow()
 
-  def getNString(columnIndex: Int): String = underlying.getNString(columnIndex: Int)
+  def getNString(columnIndex: Int): String = underlying.getNString(columnIndex + 1)
 
   def getNString(columnLabel: String): String = underlying.getNString(columnLabel: String)
 
@@ -150,45 +150,45 @@ class MutableRow private[jdbc] (
 
   def setFetchSize(rows: Int): Unit = underlying.setFetchSize(rows: Int)
 
-  def getTime(columnIndex: Int): Time = underlying.getTime(columnIndex: Int)
+  def getTime(columnIndex: Int): Time = underlying.getTime(columnIndex + 1)
 
   def getTime(columnLabel: String): Time = underlying.getTime(columnLabel: String)
 
-  def getTime(columnIndex: Int, cal: Calendar): Time = underlying.getTime(columnIndex: Int, cal: Calendar)
+  def getTime(columnIndex: Int, cal: Calendar): Time = underlying.getTime(columnIndex+ 1, cal: Calendar)
 
   def getTime(columnLabel: String, cal: Calendar): Time = underlying.getTime(columnLabel: String, cal: Calendar)
 
-  def getByte(columnIndex: Int): Byte = underlying.getByte(columnIndex: Int)
+  def getByte(columnIndex: Int): Byte = underlying.getByte(columnIndex + 1)
 
   def getByte(columnLabel: String): Byte = underlying.getByte(columnLabel: String)
 
-  def getBoolean(columnIndex: Int): Boolean = underlying.getBoolean(columnIndex: Int)
+  def getBoolean(columnIndex: Int): Boolean = underlying.getBoolean(columnIndex + 1)
 
   def getBoolean(columnLabel: String): Boolean = underlying.getBoolean(columnLabel: String)
 
   def getFetchDirection: Int = underlying.getFetchDirection
 
-  def getAsciiStream(columnIndex: Int): InputStream = underlying.getAsciiStream(columnIndex: Int)
+  def getAsciiStream(columnIndex: Int): InputStream = underlying.getAsciiStream(columnIndex + 1)
 
   def getAsciiStream(columnLabel: String): InputStream = underlying.getAsciiStream(columnLabel: String)
 
-  def getObject(columnIndex: Int): AnyRef = underlying.getObject(columnIndex: Int)
+  def getObject(columnIndex: Int): AnyRef = underlying.getObject(columnIndex + 1)
 
   def getObject(columnLabel: String): AnyRef = underlying.getObject(columnLabel: String)
 
-  def getObject(columnIndex: Int, map: util.Map[String, Class[_]]): AnyRef = underlying.getObject(columnIndex: Int, map: util.Map[String, Class[_]])
+  def getObject(columnIndex: Int, map: util.Map[String, Class[_]]): AnyRef = underlying.getObject(columnIndex + 1, map: util.Map[String, Class[_]])
 
   def getObject(columnLabel: String, map: util.Map[String, Class[_]]): AnyRef = underlying.getObject(columnLabel: String, map: util.Map[String, Class[_]])
 
-  def getObject[T](columnIndex: Int, `type`: Class[T]): T = underlying.getObject[T](columnIndex: Int, `type`: Class[T])
+  def getObject[T](columnIndex: Int, `type`: Class[T]): T = underlying.getObject[T](columnIndex + 1, `type`: Class[T])
 
   def getObject[T](columnLabel: String, `type`: Class[T]): T = underlying.getObject[T](columnLabel: String, `type`: Class[T])
 
-  def getShort(columnIndex: Int): Short = underlying.getShort(columnIndex: Int)
+  def getShort(columnIndex: Int): Short = underlying.getShort(columnIndex + 1)
 
   def getShort(columnLabel: String): Short = underlying.getShort(columnLabel: String)
 
-  def getNCharacterStream(columnIndex: Int): Reader = underlying.getNCharacterStream(columnIndex: Int)
+  def getNCharacterStream(columnIndex: Int): Reader = underlying.getNCharacterStream(columnIndex + 1)
 
   def getNCharacterStream(columnLabel: String): Reader = underlying.getNCharacterStream(columnLabel: String)
 
@@ -196,21 +196,23 @@ class MutableRow private[jdbc] (
 
   def wasNull(): Boolean = underlying.wasNull()
 
-  def getRef(columnIndex: Int): Ref = underlying.getRef(columnIndex: Int)
+  def getRef(columnIndex: Int): Ref = underlying.getRef(columnIndex + 1)
 
   def getRef(columnLabel: String): Ref = underlying.getRef(columnLabel: String)
 
   def isClosed: Boolean = underlying.isClosed()
 
-  override def findColumn(columnLabel: String): Int = underlying.findColumn(columnLabel: String)
+  override def findColumn(columnLabel: String): Int = {
+    underlying.findColumn(columnLabel: String) - 1
+  }
 
   def getWarnings: SQLWarning = underlying.getWarnings()
 
-  def getDate(columnIndex: Int): Date = underlying.getDate(columnIndex: Int)
+  def getDate(columnIndex: Int): Date = underlying.getDate(columnIndex + 1)
 
   def getDate(columnLabel: String): Date = underlying.getDate(columnLabel: String)
 
-  def getDate(columnIndex: Int, cal: Calendar): Date = underlying.getDate(columnIndex: Int, cal: Calendar)
+  def getDate(columnIndex: Int, cal: Calendar): Date = underlying.getDate(columnIndex + 1, cal: Calendar)
 
   def getDate(columnLabel: String, cal: Calendar): Date = underlying.getDate(columnLabel: String, cal: Calendar)
 
@@ -218,23 +220,23 @@ class MutableRow private[jdbc] (
 
   def getStatement: Statement = underlying.getStatement()
 
-  def getSQLXML(columnIndex: Int): SQLXML = underlying.getSQLXML(columnIndex: Int)
+  def getSQLXML(columnIndex: Int): SQLXML = underlying.getSQLXML(columnIndex + 1)
 
   def getSQLXML(columnLabel: String): SQLXML = underlying.getSQLXML(columnLabel: String)
 
-  def getInt(columnIndex: Int): Int = underlying.getInt(columnIndex: Int)
+  def getInt(columnIndex: Int): Int = underlying.getInt(columnIndex + 1)
 
   def getInt(columnLabel: String): Int = underlying.getInt(columnLabel: String)
 
-  def getBlob(columnIndex: Int): Blob = underlying.getBlob(columnIndex: Int)
+  def getBlob(columnIndex: Int): Blob = underlying.getBlob(columnIndex + 1)
 
   def getBlob(columnLabel: String): Blob = underlying.getBlob(columnLabel: String)
 
-  def getBytes(columnIndex: Int): Array[Byte] = underlying.getBytes(columnIndex: Int)
+  def getBytes(columnIndex: Int): Array[Byte] = underlying.getBytes(columnIndex + 1)
 
   def getBytes(columnLabel: String): Array[Byte] = underlying.getBytes(columnLabel: String)
 
-  def getString(columnIndex: Int): String = underlying.getString(columnIndex: Int)
+  def getString(columnIndex: Int): String = underlying.getString(columnIndex + 1)
 
   def getString(columnLabel: String): String = underlying.getString(columnLabel: String)
 

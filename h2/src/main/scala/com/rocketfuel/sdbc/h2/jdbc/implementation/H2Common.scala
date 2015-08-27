@@ -72,7 +72,7 @@ abstract class H2Common
 
   override implicit val ParameterGetter: Getter[ParameterValue[_]] = {
     (row: Row, ix: Index) =>
-      val columnType = row.getMetaData.getColumnTypeName(ix(row))
+      val columnType = row.getMetaData.getColumnTypeName(ix(row) + 1)
 
       columnType match {
         case "INTEGER" =>
