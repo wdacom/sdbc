@@ -185,7 +185,7 @@ trait OffsetDateTimeGetter {
 
   implicit val OffsetDateTimeGetter = new Parser[OffsetDateTime] {
     override def parse(asString: String): OffsetDateTime = {
-      val parsed = offsetDateTimeFormatter.parse(asString)
+      val parsed = offsetDateTimeFormatter.formatter.parse(asString)
       OffsetDateTime.from(parsed)
     }
   }

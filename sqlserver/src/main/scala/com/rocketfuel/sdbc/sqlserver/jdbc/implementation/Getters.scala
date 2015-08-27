@@ -58,7 +58,7 @@ trait Getters
           for {
             asString <- Option(row.getString(ix(row)))
           } yield {
-            val parsed = offsetDateTimeFormatter.parse(asString)
+            val parsed = offsetDateTimeFormatter.formatter.parse(asString)
             OffsetDateTime.from(parsed).toInstant
           }
       }

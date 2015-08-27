@@ -148,7 +148,7 @@ trait OffsetDateTimeUpdater {
   self: HasOffsetDateTimeFormatter =>
   implicit val OffsetDateTimeUpdater = new Updater[OffsetDateTime] {
     override def update(row: UpdatableRow, columnIndex: Int, x: OffsetDateTime): Unit = {
-      row.updateString(columnIndex, offsetDateTimeFormatter.format(x))
+      row.updateString(columnIndex, offsetDateTimeFormatter.formatter.format(x))
     }
   }
 }
