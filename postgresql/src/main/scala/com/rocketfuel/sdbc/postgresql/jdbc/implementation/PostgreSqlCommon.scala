@@ -56,13 +56,13 @@ abstract class PostgreSqlCommon
         case "time" =>
           TimeGetter(row, ix).map(QTime.apply)
         case "timetz" =>
-          OffsetTimeGetter(row, ix).map(QOffsetTime)
+          OffsetTimeGetter(row, ix).map(QOffsetTime.apply)
         case "date" =>
           DateGetter(row, ix).map(QDate.apply)
         case "timestamp" =>
           TimestampGetter(row, ix).map(QTimestamp.apply)
         case "timestamptz" =>
-          OffsetDateTimeGetter(row, ix).map(QOffsetDateTime)
+          OffsetDateTimeGetter(row, ix).map(QOffsetDateTime.apply)
         case "bytea" =>
           ByteVectorGetter(row, ix).map(bv => QBytes(bv.toArray))
         case "varchar" | "bpchar" | "text" =>

@@ -4,6 +4,10 @@ import java.time.format.DateTimeFormatter
 
 trait HasOffsetDateTimeFormatter {
 
-  def offsetDateTimeFormatter: DateTimeFormatter
+  implicit def SdbcOffsetDateTimeParameterToDateTimeFormatter(formatter: SdbcOffsetDateTimeFormatter): DateTimeFormatter = {
+    formatter.formatter
+  }
+
+  implicit def offsetDateTimeFormatter: SdbcOffsetDateTimeFormatter
 
 }

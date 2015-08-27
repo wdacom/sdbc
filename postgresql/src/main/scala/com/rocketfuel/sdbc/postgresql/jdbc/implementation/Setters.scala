@@ -4,6 +4,7 @@ import java.net.InetAddress
 import java.sql.PreparedStatement
 
 import com.rocketfuel.sdbc.base.jdbc._
+import com.rocketfuel.sdbc.base.jdbc
 import com.rocketfuel.sdbc.postgresql.jdbc.LTree
 import org.json4s._
 import org.json4s.jackson.JsonMethods
@@ -13,122 +14,80 @@ import scala.xml.Node
 
 //PostgreSQL doesn't support Byte, so we don't use the default setters.
 trait Setters
-  extends BooleanParameter
-  with BytesParameter
-  with DateParameter
-  with BigDecimalParameter
-  with DoubleParameter
-  with FloatParameter
-  with IntParameter
-  with LongParameter
-  with ShortParameter
-  with StringParameter
-  with TimeParameter
-  with TimestampParameter
-  with ReaderParameter
-  with InputStreamParameter
-  with UUIDParameter
-  with InstantParameter
-  with LocalDateParameter
-  with LocalTimeParameter
-  with LocalDateTimeParameter
-  with OffsetDateTimeParameter
-  with OffsetTimeParameter {
+  extends QBooleanImplicits
+  with QBytesImplicits
+  with QDateImplicits
+  with QBigDecimalImplicits
+  with QDoubleImplicits
+  with QFloatImplicits
+  with QIntImplicits
+  with QLongImplicits
+  with QShortImplicits
+  with QStringImplicits
+  with QTimeImplicits
+  with QTimestampImplicits
+  with QReaderImplicits
+  with QInputStreamImplicits
+  with QUUIDImplicits
+  with QInstantImplicits
+  with QLocalDateImplicits
+  with QLocalTimeImplicits
+  with QLocalDateTimeImplicits
+  with QOffsetDateTimeImplicits
+  with QOffsetTimeImplicits
+  with QInetAddressImplicits {
   self: HasOffsetDateTimeFormatter with HasOffsetTimeFormatter =>
 
-  case class QInetAddress(value: InetAddress) extends ParameterValue[InetAddress] {
+  type QBoolean = jdbc.QBoolean
+  val QBoolean = jdbc.QBoolean
 
-    override def set(preparedStatement: PreparedStatement, parameterIndex: Int): Unit = {
-      preparedStatement.setString(parameterIndex, value.getHostAddress)
-    }
+  type QBytes = jdbc.QBytes
+  val QBytes = jdbc.QBytes
 
-  }
+  type QDate = jdbc.QDate
+  val QDate = jdbc.QDate
 
-  object QInetAddress extends ToParameter {
-    override val toParameter: PartialFunction[Any, ParameterValue[_]] = {
-      case i: InetAddress => i
-    }
-  }
+  type QBigDecimal = jdbc.QBigDecimal
+  val QBigDecimal = jdbc.QBigDecimal
 
-  implicit def InetAddressToParameterValue(x: InetAddress): ParameterValue[InetAddress] = {
-    QInetAddress(x)
-  }
+  type QDouble = jdbc.QDouble
+  val QDouble = jdbc.QDouble
 
-  case class QPGInterval(value: PGInterval) extends ParameterValue[PGInterval] {
-    override def set(preparedStatement: PreparedStatement, parameterIndex: Int): Unit = {
-      preparedStatement.setObject(parameterIndex, value)
-    }
-  }
+  type QFloat = jdbc.QFloat
+  val QFloat = jdbc.QFloat
 
-  object QPGInterval extends ToParameter {
-    override val toParameter: PartialFunction[Any, ParameterValue[_]] = {
-      case p: PGInterval => p
-    }
-  }
+  type QInt = jdbc.QInt
+  val QInt = jdbc.QInt
 
-  implicit def PGIntervalToParameterValue(x: PGInterval): ParameterValue[PGInterval] = {
-    QPGInterval(x)
-  }
+  type QLong = jdbc.QLong
+  val QLong = jdbc.QLong
 
-  case class QJSON(value: JValue)(implicit formats: Formats) extends ParameterValue[JValue] {
+  type QShort = jdbc.QShort
+  val QShort = jdbc.QShort
 
-    override def set(preparedStatement: PreparedStatement, parameterIndex: Int): Unit = {
-      preparedStatement.setString(parameterIndex, JsonMethods.compact(JsonMethods.render(value)))
-    }
+  type QString = jdbc.QString
+  val QString = jdbc.QString
 
-    def withFormats(implicit newFormats: Formats): QJSON = {
-      QJSON(value)(newFormats)
-    }
+  type QTime = jdbc.QTime
+  val QTime = jdbc.QTime
 
-  }
+  type QTimestamp = jdbc.QTimestamp
+  val QTimestamp = jdbc.QTimestamp
 
-  object QJSON extends ToParameter {
-    override val toParameter: PartialFunction[Any, ParameterValue[_]] = {
-      case j: JValue => JSONToParameterValue(j)(DefaultFormats)
-    }
-  }
+  type QReader = jdbc.QReader
+  val QReader = jdbc.QReader
 
-  implicit def JSONToParameterValue(x: JValue)(implicit formats: Formats): ParameterValue[JValue] = {
-    QJSON(x)
-  }
+  type QInputStream = jdbc.QInputStream
+  val QInputStream = jdbc.QInputStream
 
-  case class QLTree(value: LTree) extends ParameterValue[LTree] {
+  type QUUID = jdbc.QUUID
+  val QUUID = jdbc.QUUID
 
-    override def set(preparedStatement: PreparedStatement, parameterIndex: Int): Unit = {
-      preparedStatement.setObject(parameterIndex, value)
-    }
+  type QOffsetTime = jdbc.QOffsetTime
+  val QOffsetTime = jdbc.QOffsetTime
 
-  }
-
-  object QLTree extends ToParameter {
-    override val toParameter: PartialFunction[Any, ParameterValue[_]] = {
-      case l: LTree => l
-    }
-  }
-
-  implicit def LTreeToParameterValue(x: LTree): ParameterValue[LTree] = {
-    QLTree(x)
-  }
-
-  case class QXML(value: Node) extends ParameterValue[Node] {
-
-    override def set(preparedStatement: PreparedStatement, parameterIndex: Int): Unit = {
-      val sqlxml = preparedStatement.getConnection.createSQLXML()
-      sqlxml.setString(value.toString)
-      preparedStatement.setSQLXML(parameterIndex, sqlxml)
-    }
-
-  }
-
-  object QXML extends ToParameter {
-    override val toParameter: PartialFunction[Any, ParameterValue[_]] = {
-      case x: Node => x
-    }
-  }
-
-  implicit def XMLToParameterValue(x: Node): ParameterValue[Node] = {
-    QXML(x)
-  }
+  type QOffsetDateTime = jdbc.QOffsetDateTime
+  val QOffsetDateTime = jdbc.QOffsetDateTime
 
   val toPostgresqlParameter: PartialFunction[Any, ParameterValue[_]] =
     QBoolean.toParameter orElse
@@ -148,11 +107,116 @@ trait Setters
       QReader.toParameter orElse
       QInputStream.toParameter orElse
       QUUID.toParameter orElse
-      toInstantParameter orElse
-      toLocalDateParameter orElse
-      toLocalTimeParameter orElse
-      toLocalDateTimeParameter orElse
-      toOffsetDateTimeParameter orElse
-      toOffsetTimeParameter
+      QInstant.toParameter orElse
+      QLocalDate.toParameter orElse
+      QLocalTime.toParameter orElse
+      QLocalDateTime.toParameter orElse
+      QOffsetDateTime.toParameter orElse
+      QOffsetTime.toParameter
 
+}
+
+case class QInetAddress(value: InetAddress) extends ParameterValue[InetAddress] {
+
+  override def set(preparedStatement: PreparedStatement, parameterIndex: Int): Unit = {
+    preparedStatement.setString(parameterIndex, value.getHostAddress)
+  }
+
+}
+
+object QInetAddress extends ToParameter with QInetAddressImplicits {
+  override val toParameter: PartialFunction[Any, ParameterValue[_]] = {
+    case i: InetAddress => i
+  }
+}
+
+trait QInetAddressImplicits {
+  implicit def InetAddressToParameterValue(x: InetAddress): ParameterValue[InetAddress] = {
+    QInetAddress(x)
+  }
+}
+
+
+case class QPGInterval(value: PGInterval) extends ParameterValue[PGInterval] {
+  override def set(preparedStatement: PreparedStatement, parameterIndex: Int): Unit = {
+    preparedStatement.setObject(parameterIndex, value)
+  }
+}
+
+object QPGInterval extends ToParameter with QPGIntervalImplicits {
+  override val toParameter: PartialFunction[Any, ParameterValue[_]] = {
+    case p: PGInterval => p
+  }
+}
+
+trait QPGIntervalImplicits {
+  implicit def PGIntervalToParameterValue(x: PGInterval): ParameterValue[PGInterval] = {
+    QPGInterval(x)
+  }
+}
+
+case class QJSON(value: JValue)(implicit formats: Formats) extends ParameterValue[JValue] {
+
+  override def set(preparedStatement: PreparedStatement, parameterIndex: Int): Unit = {
+    preparedStatement.setString(parameterIndex, JsonMethods.compact(JsonMethods.render(value)))
+  }
+
+  def withFormats(implicit newFormats: Formats): QJSON = {
+    QJSON(value)(newFormats)
+  }
+
+}
+
+object QJSON extends ToParameter with QJSONImplicits {
+  override val toParameter: PartialFunction[Any, ParameterValue[_]] = {
+    case j: JValue => JSONToParameterValue(j)(DefaultFormats)
+  }
+}
+
+trait QJSONImplicits {
+  implicit def JSONToParameterValue(x: JValue)(implicit formats: Formats): ParameterValue[JValue] = {
+    QJSON(x)
+  }
+}
+
+case class QLTree(value: LTree) extends ParameterValue[LTree] {
+
+  override def set(preparedStatement: PreparedStatement, parameterIndex: Int): Unit = {
+    preparedStatement.setObject(parameterIndex, value)
+  }
+
+}
+
+object QLTree extends ToParameter with QLTreeImplicits {
+  override val toParameter: PartialFunction[Any, ParameterValue[_]] = {
+    case l: LTree => l
+  }
+}
+
+trait QLTreeImplicits {
+  implicit def LTreeToParameterValue(x: LTree): ParameterValue[LTree] = {
+    QLTree(x)
+  }
+}
+
+case class QXML(value: Node) extends ParameterValue[Node] {
+
+  override def set(preparedStatement: PreparedStatement, parameterIndex: Int): Unit = {
+    val sqlxml = preparedStatement.getConnection.createSQLXML()
+    sqlxml.setString(value.toString)
+    preparedStatement.setSQLXML(parameterIndex, sqlxml)
+  }
+
+}
+
+object QXML extends ToParameter with QXMLImplicits {
+  override val toParameter: PartialFunction[Any, ParameterValue[_]] = {
+    case x: Node => x
+  }
+}
+
+trait QXMLImplicits {
+  implicit def XMLToParameterValue(x: Node): ParameterValue[Node] = {
+    QXML(x)
+  }
 }

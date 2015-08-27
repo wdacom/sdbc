@@ -26,7 +26,3 @@ trait ParameterValueImplicits {
     v.map(conversion)
   }
 }
-
-trait ToParameter[Statement, Index] {
-  val toParameter: PartialFunction[Any, ParameterValue[_, Statement, Index]]
-}

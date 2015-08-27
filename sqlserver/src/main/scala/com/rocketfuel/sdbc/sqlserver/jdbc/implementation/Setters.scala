@@ -3,82 +3,101 @@ package com.rocketfuel.sdbc.sqlserver.jdbc.implementation
 import java.sql.PreparedStatement
 import java.util.UUID
 
+import com.rocketfuel.sdbc.sqlserver.jdbc.implementation
 import com.rocketfuel.sdbc.base.jdbc._
 import com.rocketfuel.sdbc.sqlserver.jdbc.HierarchyId
 
 import scala.xml.Node
 
-//We have to use a special UUID getter, so we can't use the default setters.
-trait Setters
-  extends BooleanParameter
-  with ByteParameter
-  with BytesParameter
-  with DateParameter
-  with BigDecimalParameter
-  with DoubleParameter
-  with FloatParameter
-  with IntParameter
-  with LongParameter
-  with ShortParameter
-  with StringParameter
-  with TimeParameter
-  with TimestampParameter
-  with ReaderParameter
-  with InputStreamParameter
-  with InstantParameter
-  with LocalDateParameter
-  with LocalTimeParameter
-  with LocalDateTimeParameter
-  with OffsetDateTimeParameter {
-  self: HasOffsetDateTimeFormatter =>
-
-  case class QUUID(value: UUID) extends ParameterValue[UUID] {
-    override def set(statement: PreparedStatement, parameterIndex: Int): Unit = {
-      statement.setString(parameterIndex, value.toString)
-    }
+case class QUUID(value: UUID) extends ParameterValue[UUID] {
+  override def set(statement: PreparedStatement, parameterIndex: Int): Unit = {
+    statement.setString(parameterIndex, value.toString)
   }
+}
 
-  object QUUID extends ToParameter {
-    override val toParameter: PartialFunction[Any, ParameterValue[_]] = {
-      case u: UUID => u
-    }
+object QUUID extends ToParameter with QUUIDImplicits {
+  override val toParameter: PartialFunction[Any, ParameterValue[_]] = {
+    case u: UUID => u
   }
+}
 
+trait QUUIDImplicits {
   implicit def UUIDToParameterValue(x: UUID): ParameterValue[UUID] = {
     QUUID(x)
   }
+}
 
-  case class QHierarchyId(value: HierarchyId) extends ParameterValue[HierarchyId] {
-    override def set(statement: PreparedStatement, parameterIndex: Int): Unit = {
-      statement.setString(parameterIndex, value.toString)
-    }
+case class QHierarchyId(value: HierarchyId) extends ParameterValue[HierarchyId] {
+  override def set(statement: PreparedStatement, parameterIndex: Int): Unit = {
+    statement.setString(parameterIndex, value.toString)
   }
+}
 
-  object QHierarchyId extends ToParameter {
-    override val toParameter: PartialFunction[Any, ParameterValue[_]] = {
-      case h: HierarchyId => h
-    }
+object QHierarchyId extends ToParameter with QHierarchyIdImplicits {
+  override val toParameter: PartialFunction[Any, ParameterValue[_]] = {
+    case h: HierarchyId => h
   }
+}
 
+trait QHierarchyIdImplicits {
   implicit def HierarchyIdToParameterValue(x: HierarchyId): ParameterValue[HierarchyId] = {
     QHierarchyId(x)
   }
+}
 
-  implicit class QXML(override val value: Node) extends ParameterValue[Node] {
-    override def set(preparedStatement: PreparedStatement, parameterIndex: Int): Unit = {
-      preparedStatement.setString(parameterIndex, value.toString)
-    }
+case class QXML(override val value: Node) extends ParameterValue[Node] {
+  override def set(preparedStatement: PreparedStatement, parameterIndex: Int): Unit = {
+    preparedStatement.setString(parameterIndex, value.toString)
   }
+}
 
-  object QXML extends ToParameter {
-    override val toParameter: PartialFunction[Any, ParameterValue[_]] = {
-      case x: Node => XMLToParameterValue(x)
-    }
+object QXML extends ToParameter with QXMLImplicits {
+  override val toParameter: PartialFunction[Any, ParameterValue[_]] = {
+    case x: Node => XMLToParameterValue(x)
   }
+}
 
+trait QXMLImplicits {
   implicit def XMLToParameterValue(x: Node): ParameterValue[Node] = {
     QXML(x)
   }
+}
+
+//We have to use a special UUID getter, so we can't use the default setters.
+trait Setters
+  extends QBooleanImplicits
+  with QByteImplicits
+  with QBytesImplicits
+  with QDateImplicits
+  with QBigDecimalImplicits
+  with QDoubleImplicits
+  with QFloatImplicits
+  with QIntImplicits
+  with QLongImplicits
+  with QShortImplicits
+  with QStringImplicits
+  with QTimeImplicits
+  with QTimestampImplicits
+  with QReaderImplicits
+  with QInputStreamImplicits
+  with QInstantImplicits
+  with QLocalDateImplicits
+  with QLocalTimeImplicits
+  with QLocalDateTimeImplicits
+  with QOffsetDateTimeImplicits
+  with QUUIDImplicits
+  with QHierarchyIdImplicits
+  with QXMLImplicits {
+  self: HasOffsetDateTimeFormatter =>
+
+  type QUUID = implementation.QUUID
+  val QUUID = implementation.QUUID
+
+  type QHierarchyId = implementation.QHierarchyId
+  val QHierarchyId = implementation.QHierarchyId
+
+  type QXML = implementation.QXML
+  val QXML = implementation.QXML
 
   val toSqlServerParameter =
     QBoolean.toParameter orElse
@@ -96,11 +115,11 @@ trait Setters
       QTimestamp.toParameter orElse
       QReader.toParameter orElse
       QInputStream.toParameter orElse
-      toInstantParameter orElse
-      toLocalDateParameter orElse
-      toLocalTimeParameter orElse
-      toLocalDateTimeParameter orElse
-      toOffsetDateTimeParameter orElse
+      QInstant.toParameter orElse
+      QLocalDate.toParameter orElse
+      QLocalTime.toParameter orElse
+      QLocalDateTime.toParameter orElse
+      QOffsetDateTime.toParameter orElse
       QUUID.toParameter orElse
       QHierarchyId.toParameter orElse
       QXML.toParameter

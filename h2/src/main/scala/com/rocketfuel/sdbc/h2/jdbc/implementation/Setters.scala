@@ -4,16 +4,16 @@ import com.rocketfuel.sdbc.base.jdbc._
 
 trait Setters
   extends DefaultSetters
-  with LocalDateParameter
-  with LocalDateTimeParameter
-  with LocalTimeParameter
-  with InstantParameter {
+  with QInstantImplicits
+  with QLocalDateImplicits
+  with QLocalTimeImplicits
+  with QLocalDateTimeImplicits {
 
   val toH2Parameter =
     toDefaultParameter orElse
-      toLocalDateParameter orElse
-      toLocalDateTimeParameter orElse
-      toLocalTimeParameter orElse
-      toInstantParameter
+      QInstant.toParameter orElse
+      QLocalDate.toParameter orElse
+      QLocalTime.toParameter orElse
+      QLocalDateTime.toParameter
 
 }
