@@ -4,7 +4,6 @@ import java.time.format.{DateTimeFormatter, DateTimeFormatterBuilder}
 
 import com.rocketfuel.sdbc.base.jdbc
 import com.rocketfuel.sdbc.base.jdbc._
-import com.rocketfuel.sdbc.sqlserver.jdbc.HierarchyId
 
 /*
 Note that in a result set, sql server (or jtds) doesn't do a good job of reporting the types
@@ -33,7 +32,7 @@ abstract class SqlServer
   override val supportsIsValid = false
 
   override val offsetDateTimeFormatter = {
-    new DateTimeFormatterBuilder().
+    val formatter = new DateTimeFormatterBuilder().
     parseCaseInsensitive().
     append(DateTimeFormatter.ISO_LOCAL_DATE).
     appendLiteral(' ').
@@ -43,6 +42,8 @@ abstract class SqlServer
     appendOffset("+HH:MM", "+00:00").
     optionalEnd().
     toFormatter
+
+    SdbcOffsetDateTimeFormatter(formatter)
   }
 
   override implicit val ParameterGetter: Getter[ParameterValue[_]] = {
