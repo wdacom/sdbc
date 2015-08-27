@@ -3,6 +3,7 @@ package com.rocketfuel.sdbc.postgresql.jdbc.implementation
 import java.net.InetAddress
 import java.sql.PreparedStatement
 
+import com.rocketfuel.sdbc.postgresql.jdbc.implementation
 import com.rocketfuel.sdbc.base.jdbc._
 import com.rocketfuel.sdbc.base.jdbc
 import com.rocketfuel.sdbc.postgresql.jdbc.LTree
@@ -35,7 +36,8 @@ trait Setters
   with QLocalDateTimeImplicits
   with QOffsetDateTimeImplicits
   with QOffsetTimeImplicits
-  with QInetAddressImplicits {
+  with QInetAddressImplicits
+  with QXMLImplicits {
   self: HasOffsetDateTimeFormatter with HasOffsetTimeFormatter =>
 
   type QBoolean = jdbc.QBoolean
@@ -89,6 +91,21 @@ trait Setters
   type QOffsetDateTime = jdbc.QOffsetDateTime
   val QOffsetDateTime = jdbc.QOffsetDateTime
 
+  type QInetAddress = implementation.QInetAddress
+  val QInetAddress = implementation.QInetAddress
+
+  type QPGInterval = implementation.QPGInterval
+  val QPGInterval = implementation.QPGInterval
+
+  type QJSON = implementation.QJSON
+  val QJSON = implementation.QJSON
+
+  type QLTree = implementation.QLTree
+  val QLTree = implementation.QLTree
+
+  type QXML = implementation.QXML
+  val QXML = implementation.QXML
+
   val toPostgresqlParameter: PartialFunction[Any, ParameterValue[_]] =
     QBoolean.toParameter orElse
       QBytes.toParameter orElse
@@ -112,7 +129,12 @@ trait Setters
       QLocalTime.toParameter orElse
       QLocalDateTime.toParameter orElse
       QOffsetDateTime.toParameter orElse
-      QOffsetTime.toParameter
+      QOffsetTime.toParameter orElse
+      QInetAddress.toParameter orElse
+      QPGInterval.toParameter orElse
+      QJSON.toParameter orElse
+      QLTree.toParameter orElse
+      QXML.toParameter
 
 }
 
