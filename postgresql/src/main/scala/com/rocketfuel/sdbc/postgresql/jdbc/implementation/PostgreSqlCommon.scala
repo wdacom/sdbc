@@ -37,8 +37,8 @@ abstract class PostgreSqlCommon
     pgConnection.addDataType("inet", classOf[PGInetAddress])
     pgConnection.addDataType("timestamptz", classOf[PGTimestampTz])
     pgConnection.addDataType("timetz", classOf[PGTimeTz])
-    pgConnection.addDataType("json", classOf[PgJson])
-    pgConnection.addDataType("jsonb", classOf[PgJson])
+    pgConnection.addDataType("json", classOf[PGJson])
+    pgConnection.addDataType("jsonb", classOf[PGJson])
   }
 
   override implicit val parameterSetter: ParameterSetter = new ParameterSetter {

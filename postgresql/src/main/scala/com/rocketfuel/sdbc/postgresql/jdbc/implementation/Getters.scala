@@ -61,13 +61,7 @@ trait Getters extends AnyRefGetter
 
   implicit val JavaDurationGetter = new Getter[JavaDuration] {
     override def apply(row: Row, ix: Index): Option[JavaDuration] = {
-      Option(row.getObject(ix(row))).map {
-        case pgInterval: PGInterval =>
-          val asDuration: JavaDuration = pgInterval
-          asDuration
-        case _ =>
-          throw new SQLException("column does not contain a PGInterval")
-      }
+      PGIntervalGetter(row, ix).map(PGIntervalToJavaDuration)
     }
   }
 
@@ -76,13 +70,18 @@ trait Getters extends AnyRefGetter
       row: Row,
       ix: Index
     ): Option[ScalaDuration] = {
-      JavaDurationGetter(row, ix).map(i => ScalaDuration(i.toMillis, TimeUnit.MILLISECONDS))
+      PGIntervalGetter(row, ix).map(PGIntervalToDuration)
     }
   }
 
-  implicit val JValueGetter = new Parser[JValue] {
-    override def parse(asString: String): JValue = {
-      JsonMethods.parse(asString)
+  implicit val JValueGetter = new Getter[JValue] {
+    override def apply(row: Row, ix: Index): Option[JValue] = {
+      Option(row.getObject(ix(row))).map {
+        case asPg: PGJson =>
+          asPg.value.get
+        case _ =>
+          throw new SQLException("column does not contain a ")
+      }
     }
   }
 
@@ -135,10 +134,10 @@ trait Getters extends AnyRefGetter
     }
   }
 
-  implicit val OffsetTimeGetter: Getter[OffsetDateTime] = new Getter[OffsetDateTime] {
+  implicit val OffsetTimeGetter: Getter[OffsetTime] = new Getter[OffsetTime] {
     override def apply(row: Row, ix: Index): Option[OffsetTime] = {
       Option(row.getObject(ix(row))).map {
-        case p: PGTimestampTz => OffsetTime.from(offsetTimeFormatter.parse(p.getValue))
+        case p: PGTimeTz => OffsetTime.from(offsetTimeFormatter.parse(p.getValue))
       }
     }
   }

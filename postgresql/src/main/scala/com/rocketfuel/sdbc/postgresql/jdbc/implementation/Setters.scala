@@ -105,8 +105,8 @@ trait QPGTimestampTzImplicits {
 }
 
 trait PgJsonImplicits extends ToParameter {
-  implicit def JValueToPGobject(x: JValue)(implicit formats: Formats = DefaultFormats): PgJson = {
-    PgJson(x)
+  implicit def JValueToPGobject(x: JValue)(implicit formats: Formats = DefaultFormats): PGJson = {
+    PGJson(x)
   }
 }
 

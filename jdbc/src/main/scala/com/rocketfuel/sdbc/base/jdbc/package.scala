@@ -22,8 +22,6 @@ package object jdbc
 
   type IsParameter[T] = base.IsParameter[T, PreparedStatement, Int]
 
-  type ParameterSetter = base.ParameterSetter[PreparedStatement, Int]
-
   type Index = PartialFunction[Row, Int]
 
   type Getter[+T] = base.Getter[Row, Index, T]

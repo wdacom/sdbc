@@ -4,11 +4,11 @@ import org.json4s.jackson.JsonMethods
 import org.json4s.{DefaultFormats, Formats, JValue}
 import org.postgresql.util.PGobject
 
-class PgJson() extends PGobject() {
+class PGJson() extends PGobject() {
 
   private var formats: Formats = DefaultFormats
 
-  private var value: Option[JValue] = None
+  var value: Option[JValue] = None
 
   override def getValue: String = {
     value.map(j => JsonMethods.compact(JsonMethods.render(j))).orNull
@@ -26,9 +26,9 @@ class PgJson() extends PGobject() {
 
 }
 
-object PgJson {
-  def apply(j: JValue)(implicit formats: Formats = DefaultFormats): PgJson = {
-    val p = new PgJson()
+object PGJson {
+  def apply(j: JValue)(implicit formats: Formats = DefaultFormats): PGJson = {
+    val p = new PGJson()
 
     p.value = Some(j)
     p.formats = formats
