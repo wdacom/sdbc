@@ -6,7 +6,7 @@ import com.rocketfuel.sdbc.base.jdbc._
 import com.rocketfuel.sdbc.postgresql.jdbc.LTree
 import org.json4s.JValue
 import org.json4s.jackson.JsonMethods
-import org.postgresql.util.PGInterval
+import org.postgresql.util.{PGobject, PGInterval}
 
 import scala.xml.Node
 
@@ -32,42 +32,21 @@ trait Updaters
   with LocalDateTimeUpdater
   with InstantUpdater
   with LocalDateUpdater
-  with LocalTimeUpdater
-  with OffsetDateTimeUpdater
-  with OffsetTimeUpdater {
-  self: DateTimeFormatters with HasOffsetTimeFormatter =>
+  with LocalTimeUpdater {
 
-  implicit val InetAddressUpdater = new Updater[InetAddress] {
-    override def update(row: UpdatableRow, columnIndex: Int, x: InetAddress): Unit = {
-      row.updateObject(columnIndex, x)
+  implicit def AsPGobjectUpdater[T](x: T)(implicit converter: T => PGobject): Updater[T] = {
+    new Updater[T] {
+      override def update(row: UpdatableRow, columnIndex: Int, x: T): Unit = {
+        PGobjectUpdater.update(row, columnIndex, converter(x))
+      }
     }
   }
 
-  implicit val PGIntervalUpdater = new Updater[PGInterval] {
+  implicit val PGobjectUpdater = new Updater[PGobject] {
     override def update(
       row: UpdatableRow,
       columnIndex: Int,
-      x: PGInterval
-    ): Unit = {
-      row.updateObject(columnIndex, x)
-    }
-  }
-
-  implicit val JsonUpdater = new Updater[JValue] {
-    override def update(
-      row: UpdatableRow,
-      columnIndex: Int,
-      x: JValue
-    ): Unit = {
-      row.updateString(columnIndex, JsonMethods.compact(JsonMethods.render(x)))
-    }
-  }
-
-  implicit val LTreeUpdater = new Updater[LTree] {
-    override def update(
-      row: UpdatableRow,
-      columnIndex: Int,
-      x: LTree
+      x: PGobject
     ): Unit = {
       row.updateObject(columnIndex, x)
     }
@@ -80,6 +59,13 @@ trait Updaters
       x: Node
     ): Unit = {
       row.updateString(columnIndex, x.toString)
+    }
+  }
+
+  implicit val MapUpdater = new Updater[Map[String, String]] {
+    override def update(row: UpdatableRow, columnIndex: Int, x: Map[String, String]): Unit = {
+      import scala.collection.convert.decorateAsJava._
+      row.updateObject(columnIndex, x.asJava)
     }
   }
 

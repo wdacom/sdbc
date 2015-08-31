@@ -1,12 +1,9 @@
 package com.rocketfuel.sdbc.postgresql.jdbc.implementation
 
-import java.net.InetAddress
 import java.sql.PreparedStatement
-import java.time.{OffsetDateTime, OffsetTime}
 
 import com.rocketfuel.sdbc.base.{ParameterValue, ToParameter}
 import com.rocketfuel.sdbc.base.jdbc._
-import org.json4s._
 import org.postgresql.util.PGobject
 
 //PostgreSQL doesn't support Byte, so we don't use the default setters.
@@ -31,13 +28,13 @@ trait Setters
   with QLocalDateImplicits
   with QLocalTimeImplicits
   with QLocalDateTimeImplicits
-  with QPGTimeTzImplicits
-  with QPGTimestampTzImplicits
-  with QInetAddressImplicits
+  with PGTimeTzImplicits
+  with PGTimestampTzImplicits
+  with PGInetAddressImplicits
   with QXMLImplicits
   with QSQLXMLImplicits
   with QBlobImplicits
-  with PgJsonImplicits {
+  with PGJsonImplicits {
 
   val toPostgresqlParameter: PartialFunction[Any, Any] =
     QBoolean.toParameter orElse
@@ -64,11 +61,12 @@ trait Setters
       QXML.toParameter orElse
       QSQLXML.toParameter orElse
       QBlob.toParameter orElse
-      QPGObject.toParameter
+      QPGObject.toParameter orElse
+      QMap.toParameter
 
 }
 
-object QPGObject extends ToParameter with QPGObjectImplicits {
+object QPGObject extends ToParameter {
   override val toParameter: PartialFunction[Any, Any] = {
     case i: PGobject => i
   }
@@ -91,27 +89,8 @@ trait QPGObjectImplicits {
 
 }
 
-trait QPGTimeTzImplicits {
-
-  implicit def OffsetTimeToPGTimeTz(value: OffsetTime): PGTimeTz = {
-    PGTimeTz(value)
-  }
-}
-
-trait QPGTimestampTzImplicits {
-  implicit def OffsetTimeToPGTimestampTz(value: OffsetDateTime): PGTimestampTz = {
-    PGTimestampTz(value)
-  }
-}
-
-trait PgJsonImplicits extends ToParameter {
-  implicit def JValueToPGobject(x: JValue)(implicit formats: Formats = DefaultFormats): PGJson = {
-    PGJson(x)
-  }
-}
-
-trait QInetAddressImplicits {
-  implicit def InetAddressToPGInetAddress(address: InetAddress): PGInetAddress = {
-    PGInetAddress(address)
+object QMap extends ToParameter {
+  override val toParameter: PartialFunction[Any, Any] = {
+    case i: Map[String, String] => i
   }
 }

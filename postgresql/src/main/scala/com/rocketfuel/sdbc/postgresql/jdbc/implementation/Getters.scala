@@ -1,20 +1,15 @@
 package com.rocketfuel.sdbc.postgresql.jdbc.implementation
 
 
-import java.net.InetAddress
 import java.sql.{SQLException, SQLDataException}
+import java.time.{OffsetDateTime, OffsetTime, Duration => JavaDuration}
 import java.util.UUID
-import java.util.concurrent.TimeUnit
-
 import com.rocketfuel.sdbc.base.jdbc._
 import com.rocketfuel.sdbc.postgresql.jdbc.LTree
 import org.json4s.JValue
-import org.json4s.jackson.JsonMethods
-import org.postgresql.util.PGInterval
-
-import java.time.{Duration => JavaDuration, OffsetTime, OffsetDateTime}
-import scala.concurrent.duration.{Duration => ScalaDuration}
+import org.postgresql.util.{PGInterval, PGobject}
 import scala.xml.{Node, XML}
+import scala.concurrent.duration.{Duration => ScalaDuration}
 
 //PostgreSQL doesn't support Byte, so we don't use the default getters.
 trait Getters extends AnyRefGetter
@@ -38,14 +33,14 @@ trait Getters extends AnyRefGetter
   with InstantGetter
   with LocalDateGetter
   with LocalDateTimeGetter
-  with LocalTimeGetter
-  with IntervalImplicits {
+  with LocalTimeGetter {
+  self: PGTimestampTzImplicits with PGTimeTzImplicits with IntervalImplicits =>
 
   implicit val LTreeGetter = new Getter[LTree] {
     override def apply(row: Row, ix: Index): Option[LTree] = {
       Option(row.getObject(ix(row))).map {
         case l: LTree => l
-        case _ => throw new SQLDataException("column does not contain an LTree value")
+        case _ => throw new SQLException("column does not contain an ltree")
       }
     }
   }
@@ -53,43 +48,38 @@ trait Getters extends AnyRefGetter
   implicit val PGIntervalGetter = new Getter[PGInterval] {
     override def apply(row: Row, ix: Index): Option[PGInterval] = {
       Option(row.getObject(ix(row))).map {
-        case pgInterval: PGInterval => pgInterval
-        case _ => throw new SQLDataException("column does not contain a PGInterval")
+        case p: PGInterval => p
+        case _ => throw new SQLException("column does not contain an interval")
       }
     }
   }
 
-  implicit val JavaDurationGetter = new Getter[JavaDuration] {
-    override def apply(row: Row, ix: Index): Option[JavaDuration] = {
-      PGIntervalGetter(row, ix).map(PGIntervalToJavaDuration)
-    }
-  }
-
-  implicit val ScalaDurationGetter = new Getter[ScalaDuration] {
-    override def apply(
-      row: Row,
-      ix: Index
-    ): Option[ScalaDuration] = {
-      PGIntervalGetter(row, ix).map(PGIntervalToDuration)
-    }
-  }
-
-  implicit val JValueGetter = new Getter[JValue] {
-    override def apply(row: Row, ix: Index): Option[JValue] = {
+  private def IsPGobjectGetter[T](implicit converter: PGobject => T): Getter[T] = new Getter[T] {
+    override def apply(row: Row, ix: Index): Option[T] = {
       Option(row.getObject(ix(row))).map {
-        case asPg: PGJson =>
-          asPg.value.get
+        case p: PGobject =>
+          converter(p)
         case _ =>
-          throw new SQLException("column does not contain a ")
+          throw new SQLException("column does not contain a PGobject")
       }
     }
   }
+
+  implicit val OffsetTimeGetter = IsPGobjectGetter[OffsetTime]
+
+  implicit val OffsetDateTimeGetter = IsPGobjectGetter[OffsetDateTime]
+
+  implicit val ScalaDurationGetter = IsPGobjectGetter[ScalaDuration]
+
+  implicit val JavaDurationGetter = IsPGobjectGetter[JavaDuration]
+
+  implicit val JValueGetter = IsPGobjectGetter[JValue]
 
   override implicit val UUIDGetter: Getter[UUID] = new Getter[UUID] {
     override def apply(row: Row, ix: Index): Option[UUID] = {
       Option(row.getObject(ix(row))).map {
         case uuid: UUID => uuid
-        case _ => throw new SQLDataException("column does not contain a UUID")
+        case _ => throw new SQLDataException("column does not contain a uuid")
       }
     }
   }
@@ -113,31 +103,6 @@ trait Getters extends AnyRefGetter
           Map(values.toSeq: _*)
         case _ =>
           throw new SQLException("column does not contain an hstore")
-      }
-    }
-  }
-
-  implicit val InetAddressGetter: Getter[InetAddress] = new Getter[InetAddress] {
-    override def apply(row: Row, ix: Index): Option[InetAddress] = {
-      Option(row.getObject(ix(row))).map {
-        case p: PGInetAddress =>
-          p.inetAddress.get
-      }
-    }
-  }
-
-  implicit val OffsetDateTimeGetter: Getter[OffsetDateTime] = new Getter[OffsetDateTime] {
-    override def apply(row: Row, ix: Index): Option[OffsetDateTime] = {
-      Option(row.getObject(ix(row))).map {
-        case p: PGTimestampTz => OffsetDateTime.from(offsetDateTimeFormatter.parse(p.getValue))
-      }
-    }
-  }
-
-  implicit val OffsetTimeGetter: Getter[OffsetTime] = new Getter[OffsetTime] {
-    override def apply(row: Row, ix: Index): Option[OffsetTime] = {
-      Option(row.getObject(ix(row))).map {
-        case p: PGTimeTz => OffsetTime.from(offsetTimeFormatter.parse(p.getValue))
       }
     }
   }

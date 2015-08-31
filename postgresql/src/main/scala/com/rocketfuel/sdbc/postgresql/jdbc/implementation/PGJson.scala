@@ -1,5 +1,7 @@
 package com.rocketfuel.sdbc.postgresql.jdbc.implementation
 
+import java.sql.SQLException
+
 import org.json4s.jackson.JsonMethods
 import org.json4s.{DefaultFormats, Formats, JValue}
 import org.postgresql.util.PGobject
@@ -35,4 +37,21 @@ object PGJson {
 
     p
   }
+}
+
+trait PGJsonImplicits {
+
+  implicit def JValueToPGJson(j: JValue)(implicit formats: Formats = DefaultFormats): PGJson = {
+    PGJson(j)
+  }
+
+  implicit def PGobjectToJValue(x: PGobject): JValue = {
+    x match {
+      case p: PGJson =>
+        p.value.get
+      case _ =>
+        throw new SQLException("column does not contain a json")
+    }
+  }
+
 }

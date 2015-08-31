@@ -128,6 +128,10 @@ abstract class PostgreSqlCommon
           XMLGetter(row, ix)
         case "json" | "jsonb" =>
           JValueGetter(row, ix)
+        case "interval" =>
+          PGIntervalGetter(row, ix)
+        case "inet" =>
+          InetAddressGetter(row, ix)
         case array if array.startsWith("_") =>
           throw new NotImplementedError("PostgreSql.parameterGetter for arrays")
       }
@@ -140,7 +144,7 @@ abstract class PostgreSqlCommon
       case Some(a) =>
         Some(toParameter(a)).flatten
       case _ =>
-        Some(toPostgresqlParameter(a))
+        Some(ParameterValue(toPostgresqlParameter(a)))
     }
   }
 }
