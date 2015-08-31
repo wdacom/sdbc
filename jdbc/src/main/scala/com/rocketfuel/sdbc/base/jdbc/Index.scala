@@ -21,6 +21,6 @@ case class StringIndex(columnLabel: String) extends Index {
   }
 
   override def apply(row: Row): Int = {
-    row.findColumn(columnLabel)
+    row.columnIndexes(columnLabel)
   }
 }

@@ -16,11 +16,17 @@ abstract class DBMS
   with base.ExecutableMethods[Connection, Execute]
   with StringContextMethods {
 
+  /**
+   *
+   */
+  implicit val parameterSetter: ParameterSetter
+
   type Index = jdbc.Index
 
   type Getter[+T] = jdbc.Getter[T]
 
-  type ParameterValue[+T] = jdbc.ParameterValue[T]
+  type ParameterValue = jdbc.ParameterValue
+  val ParameterValue = jdbc.ParameterValue
 
   type ParameterList = jdbc.ParameterList
 
@@ -58,9 +64,11 @@ abstract class DBMS
 
   type Connection = jdbc.Connection
 
-  type Row = jdbc.MutableRow
+  type Row = jdbc.Row
 
-  type MutableRow = jdbc.UpdatableRow
+  type MutableRow = jdbc.MutableRow
+
+  type UpdatableRow = jdbc.UpdatableRow
 
   type ImmutableRow = jdbc.ImmutableRow
 
@@ -71,29 +79,29 @@ abstract class DBMS
   implicit class ConnectionMethods(connection: Connection) {
     def iterator[T](
       queryText: String,
-      parameters: (String, Option[ParameterValue[_]])*
-    )(implicit converter: Row => T
+      parameters: (String, Option[ParameterValue])*
+    )(implicit converter: MutableRow => T
     ): Iterator[T] = {
       Select[T](queryText).on(parameters: _*).iterator()(connection)
     }
 
     def iteratorForUpdate(
       queryText: String,
-      parameters: (String, Option[ParameterValue[_]])*
-    ): Iterator[MutableRow] = {
+      parameters: (String, Option[ParameterValue])*
+    ): Iterator[UpdatableRow] = {
       SelectForUpdate(queryText).on(parameters: _*).iterator()(connection)
     }
 
     def update(
       queryText: String,
-      parameterValues: (String, Option[ParameterValue[_]])*
+      parameterValues: (String, Option[ParameterValue])*
     ): Long = {
       Update(queryText).on(parameterValues: _*).update()(connection)
     }
 
     def execute(
       queryText: String,
-      parameterValues: (String, Option[ParameterValue[_]])*
+      parameterValues: (String, Option[ParameterValue])*
     ): Unit = {
       Execute(queryText).on(parameterValues: _*).execute()(connection)
     }

@@ -3,7 +3,12 @@ package com.rocketfuel.sdbc.base.jdbc
 trait ReadSelect {
   self: com.rocketfuel.Resources =>
 
-  def readSelect[T](name: String, hasParameters: Boolean = true)(implicit getter: MutableRow => T): Select[T] = {
+  def readSelect[T](
+    name: String,
+    hasParameters: Boolean = true
+  )(implicit getter: MutableRow => T,
+    parameterSetter: ParameterSetter
+  ): Select[T] = {
     val queryText = readResource("queries", name + ".sql")
     Select[T](queryText, hasParameters)
   }
@@ -12,7 +17,11 @@ trait ReadSelect {
 trait ReadBatch {
   self: com.rocketfuel.Resources =>
 
-  def readUpdate(name: String, hasParameters: Boolean = true): Batch = {
+  def readUpdate(
+    name: String,
+    hasParameters: Boolean = true
+  )(implicit parameterSetter: ParameterSetter
+  ): Batch = {
     val queryText = readResource("queries", name + ".sql")
     Batch(queryText, hasParameters)
   }
@@ -21,7 +30,11 @@ trait ReadBatch {
 trait ReadUpdate {
   self: com.rocketfuel.Resources =>
 
-  def readUpdate(name: String, hasParameters: Boolean = true): Update = {
+  def readUpdate(
+    name: String,
+    hasParameters: Boolean = true
+  )(implicit parameterSetter: ParameterSetter
+  ): Update = {
     val queryText = readResource("queries", name + ".sql")
     Update(queryText, hasParameters)
   }
@@ -30,7 +43,11 @@ trait ReadUpdate {
 trait ReadSelectForUpdate {
   self: com.rocketfuel.Resources =>
 
-  def readSelectForUpdate(name: String, hasParameters: Boolean = true): SelectForUpdate = {
+  def readSelectForUpdate(
+    name: String,
+    hasParameters: Boolean = true
+  )(implicit parameterSetter: ParameterSetter
+  ): SelectForUpdate = {
     val queryText = readResource("queries", name + ".sql")
     SelectForUpdate(queryText, hasParameters)
   }

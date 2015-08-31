@@ -8,7 +8,8 @@ import com.rocketfuel.sdbc.base.CompiledStatement
 
 case class SelectForUpdate private[jdbc] (
   statement: CompiledStatement,
-  parameterValues: Map[String, Option[ParameterValue[_]]]
+  parameterValues: Map[String, Option[Any]]
+)(implicit parameterSetter: ParameterSetter
 ) extends base.Select[Connection, UpdatableRow]
   with ParameterizedQuery[SelectForUpdate]
   with ResultSetImplicits
@@ -22,9 +23,9 @@ case class SelectForUpdate private[jdbc] (
     preparedStatement.executeQuery().updatableIterator()
   }
 
-  override def subclassConstructor(
+  override protected def subclassConstructor(
     statement: CompiledStatement,
-    parameterValues: Map[String, Option[base.ParameterValue[_, PreparedStatement, Int]]]
+    parameterValues: Map[String, Option[Any]]
   ): SelectForUpdate = {
     SelectForUpdate(
       statement,
@@ -37,10 +38,11 @@ object SelectForUpdate {
   def apply(
     queryText: String,
     hasParameters: Boolean = true
+  )(implicit parameterSetter: ParameterSetter
   ): SelectForUpdate = {
     SelectForUpdate(
       statement = CompiledStatement(queryText, hasParameters),
-      parameterValues = Map.empty[String, Option[ParameterValue[_]]]
+      parameterValues = Map.empty[String, Option[Any]]
     )
   }
 }

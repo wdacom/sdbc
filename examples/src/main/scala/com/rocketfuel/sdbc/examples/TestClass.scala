@@ -9,7 +9,7 @@ case class TestClass(
 
 object TestClass {
 
-  implicit def apply(row: Row): TestClass = {
+  implicit def apply(row: MutableRow): TestClass = {
     TestClass(row.get[Int]("id").get, row.get[String]("value").get)
   }
 

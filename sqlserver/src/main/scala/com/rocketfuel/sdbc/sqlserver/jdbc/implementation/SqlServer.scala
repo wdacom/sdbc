@@ -47,7 +47,7 @@ abstract class SqlServer
   }
 
   override implicit val ParameterGetter: Getter[ParameterValue[_]] = {
-    case (row: Row, ix: Index) =>
+    case (row: MutableRow, ix: Index) =>
       ???
   }
 

@@ -144,24 +144,6 @@ trait LocalTimeUpdater {
   }
 }
 
-trait OffsetDateTimeUpdater {
-  self: HasOffsetDateTimeFormatter =>
-  implicit val OffsetDateTimeUpdater = new Updater[OffsetDateTime] {
-    override def update(row: UpdatableRow, columnIndex: Int, x: OffsetDateTime): Unit = {
-      row.updateString(columnIndex, offsetDateTimeFormatter.formatter.format(x))
-    }
-  }
-}
-
-trait OffsetTimeUpdater {
-  self: HasOffsetTimeFormatter =>
-  implicit val OffsetTimeUpdater = new Updater[OffsetTime] {
-    override def update(row: UpdatableRow, columnIndex: Int, x: OffsetTime): Unit = {
-      row.updateString(columnIndex, offsetTimeFormatter.format(x))
-    }
-  }
-}
-
 trait BooleanUpdater {
   implicit val BooleanUpdater = new Updater[Boolean] {
     override def update(row: UpdatableRow, columnIndex: Int, x: Boolean): Unit = {

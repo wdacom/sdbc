@@ -6,7 +6,8 @@ import com.rocketfuel.sdbc.base.CompiledStatement
 
 case class Update private [jdbc] (
   statement: CompiledStatement,
-  parameterValues: Map[String, Option[ParameterValue[_]]]
+  parameterValues: Map[String, Option[Any]]
+)(implicit parameterSetter: ParameterSetter
 ) extends base.Update[Connection]
   with ParameterizedQuery[Update]
   with Logging {
@@ -24,9 +25,9 @@ case class Update private [jdbc] (
     result
   }
 
-  override def subclassConstructor(
+  override protected def subclassConstructor(
     statement: CompiledStatement,
-    parameterValues: Map[String, Option[ParameterValue[_]]]
+    parameterValues: Map[String, Option[Any]]
   ): Update = {
     Update(statement, parameterValues)
   }
@@ -36,10 +37,11 @@ object Update {
   def apply(
     queryText: String,
     hasParameters: Boolean = true
+  )(implicit parameterSetter: ParameterSetter
   ): Update = {
     Update(
       statement = CompiledStatement(queryText, hasParameters),
-      parameterValues = Map.empty[String, Option[ParameterValue[_]]]
+      parameterValues = Map.empty[String, Option[Any]]
     )
   }
 }

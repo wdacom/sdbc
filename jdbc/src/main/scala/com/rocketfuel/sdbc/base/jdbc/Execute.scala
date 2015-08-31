@@ -6,7 +6,8 @@ import com.rocketfuel.sdbc.base.CompiledStatement
 
 case class Execute private [jdbc] (
   statement: CompiledStatement,
-  parameterValues: Map[String, Option[ParameterValue[_]]]
+  parameterValues: Map[String, Option[Any]]
+)(implicit parameterSetter: ParameterSetter
 ) extends base.Execute[Connection]
   with ParameterizedQuery[Execute]
   with Logging {
@@ -23,9 +24,9 @@ case class Execute private [jdbc] (
     prepared.close()
   }
 
-  override def subclassConstructor(
+  override protected def subclassConstructor(
     statement: CompiledStatement,
-    parameterValues: Map[String, Option[ParameterValue[_]]]
+    parameterValues: Map[String, Option[Any]]
   ): Execute = {
     Execute(statement, parameterValues)
   }
@@ -35,10 +36,11 @@ object Execute {
   def apply(
     queryText: String,
     hasParameters: Boolean = true
+  )(implicit parameterSetter: ParameterSetter
   ): Execute = {
     Execute(
       statement = CompiledStatement(queryText, hasParameters),
-      parameterValues = Map.empty[String, Option[ParameterValue[_]]]
+      parameterValues = Map.empty[String, Option[Any]]
     )
   }
 }

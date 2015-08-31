@@ -20,55 +20,39 @@ trait DefaultSetters
   with QInputStreamImplicits
   with QUUIDImplicits {
 
-  type QBoolean = jdbc.QBoolean
   val QBoolean = jdbc.QBoolean
 
-  type QByte = jdbc.QByte
   val QByte = jdbc.QByte
 
-  type QBytes = jdbc.QBytes
   val QBytes = jdbc.QBytes
 
-  type QDate = jdbc.QDate
   val QDate = jdbc.QDate
 
-  type QBigDecimal = jdbc.QBigDecimal
   val QBigDecimal = jdbc.QBigDecimal
 
-  type QDouble = jdbc.QDouble
   val QDouble = jdbc.QDouble
 
-  type QFloat = jdbc.QFloat
   val QFloat = jdbc.QFloat
 
-  type QInt = jdbc.QInt
   val QInt = jdbc.QInt
 
-  type QLong = jdbc.QLong
   val QLong = jdbc.QLong
 
-  type QShort = jdbc.QShort
   val QShort = jdbc.QShort
 
-  type QString = jdbc.QString
   val QString = jdbc.QString
 
-  type QTime = jdbc.QTime
   val QTime = jdbc.QTime
 
-  type QTimestamp = jdbc.QTimestamp
   val QTimestamp = jdbc.QTimestamp
 
-  type QReader = jdbc.QReader
   val QReader = jdbc.QReader
 
-  type QInputStream = jdbc.QInputStream
   val QInputStream = jdbc.QInputStream
 
-  type QUUID = jdbc.QUUID
   val QUUID = jdbc.QUUID
 
-  val toDefaultParameter: PartialFunction[Any, ParameterValue[_]] =
+  val toDefaultParameter: PartialFunction[Any, Any] =
     QBoolean.toParameter orElse
       QByte.toParameter orElse
       QBytes.toParameter orElse
@@ -95,18 +79,13 @@ trait Java8DefaultSetters
   with QInstantImplicits
   with QLocalDateImplicits
   with QLocalTimeImplicits
-  with QLocalDateTimeImplicits
-  with QOffsetDateTimeImplicits
-  with QOffsetTimeImplicits {
-  self: HasOffsetDateTimeFormatter with HasOffsetTimeFormatter =>
+  with QLocalDateTimeImplicits {
 
   val toJava8DefaultParameter =
     toDefaultParameter orElse
       QInstant.toParameter orElse
       QLocalDate.toParameter orElse
       QLocalTime.toParameter orElse
-      QLocalDateTime.toParameter orElse
-      QOffsetDateTime.toParameter orElse
-      QOffsetTime.toParameter
+      QLocalDateTime.toParameter
 
 }

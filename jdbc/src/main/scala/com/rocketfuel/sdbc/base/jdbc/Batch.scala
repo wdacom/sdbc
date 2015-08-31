@@ -8,13 +8,13 @@ import com.rocketfuel.sdbc.base.CompiledStatement
 
 case class Batch private [jdbc] (
   statement: CompiledStatement,
-  parameterValues: Map[String, Option[ParameterValue[_]]],
-  parameterValueBatches: Seq[Map[String, Option[ParameterValue[_]]]]
-) extends base.Batch[Connection]
+  parameterValues: Map[String, Option[Any]],
+  parameterValueBatches: Seq[Map[String, Option[Any]]]
+)(implicit parameterSetter: ParameterSetter) extends base.Batch[Connection]
   with ParameterizedQuery[Batch]
   with Logging {
 
-  def addBatch(parameterValues: (String, Option[ParameterValue[_]])*): Batch = {
+  def addBatch(parameterValues: (String, Option[ParameterValue])*): Batch = {
     val newBatch = setParameters(parameterValues: _*)
 
     Batch(
@@ -28,15 +28,8 @@ case class Batch private [jdbc] (
     val prepared = connection.prepareStatement(queryText)
     for (batch <- parameterValueBatches) {
       for ((name, value) <- batch) {
-        value match {
-          case None =>
-            for (index <- parameterPositions(name)) {
-              prepared.setNull(index, Types.NULL)
-            }
-          case Some(parameter) =>
-            for (index <- parameterPositions(name)) {
-              parameter.set(prepared, index)
-            }
+        for (index <- parameterPositions(name)) {
+          parameterSetter.setAny(prepared, index, value)
         }
       }
       prepared.addBatch()
@@ -61,9 +54,9 @@ case class Batch private [jdbc] (
     seq().toIterator
   }
 
-  override def subclassConstructor(
+  override protected def subclassConstructor(
     statement: CompiledStatement,
-    parameterValues: Map[String, Option[ParameterValue[_]]]
+    parameterValues: Map[String, Option[Any]]
   ): Batch = {
     Batch(statement, parameterValues, Vector.empty)
   }
@@ -73,11 +66,12 @@ object Batch {
   def apply(
     queryText: String,
     hasParameters: Boolean = true
+  )(implicit parameterSetter: ParameterSetter
   ): Batch = {
     Batch(
       statement = CompiledStatement(queryText, hasParameters),
-      parameterValues = Map.empty[String, Option[ParameterValue[_]]],
-      parameterValueBatches = Vector.empty[Map[String, Option[ParameterValue[_]]]]
+      parameterValues = Map.empty[String, Option[Any]],
+      parameterValueBatches = Vector.empty[Map[String, Option[Any]]]
     )
   }
 }

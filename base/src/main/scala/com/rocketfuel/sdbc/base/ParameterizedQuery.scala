@@ -24,7 +24,7 @@ trait ParameterizedQuery[
 
   def statement: CompiledStatement
 
-  def parameterValues: Map[String, Option[ParameterValue[_, UnderlyingQuery, Index]]]
+  def parameterValues: Map[String, Option[Any]]
 
   /**
    * The query text with name parameters replaced with positional parameters.
@@ -37,27 +37,28 @@ trait ParameterizedQuery[
   def parameterPositions: Map[String, Set[Int]] = statement.parameterPositions
 
   private def setParameter(
-    parameterValues: Map[String, Option[ParameterValue[_, UnderlyingQuery, Index]]],
-    nameValuePair: (String, Option[ParameterValue[_, UnderlyingQuery, Index]])
-  ): Map[String, Option[ParameterValue[_, UnderlyingQuery, Index]]] = {
+    parameterValues: Map[String, Option[Any]],
+    nameValuePair: (String, Option[ParameterValue])
+  ): Map[String, Option[Any]] = {
     if (parameterPositions.contains(nameValuePair._1)) {
-      parameterValues + nameValuePair
+      val stripped = nameValuePair._2.map(p => p.value)
+      parameterValues + (nameValuePair._1 -> stripped)
     } else {
       throw new IllegalArgumentException(s"${nameValuePair._1} is not a parameter in the query.")
     }
   }
 
-  def subclassConstructor(
+  protected def subclassConstructor(
     statement: CompiledStatement,
-    parameterValues: Map[String, Option[ParameterValue[_, UnderlyingQuery, Index]]]
+    parameterValues: Map[String, Option[Any]]
   ): Self
 
-  def on(parameterValues: (String, Option[ParameterValue[_, UnderlyingQuery, Index]])*): Self = {
+  def on(parameterValues: (String, Option[ParameterValue])*): Self = {
     val newValues = setParameters(parameterValues: _*)
     subclassConstructor(statement, newValues)
   }
 
-  protected def setParameters(nameValuePairs: (String, Option[ParameterValue[_, UnderlyingQuery, Index]])*): Map[String, Option[ParameterValue[_, UnderlyingQuery, Index]]] = {
+  protected def setParameters(nameValuePairs: (String, Option[ParameterValue])*): Map[String, Option[Any]] = {
     nameValuePairs.foldLeft(parameterValues)(setParameter)
   }
 

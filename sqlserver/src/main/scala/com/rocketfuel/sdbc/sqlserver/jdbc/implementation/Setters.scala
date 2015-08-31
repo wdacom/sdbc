@@ -3,63 +3,62 @@ package com.rocketfuel.sdbc.sqlserver.jdbc.implementation
 import java.sql.PreparedStatement
 import java.util.UUID
 
+import com.rocketfuel.sdbc.base.jdbc
 import com.rocketfuel.sdbc.sqlserver.jdbc.implementation
 import com.rocketfuel.sdbc.base.jdbc._
 import com.rocketfuel.sdbc.sqlserver.jdbc.HierarchyId
 
 import scala.xml.Node
 
-case class QUUID(value: UUID) extends ParameterValue[UUID] {
-  override def set(statement: PreparedStatement, parameterIndex: Int): Unit = {
-    statement.setString(parameterIndex, value.toString)
-  }
-}
-
 object QUUID extends ToParameter with QUUIDImplicits {
-  override val toParameter: PartialFunction[Any, ParameterValue[_]] = {
+  implicit val UUIDIsParameter: IsParameter[UUID] = new IsParameter[UUID] {
+    override def set(preparedStatement: PreparedStatement, parameterIndex: Int, parameter: UUID): Unit = {
+      preparedStatement.setString(parameterIndex, parameter.toString)
+    }
+  }
+  
+  override val toParameter: PartialFunction[Any, AnyParameter] = {
     case u: UUID => u
   }
 }
 
 trait QUUIDImplicits {
   implicit def UUIDToParameterValue(x: UUID): ParameterValue[UUID] = {
-    QUUID(x)
+    jdbc.QUUID(x)
   }
 }
 
-case class QHierarchyId(value: HierarchyId) extends ParameterValue[HierarchyId] {
-  override def set(statement: PreparedStatement, parameterIndex: Int): Unit = {
-    statement.setString(parameterIndex, value.toString)
-  }
-}
+case class QHierarchyId(value: HierarchyId) extends ParameterValue[HierarchyId]
 
 object QHierarchyId extends ToParameter with QHierarchyIdImplicits {
-  override val toParameter: PartialFunction[Any, ParameterValue[_]] = {
+  override val toParameter: PartialFunction[Any, AnyParameter] = {
     case h: HierarchyId => h
   }
 }
 
 trait QHierarchyIdImplicits {
+  implicit val HierarchyIdIsParameter: IsParameter[HierarchyId] = new IsParameter[HierarchyId] {
+    override def set(preparedStatement: PreparedStatement, parameterIndex: Int, parameter: HierarchyId): Unit = {
+      preparedStatement.setString(parameterIndex, parameter.toString)
+    }
+  }
+  
   implicit def HierarchyIdToParameterValue(x: HierarchyId): ParameterValue[HierarchyId] = {
     QHierarchyId(x)
   }
 }
 
-case class QXML(override val value: Node) extends ParameterValue[Node] {
-  override def set(preparedStatement: PreparedStatement, parameterIndex: Int): Unit = {
-    preparedStatement.setString(parameterIndex, value.toString)
-  }
-}
-
 object QXML extends ToParameter with QXMLImplicits {
-  override val toParameter: PartialFunction[Any, ParameterValue[_]] = {
-    case x: Node => XMLToParameterValue(x)
+  override val toParameter: PartialFunction[Any, AnyParameter] = {
+    case x: Node => x
   }
 }
 
-trait QXMLImplicits {
-  implicit def XMLToParameterValue(x: Node): ParameterValue[Node] = {
-    QXML(x)
+trait QXMLImplicits extends jdbc.QXMLImplicits {
+  override implicit val NodeIsParameter: IsParameter[Node] = new IsParameter[Node] {
+    override def set(preparedStatement: PreparedStatement, parameterIndex: Int, parameter: Node): Unit = {
+      preparedStatement.setString(parameterIndex, parameter.toString)
+    }
   }
 }
 
@@ -90,13 +89,13 @@ trait Setters
   with QXMLImplicits {
   self: HasOffsetDateTimeFormatter =>
 
-  type QUUID = implementation.QUUID
+  type QUUID = jdbc.QUUID
   val QUUID = implementation.QUUID
 
   type QHierarchyId = implementation.QHierarchyId
   val QHierarchyId = implementation.QHierarchyId
 
-  type QXML = implementation.QXML
+  type QXML = jdbc.QXML
   val QXML = implementation.QXML
 
   val toSqlServerParameter =

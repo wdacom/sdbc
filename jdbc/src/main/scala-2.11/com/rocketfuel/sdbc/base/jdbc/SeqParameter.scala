@@ -3,6 +3,7 @@ package com.rocketfuel.sdbc.base.jdbc
 import java.sql.PreparedStatement
 
 import com.rocketfuel.sdbc.base
+import com.rocketfuel.sdbc.base.ToParameter
 
 import scala.reflect.runtime.universe._
 
@@ -20,10 +21,10 @@ trait SeqParameter {
     typeName(innerType)
   }
 
-  case class QSeq[+T](
-    override val value: Seq[Option[ParameterValue[T]]]
-  )(implicit t: TypeTag[T]
-  ) extends ParameterValue[Seq[Option[ParameterValue[T]]]] {
+  case class QSeq[T](
+    value: Seq[Option[ParameterValue]]
+  )(implicit val ttag: TypeTag[T]
+  ) {
     /**
      * Get the values of this array in a form suitable for use
      * with Java methods that expect an Array.
@@ -32,43 +33,37 @@ trait SeqParameter {
     def asJava: Array[AnyRef] = {
       value.map(_.map(v => base.box(v.value)).orNull).toArray
     }
+  }
 
-    override def set(preparedStatement: PreparedStatement, parameterIndex: Int): Unit = {
-      val array = preparedStatement.getConnection.createArrayOf(typeName[T], asJava)
-      preparedStatement.setArray(parameterIndex, array)
+  object QSeq extends ToParameter with QSeqImplicits {
+    override val toParameter: PartialFunction[Any, Any] = {
+      case s: QSeq[_] => s
     }
+  }
 
+  trait QSeqImplicits {
+    implicit def QSeqIsParameter: IsParameter[QSeq[_]] = new IsParameter[QSeq[_]] {
+      override def set(preparedStatement: PreparedStatement, parameterIndex: Int, parameter: QSeq[_]): Unit = {
+        val array = preparedStatement.getConnection.createArrayOf(typeName(parameter.ttag), parameter.asJava)
+        preparedStatement.setArray(parameterIndex, array)
+      }
+    }
   }
 
   implicit def SeqToOptionParameterValue[T, S](
     v: Seq[T]
-  )(implicit conversion: T => ParameterValue[S],
+  )(implicit conversion: T => ParameterValue,
     ttag: TypeTag[S]
-  ): Option[ParameterValue[Seq[Option[ParameterValue[S]]]]] = {
-    Some(QSeq(v.map(conversion andThen Some.apply)))
-  }
-
-  implicit def OptionSeqToOptionParameterValue[T, S](
-    vOpt: Option[Seq[T]]
-  )(implicit conversion: T => ParameterValue[S], ttag: TypeTag[S]
-  ): Option[ParameterValue[Seq[Option[ParameterValue[S]]]]] = {
-    vOpt.map(v => QSeq(v.map(conversion andThen Some.apply)))
+  ): ParameterValue = {
+    base.ParameterValue(QSeq(v.map(conversion andThen Some.apply)))
   }
 
   implicit def SeqOptionToOptionParameterValue[T, S](
     v: Seq[Option[T]]
-  )(implicit conversion: T => ParameterValue[S],
+  )(implicit conversion: T => ParameterValue,
     ttag: TypeTag[S]
-  ): Option[ParameterValue[Seq[Option[ParameterValue[S]]]]] = {
-    Some(QSeq(v.map(_.map(conversion))))
-  }
-
-  implicit def OptionOptionSeqToOptionParameterValue[T, S](
-    vOpt: Option[Seq[Option[T]]]
-  )(implicit conversion: T => ParameterValue[S],
-    ttag: TypeTag[S]
-  ): Option[ParameterValue[Seq[Option[ParameterValue[S]]]]] = {
-    vOpt.map(v => QSeq(v.map(_.map(conversion))))
+  ): ParameterValue = {
+    ParameterValue(QSeq(v.map(_.map(conversion))))
   }
 
   implicit def GetterToSeqOptionGetter[T](implicit getter: Getter[T]): Getter[Seq[Option[T]]] = {

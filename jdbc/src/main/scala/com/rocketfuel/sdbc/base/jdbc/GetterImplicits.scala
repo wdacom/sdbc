@@ -11,7 +11,7 @@ trait GetterImplicits {
     getter(row, 0).get
   }
 
-  implicit def ParameterGetterToImmutableRowConverter(implicit getter: Getter[ParameterValue[_]]): MutableRow => ImmutableRow = { row =>
+  implicit def ParameterGetterToImmutableRowConverter(implicit getter: Getter[ParameterValue]): MutableRow => ImmutableRow = { row =>
     row.asImmutable
   }
 

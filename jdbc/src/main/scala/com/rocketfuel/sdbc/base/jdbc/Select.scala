@@ -8,9 +8,10 @@ import com.rocketfuel.sdbc.base.CompiledStatement
 
 case class Select[T] private [jdbc] (
   override val statement: CompiledStatement,
-  override val parameterValues: Map[String, Option[ParameterValue[_]]]
-)(implicit val converter: MutableRow => T)
-  extends base.Select[Connection, T]
+  override val parameterValues: Map[String, Option[Any]]
+)(implicit val converter: MutableRow => T,
+  parameterSetter: ParameterSetter
+) extends base.Select[Connection, T]
   with ParameterizedQuery[Select[T]]
   with ResultSetImplicits
   with Logging {
@@ -58,9 +59,9 @@ case class Select[T] private [jdbc] (
     value
   }
 
-  override def subclassConstructor(
+  override protected def subclassConstructor(
     statement: CompiledStatement,
-    parameterValues: Map[String, Option[ParameterValue[_]]]
+    parameterValues: Map[String, Option[Any]]
   ): Select[T] = {
     Select[T](
       statement,
@@ -73,11 +74,12 @@ object Select {
   def apply[T](
     queryText: String,
     hasParameters: Boolean = true
-  )(implicit converter: MutableRow => T
+  )(implicit converter: MutableRow => T,
+    parameterSetter: ParameterSetter
   ): Select[T] = {
     Select[T](
       statement = CompiledStatement(queryText, hasParameters),
-      parameterValues = Map.empty[String, Option[ParameterValue[_]]]
+      parameterValues = Map.empty[String, Option[Any]]
     )
   }
 }

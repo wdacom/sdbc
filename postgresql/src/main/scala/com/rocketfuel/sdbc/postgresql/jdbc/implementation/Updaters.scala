@@ -35,7 +35,7 @@ trait Updaters
   with LocalTimeUpdater
   with OffsetDateTimeUpdater
   with OffsetTimeUpdater {
-  self: HasOffsetDateTimeFormatter with HasOffsetTimeFormatter =>
+  self: DateTimeFormatters with HasOffsetTimeFormatter =>
 
   implicit val InetAddressUpdater = new Updater[InetAddress] {
     override def update(row: UpdatableRow, columnIndex: Int, x: InetAddress): Unit = {

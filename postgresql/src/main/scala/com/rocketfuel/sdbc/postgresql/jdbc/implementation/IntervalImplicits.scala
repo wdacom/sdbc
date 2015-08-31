@@ -1,12 +1,14 @@
 package com.rocketfuel.sdbc.postgresql.jdbc.implementation
 
-import java.time.Duration
+import java.time.{Duration => JavaDuration}
+import java.util.concurrent.TimeUnit
+import scala.concurrent.duration.Duration
 
 import org.postgresql.util.PGInterval
 
 trait IntervalImplicits {
 
-  implicit def DurationToPGInterval(value: Duration): PGInterval = {
+  implicit def JavaDurationToPGInterval(value: JavaDuration): PGInterval = {
     val nano = value.getNano.toDouble / IntervalConstants.nanosecondsPerSecond.toDouble
     val totalSeconds = value.getSeconds
     val years = totalSeconds / IntervalConstants.secondsPerYear
@@ -29,7 +31,7 @@ trait IntervalImplicits {
     )
   }
 
-  implicit def PGIntervalToDuration(value: PGInterval): Duration = {
+  implicit def PGIntervalToJavaDuration(value: PGInterval): JavaDuration = {
     val nanos = (value.getSeconds - value.getSeconds.floor) * IntervalConstants.nanosecondsPerSecond
     var seconds = 0L
     seconds += value.getSeconds.toLong
@@ -38,7 +40,17 @@ trait IntervalImplicits {
     seconds += value.getDays * IntervalConstants.secondsPerDay
     seconds += value.getMonths * IntervalConstants.secondsPerMonth
     seconds += value.getYears * IntervalConstants.secondsPerYear
-    java.time.Duration.ofSeconds(seconds, nanos.toLong)
+    JavaDuration.ofSeconds(seconds, nanos.toLong)
+  }
+
+  implicit def DurationToPGInterval(duration: Duration): PGInterval = {
+    val javaDuration = JavaDuration.ofNanos(duration.toNanos)
+    javaDuration
+  }
+
+  implicit def PGIntervalToDuration(value: PGInterval): Duration = {
+    val javaDuration: JavaDuration = value
+    Duration(javaDuration.getSeconds, TimeUnit.SECONDS) + Duration(javaDuration.getNano, TimeUnit.NANOSECONDS)
   }
 
 }

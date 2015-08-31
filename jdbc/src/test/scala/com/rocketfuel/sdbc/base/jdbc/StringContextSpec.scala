@@ -7,6 +7,8 @@ class StringContextSpec
   with StringContextMethods
   with DefaultSetters {
 
+  implicit val parameterSetter: ParameterSetter = ???
+
   test("empty string is identity") {
     val s = select""
 
@@ -58,14 +60,14 @@ class StringContextSpec
     val i = 3
     val s = execute"$i"
 
-    assertResult(Map("0" -> Some(QInt(i))))(s.parameterValues)
+    assertResult(Map("0" -> Some(i)))(s.parameterValues)
   }
 
   test("Select interpolation works") {
     val i = 3
     val s = select"$i"
 
-    assertResult(Map("0" -> Some(QInt(i))))(s.parameterValues)
+    assertResult(Map("0" -> Some(i)))(s.parameterValues)
   }
 
   /**
@@ -74,7 +76,7 @@ class StringContextSpec
    * @param a
    * @return
    */
-  override protected def toParameter(a: Any): Option[ParameterValue[_]] = {
+  override protected def toParameter(a: Any): Option[Any] = {
     a match {
       case null | None | Some(null) | Some(None) =>
         None
@@ -86,6 +88,6 @@ class StringContextSpec
 
   }
 
-  implicit val ParameterGetter: Getter[ParameterValue[_]] = ???
+  implicit val ParameterGetter: Getter[ParameterValue] = ???
 
 }

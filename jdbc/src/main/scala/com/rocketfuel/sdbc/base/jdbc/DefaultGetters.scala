@@ -27,8 +27,3 @@ trait Java8DefaultGetters
   with LocalDateGetter
   with LocalDateTimeGetter
   with LocalTimeGetter
-  with OffsetDateTimeGetter
-  with OffsetTimeGetter {
-  self: HasOffsetDateTimeFormatter with HasOffsetTimeFormatter =>
-
-}

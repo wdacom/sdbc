@@ -68,6 +68,7 @@ scalacOptions in ThisBuild ++= Seq(
   "-language:existentials",
   "-language:higherKinds",
   "-language:implicitConversions",
+  "-language:postfixOps",
   "-unchecked",
   "-Xfatal-warnings",
   "-Yno-adapted-args",

@@ -1,6 +1,6 @@
 package com.rocketfuel.sdbc.base
 
-import java.sql.{Types, PreparedStatement}
+import java.sql.PreparedStatement
 import com.rocketfuel.sdbc.base
 import com.rocketfuel.CaseInsensitiveOrdering
 import com.zaxxer.hikari.HikariConfig
@@ -15,15 +15,18 @@ package object jdbc
 
   type ParameterizedQuery[Self <: ParameterizedQuery[Self]] = base.ParameterizedQuery[Self, PreparedStatement, Int]
 
-  type ParameterValue[+T] = base.ParameterValue[T, PreparedStatement, Int]
+  type ParameterValue = base.ParameterValue
+  val ParameterValue = base.ParameterValue
 
-  type ParameterList = Seq[(String, Option[ParameterValue[_]])]
+  type ParameterList = Seq[(String, Option[ParameterValue])]
 
-  type ToParameter = base.ToParameter[PreparedStatement, Int]
+  type IsParameter[T] = base.IsParameter[T, PreparedStatement, Int]
+
+  type ParameterSetter = base.ParameterSetter[PreparedStatement, Int]
 
   type Index = PartialFunction[Row, Int]
 
-  type Getter[+T] = base.Getter[MutableRow, Index, T]
+  type Getter[+T] = base.Getter[Row, Index, T]
 
   type Connection = java.sql.Connection
 
@@ -95,9 +98,10 @@ package object jdbc
 
   private [jdbc] def prepare(
     queryText: String,
-    parameterValues: Map[String, Option[ParameterValue[_]]],
+    parameterValues: Map[String, Option[Any]],
     parameterPositions: Map[String, Set[Int]]
-  )(implicit connection: Connection
+  )(implicit connection: Connection,
+    parameterSetter: ParameterSetter
   ): PreparedStatement = {
     val preparedStatement = connection.prepareStatement(queryText)
 
@@ -108,21 +112,14 @@ package object jdbc
 
   private [jdbc] def bind(
     preparedStatement: PreparedStatement,
-    parameterValues: Map[String, Option[ParameterValue[_]]],
+    parameterValues: Map[String, Option[Any]],
     parameterPositions: Map[String, Set[Int]]
+  )(implicit parameterSetter: ParameterSetter
   ): Unit = {
-    for ((key, maybeValue) <- parameterValues) {
+    for ((key, value) <- parameterValues) {
       val parameterIndices = parameterPositions(key)
-
-      maybeValue match {
-        case None =>
-          for (parameterIndex <- parameterIndices) {
-            preparedStatement.setNull(parameterIndex, Types.NULL)
-          }
-        case Some(value) =>
-          for (parameterIndex <- parameterIndices) {
-            value.set(preparedStatement, parameterIndex)
-          }
+      for (parameterIndex <- parameterIndices) {
+        parameterSetter.setAny(preparedStatement, parameterIndex, value)
       }
     }
   }

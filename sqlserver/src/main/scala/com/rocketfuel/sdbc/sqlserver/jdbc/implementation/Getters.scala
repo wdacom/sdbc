@@ -32,16 +32,21 @@ trait Getters
 
   implicit val XMLGetter: Getter[Node] = new Getter[Node] {
 
-    override def apply(row: MutableRow, ix: Index): Option[Node] = {
-      for {
-        clob <- Option(row.getClob(ix(row)))
-      } yield {
-        val stream = clob.getCharacterStream()
-        try {
-          XML.load(stream)
-        } finally {
-          util.Try(stream.close())
-        }
+    override def apply(row: Row, ix: Index): Option[Node] = {
+      row match {
+        case row: MutableRow =>
+          for {
+            clob <- Option(row.getClob(ix(row)))
+          } yield {
+            val stream = clob.getCharacterStream()
+            try {
+              XML.load(stream)
+            } finally {
+              util.Try(stream.close())
+            }
+          }
+        case _ =>
+          Option(row.getString(ix(row))).map(XML.loadString)
       }
     }
   }
@@ -50,7 +55,7 @@ trait Getters
    * The JTDS driver fails to parse timestamps, so when it fails, use our own parser.
    */
   override implicit val InstantGetter = new Getter[Instant] {
-    override def apply(row: MutableRow, ix: Index): Option[Instant] = {
+    override def apply(row: Row, ix: Index): Option[Instant] = {
       try {
         Option(row.getTimestamp(ix(row))).map(_.toInstant)
       } catch {
