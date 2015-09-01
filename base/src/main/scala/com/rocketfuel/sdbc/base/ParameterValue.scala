@@ -32,8 +32,8 @@ trait ParameterSetter[Statement, Index] {
   }
 
   /**
-   * Pattern match on parameters to get the IsParameter instance for
-   * each value, and then call setParameter.
+   * Pattern match to get the IsParameter instance for
+   * a value, and then call setParameter.
    *
    * This method is to be implemented on a per-DBMS basis.
    * @param preparedStatement

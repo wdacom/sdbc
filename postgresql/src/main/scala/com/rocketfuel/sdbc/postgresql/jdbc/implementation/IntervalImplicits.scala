@@ -1,10 +1,11 @@
 package com.rocketfuel.sdbc.postgresql.jdbc.implementation
 
+import java.sql.SQLException
 import java.time.{Duration => JavaDuration}
 import java.util.concurrent.TimeUnit
 import scala.concurrent.duration.Duration
 
-import org.postgresql.util.PGInterval
+import org.postgresql.util.{PGobject, PGInterval}
 
 trait IntervalImplicits {
 
@@ -51,6 +52,22 @@ trait IntervalImplicits {
   implicit def PGIntervalToDuration(value: PGInterval): Duration = {
     val javaDuration: JavaDuration = value
     Duration(javaDuration.getSeconds, TimeUnit.SECONDS) + Duration(javaDuration.getNano, TimeUnit.NANOSECONDS)
+  }
+
+  implicit def PGobjectToScalaDuration(value: PGobject): Duration = {
+    value match {
+      case p: PGInterval => p
+      case _ =>
+        throw new SQLException("column does not contain a interval")
+    }
+  }
+
+  implicit def PGobjectToJavaDuration(value: PGobject): JavaDuration = {
+    value match {
+      case p: PGInterval => p
+      case _ =>
+        throw new SQLException("column does not contain a interval")
+    }
   }
 
 }

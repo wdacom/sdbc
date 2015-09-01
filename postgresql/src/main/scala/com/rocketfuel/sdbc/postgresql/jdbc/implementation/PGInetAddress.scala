@@ -26,7 +26,7 @@ class PGInetAddress() extends PGobject() {
   }
 
   override def hashCode(): Int = {
-    inetAddress.map(_.hashCode()).getOrElse(0)
+    inetAddress.hashCode()
   }
 }
 

@@ -62,17 +62,24 @@ trait ByteGetter {
 
 trait BytesGetter {
 
+  implicit val ArrayByteGetter =
+  new Getter[Array[Byte]] {
+    override def apply(row: Row, ix: Index): Option[Array[Byte]] = {
+      Option(row.getBytes(ix(row)))
+    }
+  }
+
   implicit val ByteBufferGetter =
     new Getter[ByteBuffer] {
       override def apply(row: Row, ix: Index): Option[ByteBuffer] = {
-        Option(row.getBytes(ix(row))).map(ByteBuffer.wrap)
+        ArrayByteGetter(row, ix).map(ByteBuffer.wrap)
       }
     }
 
   implicit val ByteVectorGetter =
     new Getter[ByteVector] {
       override def apply(row: Row, ix: Index): Option[ByteVector] = {
-        Option(row.getBytes(ix(row))).map(ByteVector.apply)
+        ArrayByteGetter(row, ix).map(ByteVector.apply)
       }
     }
 

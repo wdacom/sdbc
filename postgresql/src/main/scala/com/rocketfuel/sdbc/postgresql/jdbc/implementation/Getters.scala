@@ -1,11 +1,12 @@
 package com.rocketfuel.sdbc.postgresql.jdbc.implementation
 
 
+import java.net.InetAddress
 import java.sql.{SQLException, SQLDataException}
 import java.time.{OffsetDateTime, OffsetTime, Duration => JavaDuration}
 import java.util.UUID
 import com.rocketfuel.sdbc.base.jdbc._
-import com.rocketfuel.sdbc.postgresql.jdbc.LTree
+import com.rocketfuel.sdbc.postgresql.jdbc.{Cidr, LTree}
 import org.json4s.JValue
 import org.postgresql.util.{PGInterval, PGobject}
 import scala.xml.{Node, XML}
@@ -34,7 +35,11 @@ trait Getters extends AnyRefGetter
   with LocalDateGetter
   with LocalDateTimeGetter
   with LocalTimeGetter {
-  self: PGTimestampTzImplicits with PGTimeTzImplicits with IntervalImplicits =>
+  self: PGTimestampTzImplicits
+    with PGTimeTzImplicits
+    with IntervalImplicits
+    with PGInetAddressImplicits
+    with PGJsonImplicits =>
 
   implicit val LTreeGetter = new Getter[LTree] {
     override def apply(row: Row, ix: Index): Option[LTree] = {
@@ -50,6 +55,15 @@ trait Getters extends AnyRefGetter
       Option(row.getObject(ix(row))).map {
         case p: PGInterval => p
         case _ => throw new SQLException("column does not contain an interval")
+      }
+    }
+  }
+
+  implicit val CidrGetter = new Getter[Cidr] {
+    override def apply(row: Row, ix: Index): Option[Cidr] = {
+      Option(row.getObject(ix(row))).map {
+        case p: Cidr => p
+        case _ => throw new SQLException("column does not contain a cidr")
       }
     }
   }
@@ -74,6 +88,8 @@ trait Getters extends AnyRefGetter
   implicit val JavaDurationGetter = IsPGobjectGetter[JavaDuration]
 
   implicit val JValueGetter = IsPGobjectGetter[JValue]
+
+  implicit val InetAddressGetter = IsPGobjectGetter[InetAddress]
 
   override implicit val UUIDGetter: Getter[UUID] = new Getter[UUID] {
     override def apply(row: Row, ix: Index): Option[UUID] = {

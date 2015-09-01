@@ -91,6 +91,8 @@ trait QPGObjectImplicits {
 
 object QMap extends ToParameter {
   override val toParameter: PartialFunction[Any, Any] = {
-    case i: Map[String, String] => i
+    case i: Map[_, _] => //Technically, this should be a Map[String, String]
+      import scala.collection.convert.decorateAsJava._
+      i.asJava
   }
 }

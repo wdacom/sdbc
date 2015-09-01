@@ -1,12 +1,11 @@
 package com.rocketfuel.sdbc.postgresql.jdbc.implementation
 
 import java.io.{InputStream, Reader}
-import java.net.InetAddress
-import java.sql.{Types, PreparedStatement}
-import java.time.Instant
+import java.sql.PreparedStatement
 import java.util.UUID
 import com.rocketfuel.sdbc.base.jdbc._
 import com.rocketfuel.sdbc.postgresql.jdbc
+import com.rocketfuel.sdbc.postgresql.jdbc.Cidr
 import org.postgresql.PGConnection
 import org.postgresql.util.PGobject
 
@@ -16,7 +15,7 @@ abstract class PostgreSqlCommon
   with IntervalImplicits
   with ConnectionImplicits
   with Getters
-  with Java8DefaultUpdaters {
+  with Java8DefaultUpdaters{
 
   override def dataSourceClassName = "org.postgresql.ds.PGSimpleDataSource"
   override def driverClassName = "org.postgresql.Driver"
@@ -35,6 +34,7 @@ abstract class PostgreSqlCommon
     val pgConnection = connection.unwrap[PGConnection](classOf[PGConnection])
     pgConnection.addDataType("ltree", classOf[jdbc.LTree])
     pgConnection.addDataType("inet", classOf[PGInetAddress])
+    pgConnection.addDataType("cidr", classOf[Cidr])
     pgConnection.addDataType("timestamptz", classOf[PGTimestampTz])
     pgConnection.addDataType("timetz", classOf[PGTimeTz])
     pgConnection.addDataType("json", classOf[PGJson])
@@ -119,7 +119,7 @@ abstract class PostgreSqlCommon
         case "timestamptz" =>
           OffsetDateTimeGetter(row, ix)
         case "bytea" =>
-          ByteVectorGetter(row, ix)
+          ArrayByteGetter(row, ix)
         case "varchar" | "bpchar" | "text" =>
           StringGetter(row, ix)
         case "uuid" =>
