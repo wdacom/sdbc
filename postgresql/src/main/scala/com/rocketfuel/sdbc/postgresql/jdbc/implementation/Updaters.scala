@@ -1,13 +1,11 @@
 package com.rocketfuel.sdbc.postgresql.jdbc.implementation
 
 import java.net.InetAddress
-
+import java.time.{Duration => JavaDuration, _}
 import com.rocketfuel.sdbc.base.jdbc._
-import com.rocketfuel.sdbc.postgresql.jdbc.LTree
-import org.json4s.JValue
-import org.json4s.jackson.JsonMethods
-import org.postgresql.util.{PGobject, PGInterval}
-
+import org.json4s._
+import org.postgresql.util.PGobject
+import scala.concurrent.duration.{Duration => ScalaDuration}
 import scala.xml.Node
 
 //PostgreSQL doesn't support Byte, so we don't use the default updaters.
@@ -33,14 +31,31 @@ trait Updaters
   with InstantUpdater
   with LocalDateUpdater
   with LocalTimeUpdater {
+  self: PGTimestampTzImplicits
+    with PGTimeTzImplicits
+    with IntervalImplicits
+    with PGInetAddressImplicits
+    with PGJsonImplicits =>
 
-  implicit def AsPGobjectUpdater[T](x: T)(implicit converter: T => PGobject): Updater[T] = {
+  private def IsPGobjectUpdater[T](implicit converter: T => PGobject): Updater[T] = {
     new Updater[T] {
       override def update(row: UpdatableRow, columnIndex: Int, x: T): Unit = {
         PGobjectUpdater.update(row, columnIndex, converter(x))
       }
     }
   }
+
+  implicit val OffsetTimeUpdater = IsPGobjectUpdater[OffsetTime]
+
+  implicit val OffsetDateTimeUpdater = IsPGobjectUpdater[OffsetDateTime]
+
+  implicit val ScalaDurationUpdater = IsPGobjectUpdater[ScalaDuration]
+
+  implicit val JavaDurationUpdater = IsPGobjectUpdater[JavaDuration]
+
+  implicit val JValueUpdater = IsPGobjectUpdater[JValue]
+
+  implicit val InetAddressUpdater = IsPGobjectUpdater[InetAddress]
 
   implicit val PGobjectUpdater = new Updater[PGobject] {
     override def update(
