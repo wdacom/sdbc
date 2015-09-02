@@ -2,11 +2,14 @@ package com.rocketfuel.sdbc.postgresql.jdbc.implementation
 
 import java.sql.SQLException
 
+import com.rocketfuel.sdbc.base.ToParameter
 import org.json4s.jackson.JsonMethods
 import org.json4s.JValue
 import org.postgresql.util.PGobject
 
 class PGJson() extends PGobject() {
+
+  setType("json")
 
   var jValue: Option[JValue] = None
 
@@ -26,12 +29,16 @@ class PGJson() extends PGobject() {
 
 }
 
-object PGJson {
+object PGJson extends ToParameter {
   def apply(j: JValue): PGJson = {
     val p = new PGJson()
     p.jValue = Some(j)
 
     p
+  }
+
+  override val toParameter: PartialFunction[Any, Any] = {
+    case j: JValue => PGJson(j)
   }
 }
 

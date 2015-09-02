@@ -10,9 +10,9 @@ import scodec.bits.ByteVector
 import scala.xml.Node
 
 object QLong extends ToParameter with QLongImplicits {
-  override val toParameter: PartialFunction[Any, ParameterValue] = {
+  override val toParameter: PartialFunction[Any, Any] = {
     case l: Long => l
-    case l: java.lang.Long => l
+    case l: java.lang.Long => l.longValue()
   }
 }
 
@@ -100,30 +100,29 @@ trait QByteImplicits {
 
 object QBytes extends ToParameter with QBytesImplicits {
   override val toParameter: PartialFunction[Any, Any] = {
-    case b: Array[Byte] => b
-    case b: Array[java.lang.Byte] => b.value
+    case b: Array[Byte] => b.value
     case b: ByteBuffer => b.value
-    case b: ByteVector => b.value
+    case b: ByteVector => b
   }
 }
 
 trait QBytesImplicits {
-  implicit val BytesIsParameter: IsParameter[Array[Byte]] = new IsParameter[Array[Byte]] {
-    override def set(preparedStatement: PreparedStatement, parameterIndex: Int, parameter: Array[Byte]): Unit = {
+  //We're using ByteVectors, since they're much more easily testable than Array[Byte].
+  //IE equality actually works.
+  implicit val ByteVectorIsParameter: IsParameter[ByteVector] = new IsParameter[ByteVector] {
+    override def set(preparedStatement: PreparedStatement, parameterIndex: Int, parameter: ByteVector): Unit = {
       preparedStatement.setBytes(
         parameterIndex,
-        parameter
+        parameter.toArray
       )
     }
   }
 
-  implicit def ArrayByteToParameterValue(x: Array[Byte]): ParameterValue = ParameterValue(x)
+  implicit def ArrayByteToParameterValue(x: Array[Byte]): ParameterValue = ParameterValue(ByteVector(x))
 
-  implicit def ArrayBoxedByteToParameterValue(x: Array[java.lang.Byte]): ParameterValue = ParameterValue(x.map(_.byteValue()))
+  implicit def ByteBufferToParameterValue(x: ByteBuffer): ParameterValue = ParameterValue(ByteVector(x))
 
-  implicit def ByteBufferToParameterValue(x: ByteBuffer): ParameterValue = ParameterValue(ByteVector(x).toArray)
-
-  implicit def ByteVectorToParameterValue(x: ByteVector): ParameterValue = ParameterValue(x.toArray)
+  implicit def ByteVectorToParameterValue(x: ByteVector): ParameterValue = ParameterValue(x)
 }
 
 object QFloat extends ToParameter with QFloatImplicits {
@@ -280,7 +279,7 @@ trait QStringImplicits {
 }
 
 object QReader extends ToParameter with QReaderImplicits {
-  override val toParameter: PartialFunction[Any, ParameterValue] = {
+  override val toParameter: PartialFunction[Any, Any] = {
     case r: Reader => r
   }
 }

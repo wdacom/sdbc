@@ -1,9 +1,13 @@
 package com.rocketfuel.sdbc.base.jdbc
 
+import java.lang
+import java.nio.ByteBuffer
 import java.sql.{Time, Date, Timestamp}
 import java.io.{InputStream, Reader}
 import java.time._
 import java.util.UUID
+
+import scodec.bits.ByteVector
 
 trait Updater[T] {
 
@@ -22,12 +26,24 @@ trait LongUpdater {
       row.updateLong(columnIndex, x)
     }
   }
+
+  implicit val BoxedLongUpdater = new Updater[lang.Long] {
+    override def update(row: UpdatableRow, columnIndex: Int, x: lang.Long): Unit = {
+      LongUpdater.update(row, columnIndex, x.longValue())
+    }
+  }
 }
 
 trait IntUpdater {
   implicit val IntUpdater = new Updater[Int] {
     override def update(row: UpdatableRow, columnIndex: Int, x: Int): Unit = {
       row.updateInt(columnIndex, x)
+    }
+  }
+
+  implicit val BoxedIntUpdater = new Updater[lang.Integer] {
+    override def update(row: UpdatableRow, columnIndex: Int, x: lang.Integer): Unit = {
+      IntUpdater.update(row, columnIndex, x.intValue())
     }
   }
 }
@@ -38,12 +54,24 @@ trait ShortUpdater {
       row.updateShort(columnIndex, x)
     }
   }
+
+  implicit val BoxedShortUpdater = new Updater[lang.Short] {
+    override def update(row: UpdatableRow, columnIndex: Int, x: lang.Short): Unit = {
+      ShortUpdater.update(row, columnIndex, x.shortValue())
+    }
+  }
 }
 
 trait ByteUpdater {
   implicit val ByteUpdater = new Updater[Byte] {
     override def update(row: UpdatableRow, columnIndex: Int, x: Byte): Unit = {
       row.updateByte(columnIndex, x)
+    }
+  }
+
+  implicit val BoxedByteUpdater = new Updater[lang.Byte] {
+    override def update(row: UpdatableRow, columnIndex: Int, x: lang.Byte): Unit = {
+      ByteUpdater.update(row, columnIndex, x.byteValue())
     }
   }
 }
@@ -54,6 +82,18 @@ trait BytesUpdater {
       row.updateBytes(columnIndex, x)
     }
   }
+
+  implicit val ByteVectorUpdater = new Updater[ByteVector] {
+    override def update(row: UpdatableRow, columnIndex: Int, x: ByteVector): Unit = {
+      row.updateBytes(columnIndex, x.toArray)
+    }
+  }
+
+  implicit val ByteBufferUpdater = new Updater[ByteBuffer] {
+    override def update(row: UpdatableRow, columnIndex: Int, x: ByteBuffer): Unit = {
+      ByteVectorUpdater.update(row, columnIndex, ByteVector(x))
+    }
+  }
 }
 
 trait DoubleUpdater {
@@ -62,12 +102,24 @@ trait DoubleUpdater {
       row.updateDouble(columnIndex, x)
     }
   }
+
+  implicit val BoxedDoubleUpdater = new Updater[lang.Double] {
+    override def update(row: UpdatableRow, columnIndex: Int, x: lang.Double): Unit = {
+      DoubleUpdater.update(row, columnIndex, x.doubleValue())
+    }
+  }
 }
 
 trait FloatUpdater {
   implicit val FloatUpdater = new Updater[Float] {
     override def update(row: UpdatableRow, columnIndex: Int, x: Float): Unit = {
       row.updateFloat(columnIndex, x)
+    }
+  }
+
+  implicit val BoxedFloatUpdater = new Updater[lang.Float] {
+    override def update(row: UpdatableRow, columnIndex: Int, x: lang.Float): Unit = {
+      FloatUpdater.update(row, columnIndex, x.floatValue())
     }
   }
 }
@@ -81,11 +133,14 @@ trait JavaBigDecimalUpdater {
 }
 
 trait ScalaBigDecimalUpdater {
+  self: JavaBigDecimalUpdater =>
+
   implicit val ScalaBigDecimalUpdater = new Updater[BigDecimal] {
     override def update(row: UpdatableRow, columnIndex: Int, x: BigDecimal): Unit = {
-      row.updateBigDecimal(columnIndex, x)
+      JavaBigDecimalUpdater.update(row, columnIndex, x.underlying())
     }
   }
+
 }
 
 trait TimestampUpdater {
@@ -148,6 +203,12 @@ trait BooleanUpdater {
   implicit val BooleanUpdater = new Updater[Boolean] {
     override def update(row: UpdatableRow, columnIndex: Int, x: Boolean): Unit = {
       row.updateBoolean(columnIndex, x)
+    }
+  }
+
+  implicit val BoxedBooleanUpdater = new Updater[lang.Boolean] {
+    override def update(row: UpdatableRow, columnIndex: Int, x: lang.Boolean): Unit = {
+      BooleanUpdater.update(row, columnIndex, x.booleanValue())
     }
   }
 }

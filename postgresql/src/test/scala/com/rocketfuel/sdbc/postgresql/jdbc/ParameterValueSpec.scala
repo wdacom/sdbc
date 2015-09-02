@@ -1,5 +1,6 @@
 package com.rocketfuel.sdbc.postgresql.jdbc
 
+import java.net.InetAddress
 import java.nio.ByteBuffer
 import java.sql.{Array => _, _}
 import java.time._
@@ -13,11 +14,6 @@ import scalaz.Scalaz._
 
 class ParameterValueSpec
   extends PostgreSqlSuite {
-
-  override protected def beforeAll(): Unit = {
-    super.beforeAll()
-    createLTree()
-  }
 
   val jsonString = """{"hi":"there"}"""
 
@@ -89,4 +85,10 @@ class ParameterValueSpec
   testSelect[JValue](s"SELECT '$jsonString'::json", JsonMethods.parse(jsonString).some)
 
   testSelect[JValue](s"SELECT '$jsonString'::jsonb", JsonMethods.parse(jsonString).some)
+
+  testSelect[InetAddress]("SELECT '1.1.1.1'::inet", Some(InetAddress.getByName("1.1.1.1")))
+
+  testSelect[Cidr]("SELECT '1.1.1.0/24'::cidr", Some(Cidr(InetAddress.getByName("1.1.1.0"), 24)))
+
+  testSelect[Map[String, String]]("SELECT 'a=>b'::hstore", Some(Map("a" -> "b")))
 }

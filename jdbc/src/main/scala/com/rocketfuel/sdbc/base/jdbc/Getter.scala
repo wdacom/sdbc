@@ -1,6 +1,7 @@
 package com.rocketfuel.sdbc.base.jdbc
 
 import java.io.{InputStream, Reader}
+import java.lang
 import java.net.URL
 import java.nio.ByteBuffer
 import java.sql.{SQLException, Date, Time, Timestamp}
@@ -37,12 +38,24 @@ trait LongGetter {
   implicit val LongGetter =
     Getter.fromValGetter[Long]{ row => ix => row.getLong(ix) }
 
+  implicit val BoxedLongGetter = new Getter[java.lang.Long] {
+    override def apply(row: Row, ix: Index): Option[lang.Long] = {
+      LongGetter(row, ix).map(java.lang.Long.valueOf)
+    }
+  }
+
 }
 
 trait IntGetter {
 
   implicit val IntGetter =
     Getter.fromValGetter[Int]{ row => ix => row.getInt(ix) }
+
+  implicit val BoxedIntegerGetter = new Getter[java.lang.Integer] {
+    override def apply(row: Row, ix: Index): Option[lang.Integer] = {
+      IntGetter(row, ix).map(java.lang.Integer.valueOf)
+    }
+  }
 
 }
 
@@ -51,12 +64,24 @@ trait ShortGetter {
   implicit val ShortGetter =
     Getter.fromValGetter[Short]{ row => ix => row.getShort(ix) }
 
+  implicit val BoxedShortGetter = new Getter[java.lang.Short] {
+    override def apply(row: Row, ix: Index): Option[lang.Short] = {
+      ShortGetter(row, ix).map(java.lang.Short.valueOf)
+    }
+  }
+
 }
 
 trait ByteGetter {
 
   implicit val ByteGetter =
     Getter.fromValGetter[Byte]{ row => ix => row.getByte(ix) }
+
+  implicit val BoxedByteGetter = new Getter[java.lang.Byte] {
+    override def apply(row: Row, ix: Index): Option[lang.Byte] = {
+      ByteGetter(row, ix).map(java.lang.Byte.valueOf)
+    }
+  }
 
 }
 
@@ -90,12 +115,24 @@ trait FloatGetter {
   implicit val FloatGetter =
     Getter.fromValGetter[Float]{ row => ix => row.getFloat(ix) }
 
+  implicit val BoxedFloatGetter = new Getter[java.lang.Float] {
+    override def apply(row: Row, ix: Index): Option[lang.Float] = {
+      FloatGetter(row, ix).map(java.lang.Float.valueOf)
+    }
+  }
+
 }
 
 trait DoubleGetter {
 
   implicit val DoubleGetter =
     Getter.fromValGetter[Double]{ row => ix => row.getDouble(ix) }
+
+  implicit val BoxedDoubleGetter = new Getter[java.lang.Double] {
+    override def apply(row: Row, ix: Index): Option[lang.Double] = {
+      DoubleGetter(row, ix).map(java.lang.Double.valueOf)
+    }
+  }
 
 }
 
@@ -193,6 +230,12 @@ trait BooleanGetter {
 
   implicit val BooleanGetter: Getter[Boolean] =
     Getter.fromValGetter[Boolean]{ row => ix => row.getBoolean(ix) }
+
+  implicit val BoxedBooleanGetter = new Getter[java.lang.Boolean] {
+    override def apply(row: Row, ix: Index): Option[lang.Boolean] = {
+      BooleanGetter(row, ix).map(java.lang.Boolean.valueOf)
+    }
+  }
 
 }
 

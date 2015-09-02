@@ -3,7 +3,8 @@ package com.rocketfuel.sdbc.postgresql.jdbc.implementation
 
 import java.net.InetAddress
 import java.sql.{SQLException, SQLDataException}
-import java.time.{OffsetDateTime, OffsetTime, Duration => JavaDuration}
+import java.time.format.DateTimeFormatter
+import java.time.{Duration => JavaDuration, _}
 import java.util.UUID
 import com.rocketfuel.sdbc.base.jdbc._
 import com.rocketfuel.sdbc.postgresql.jdbc.{Cidr, LTree}
@@ -13,8 +14,8 @@ import scala.xml.{Node, XML}
 import scala.concurrent.duration.{Duration => ScalaDuration}
 
 //PostgreSQL doesn't support Byte, so we don't use the default getters.
-trait Getters extends AnyRefGetter
-  with BooleanGetter
+trait Getters
+  extends BooleanGetter
   with BytesGetter
   with DateGetter
   with DoubleGetter
@@ -33,8 +34,7 @@ trait Getters extends AnyRefGetter
   with ParameterGetter
   with InstantGetter
   with LocalDateGetter
-  with LocalDateTimeGetter
-  with LocalTimeGetter {
+  with LocalDateTimeGetter  {
   self: PGTimestampTzImplicits
     with PGTimeTzImplicits
     with IntervalImplicits
@@ -70,7 +70,8 @@ trait Getters extends AnyRefGetter
 
   private def IsPGobjectGetter[T](implicit converter: PGobject => T): Getter[T] = new Getter[T] {
     override def apply(row: Row, ix: Index): Option[T] = {
-      Option(row.getObject(ix(row))).map {
+      val shouldBePgValue = Option(row.getObject(ix(row)))
+      shouldBePgValue.map {
         case p: PGobject =>
           converter(p)
         case _ =>
@@ -79,10 +80,6 @@ trait Getters extends AnyRefGetter
     }
   }
 
-  implicit val OffsetTimeGetter = IsPGobjectGetter[OffsetTime]
-
-  implicit val OffsetDateTimeGetter = IsPGobjectGetter[OffsetDateTime]
-
   implicit val ScalaDurationGetter = IsPGobjectGetter[ScalaDuration]
 
   implicit val JavaDurationGetter = IsPGobjectGetter[JavaDuration]
@@ -90,6 +87,40 @@ trait Getters extends AnyRefGetter
   implicit val JValueGetter = IsPGobjectGetter[JValue]
 
   implicit val InetAddressGetter = IsPGobjectGetter[InetAddress]
+
+  implicit val OffsetTimeGetter = new Getter[OffsetTime] {
+    override def apply(row: Row, ix: Index): Option[OffsetTime] = {
+      for {
+        asString <- Option(row.getString(ix(row)))
+      } yield {
+        val parsed = offsetTimeFormatter.parse(asString)
+        OffsetTime.from(parsed)
+      }
+    }
+  }
+
+  implicit val OffsetDateTimeGetter = new Getter[OffsetDateTime] {
+    override def apply(row: Row, ix: Index): Option[OffsetDateTime] = {
+      for {
+        asString <- Option(row.getString(ix(row)))
+      } yield {
+        val parsed = offsetDateTimeFormatter.parse(asString)
+        OffsetDateTime.from(parsed)
+      }
+    }
+  }
+
+  implicit val LocalTimeGetter = new Getter[LocalTime] {
+    override def apply(row: Row, ix: Index): Option[LocalTime] = {
+      for {
+        asString <- Option(row.getString(ix(row)))
+      } yield {
+        val parsed = DateTimeFormatter.ISO_LOCAL_TIME.parse(asString)
+        val l = LocalTime.from(parsed)
+        l
+      }
+    }
+  }
 
   override implicit val UUIDGetter: Getter[UUID] = new Getter[UUID] {
     override def apply(row: Row, ix: Index): Option[UUID] = {

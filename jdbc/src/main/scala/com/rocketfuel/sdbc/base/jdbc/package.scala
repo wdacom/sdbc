@@ -114,11 +114,17 @@ package object jdbc
     parameterPositions: Map[String, Set[Int]]
   )(implicit parameterSetter: ParameterSetter
   ): Unit = {
-    for ((key, value) <- parameterValues) {
-      val parameterIndices = parameterPositions(key)
-      for (parameterIndex <- parameterIndices) {
-        parameterSetter.setAny(preparedStatement, parameterIndex, value)
+    for ((key, maybeValue) <- parameterValues) {
+      val setter: Int => Unit = {
+        maybeValue match {
+          case None =>
+            (parameterIndex: Int) => parameterSetter.setNone(preparedStatement, parameterIndex)
+          case Some(value) =>
+            (parameterIndex: Int) => parameterSetter.setAny(preparedStatement, parameterIndex, value)
+        }
       }
+      val parameterIndices = parameterPositions(key)
+      parameterIndices.foreach(setter)
     }
   }
 

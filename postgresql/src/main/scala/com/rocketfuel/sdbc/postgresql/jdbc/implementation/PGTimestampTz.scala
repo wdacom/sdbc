@@ -1,14 +1,16 @@
 package com.rocketfuel.sdbc.postgresql.jdbc.implementation
 
-import java.sql.SQLException
 import java.time.OffsetDateTime
 
+import com.rocketfuel.sdbc.base.ToParameter
 import org.postgresql.util.PGobject
 
 class PGTimestampTz() extends PGobject() {
 
+  setType("timestamptz")
+
   var offsetDateTime: Option[OffsetDateTime] = None
-  
+
   override def getValue: String = {
     offsetDateTime.map(offsetDateTimeFormatter.format).orNull
   }
@@ -24,7 +26,7 @@ class PGTimestampTz() extends PGobject() {
 
 }
 
-object PGTimestampTz {
+object PGTimestampTz extends ToParameter {
   def apply(value: String): PGTimestampTz = {
     val tz = new PGTimestampTz()
     tz.setValue(value)
@@ -36,19 +38,14 @@ object PGTimestampTz {
     tz.offsetDateTime = Some(value)
     tz
   }
+
+  val toParameter: PartialFunction[Any, Any] = {
+    case o: OffsetDateTime => PGTimestampTz(o)
+  }
 }
 
 trait PGTimestampTzImplicits {
   implicit def OffsetDateTimeToPGobject(o: OffsetDateTime): PGobject = {
     PGTimestampTz(o)
-  }
-  
-  implicit def PGobjectToOffsetDateTime(x: PGobject): OffsetDateTime = {
-    x match {
-      case p: PGTimestampTz =>
-        p.offsetDateTime.get
-      case _ =>
-        throw new SQLException("column does not contain a timestamptz")
-    }
   }
 }

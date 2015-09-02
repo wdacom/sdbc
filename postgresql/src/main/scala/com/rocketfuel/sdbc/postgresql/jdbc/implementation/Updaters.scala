@@ -2,7 +2,9 @@ package com.rocketfuel.sdbc.postgresql.jdbc.implementation
 
 import java.net.InetAddress
 import java.time.{Duration => JavaDuration, _}
+import java.util.UUID
 import com.rocketfuel.sdbc.base.jdbc._
+import com.rocketfuel.sdbc.postgresql.jdbc.Cidr
 import org.json4s._
 import org.postgresql.util.PGobject
 import scala.concurrent.duration.{Duration => ScalaDuration}
@@ -10,8 +12,7 @@ import scala.xml.Node
 
 //PostgreSQL doesn't support Byte, so we don't use the default updaters.
 trait Updaters
-  extends AnyRefUpdater
-  with LongUpdater
+  extends LongUpdater
   with IntUpdater
   with ShortUpdater
   with BytesUpdater
@@ -29,13 +30,13 @@ trait Updaters
   with UpdateReader
   with LocalDateTimeUpdater
   with InstantUpdater
-  with LocalDateUpdater
-  with LocalTimeUpdater {
+  with LocalDateUpdater {
   self: PGTimestampTzImplicits
     with PGTimeTzImplicits
     with IntervalImplicits
     with PGInetAddressImplicits
-    with PGJsonImplicits =>
+    with PGJsonImplicits
+    with PGLocalTimeImplicits =>
 
   private def IsPGobjectUpdater[T](implicit converter: T => PGobject): Updater[T] = {
     new Updater[T] {
@@ -49,6 +50,8 @@ trait Updaters
 
   implicit val OffsetDateTimeUpdater = IsPGobjectUpdater[OffsetDateTime]
 
+  implicit val LocalTimeUpdater = IsPGobjectUpdater[LocalTime]
+
   implicit val ScalaDurationUpdater = IsPGobjectUpdater[ScalaDuration]
 
   implicit val JavaDurationUpdater = IsPGobjectUpdater[JavaDuration]
@@ -56,6 +59,8 @@ trait Updaters
   implicit val JValueUpdater = IsPGobjectUpdater[JValue]
 
   implicit val InetAddressUpdater = IsPGobjectUpdater[InetAddress]
+
+  implicit val CidrUpdater = IsPGobjectUpdater[Cidr]
 
   implicit val PGobjectUpdater = new Updater[PGobject] {
     override def update(
@@ -67,13 +72,22 @@ trait Updaters
     }
   }
 
+  override implicit val UUIDUpdater: Updater[UUID] = new Updater[UUID] {
+    override def update(row: UpdatableRow, columnIndex: Int, x: UUID): Unit = {
+      row.updateObject(columnIndex, x)
+    }
+  }
+
   implicit val XmlUpdater = new Updater[Node] {
     override def update(
       row: UpdatableRow,
       columnIndex: Int,
       x: Node
     ): Unit = {
-      row.updateString(columnIndex, x.toString)
+      val connection = row.underlying.getStatement.getConnection
+      val sqlXml = connection.createSQLXML()
+      sqlXml.setString(x.toString())
+      row.updateSQLXML(columnIndex, sqlXml)
     }
   }
 

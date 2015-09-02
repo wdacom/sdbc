@@ -39,6 +39,13 @@ trait HasPostgreSqlPool {
     }
   }
 
+  protected def createHstore(): Unit = {
+    withPg {implicit connection =>
+      execute"CREATE EXTENSION hstore".execute()
+      connection.commit()
+    }
+  }
+
   protected def pgDropTestCatalogs(): Unit = {
     pgPool.foreach(_.close())
     pgPool = None

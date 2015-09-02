@@ -7,7 +7,7 @@ import java.util.UUID
 
 import com.rocketfuel.sdbc.base.jdbc
 import com.rocketfuel.sdbc.base.jdbc.Index
-import com.rocketfuel.sdbc.postgresql.jdbc.LTree
+import com.rocketfuel.sdbc.postgresql.jdbc.{Cidr, LTree}
 import org.json4s._
 
 import scala.reflect.runtime.universe._
@@ -45,6 +45,8 @@ trait SeqParameter extends jdbc.SeqParameter {
       case t if t =:= typeOf[LTree] => "ltree"
       case t if t =:= typeOf[UUID] => "uuid"
       case t if t =:= typeOf[InetAddress] => "inet"
+      case t if t =:= typeOf[Cidr] => "cidr"
+      case t if t =:= typeOf[Map[String, String]] => "hstore"
       case t if t <:< typeOf[QSeq[_]] =>
         innerTypeName(t)
       case t if t <:< typeOf[Seq[_]] =>

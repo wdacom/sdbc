@@ -6,8 +6,12 @@ import java.util.UUID
 import com.rocketfuel.sdbc.base.jdbc._
 import com.rocketfuel.sdbc.postgresql.jdbc
 import com.rocketfuel.sdbc.postgresql.jdbc.Cidr
+import org.json4s.JValue
 import org.postgresql.PGConnection
 import org.postgresql.util.PGobject
+import scodec.bits.ByteVector
+
+import scala.xml.Node
 
 abstract class PostgreSqlCommon
   extends DBMS
@@ -15,7 +19,7 @@ abstract class PostgreSqlCommon
   with IntervalImplicits
   with ConnectionImplicits
   with Getters
-  with Java8DefaultUpdaters{
+  with Updaters {
 
   override def dataSourceClassName = "org.postgresql.ds.PGSimpleDataSource"
   override def driverClassName = "org.postgresql.Driver"
@@ -35,10 +39,9 @@ abstract class PostgreSqlCommon
     pgConnection.addDataType("ltree", classOf[jdbc.LTree])
     pgConnection.addDataType("inet", classOf[PGInetAddress])
     pgConnection.addDataType("cidr", classOf[Cidr])
-    pgConnection.addDataType("timestamptz", classOf[PGTimestampTz])
-    pgConnection.addDataType("timetz", classOf[PGTimeTz])
     pgConnection.addDataType("json", classOf[PGJson])
     pgConnection.addDataType("jsonb", classOf[PGJson])
+    pgConnection.addDataType("time", classOf[PGLocalTime])
   }
 
   override implicit val parameterSetter: ParameterSetter = new ParameterSetter {
@@ -53,8 +56,8 @@ abstract class PostgreSqlCommon
       parameter match {
         case b: Boolean =>
           setParameter[Boolean](preparedStatement, parameterIndex, b)
-        case b: Array[Byte] =>
-          setParameter[Array[Byte]](preparedStatement, parameterIndex, b)
+        case b: ByteVector =>
+          setParameter[ByteVector](preparedStatement, parameterIndex, b)
         case b: java.sql.Date =>
           setParameter[java.sql.Date](preparedStatement, parameterIndex, b)
         case b: java.math.BigDecimal =>
@@ -83,6 +86,12 @@ abstract class PostgreSqlCommon
           setParameter[UUID](preparedStatement, parameterIndex, b)
         case b: PGobject =>
           setParameter[PGobject](preparedStatement, parameterIndex, b)
+        case b: java.util.Map[_, _] =>
+          setParameter[java.util.Map[String, String]](preparedStatement, parameterIndex, b.asInstanceOf[java.util.Map[String, String]])
+        case b: Node =>
+          setParameter[Node](preparedStatement, parameterIndex, b)
+        case b: JValue =>
+          setParameter[PGobject](preparedStatement, parameterIndex, b)
       }
     }
   }
@@ -109,7 +118,7 @@ abstract class PostgreSqlCommon
         case "float8" =>
           DoubleGetter(row, ix)
         case "time" =>
-          TimeGetter(row, ix)
+          LocalTimeGetter(row, ix)
         case "timetz" =>
           OffsetTimeGetter(row, ix)
         case "date" =>
@@ -132,19 +141,21 @@ abstract class PostgreSqlCommon
           PGIntervalGetter(row, ix)
         case "inet" =>
           InetAddressGetter(row, ix)
+        case "hstore" =>
+          MapGetter(row, ix)
         case array if array.startsWith("_") =>
           throw new NotImplementedError("PostgreSql.parameterGetter for arrays")
       }
   }
 
-  override def toParameter(a: Any): Option[ParameterValue] = {
+  override def toParameter(a: Any): Option[Any] = {
     a match {
       case null | None | Some(null) =>
         None
       case Some(a) =>
         Some(toParameter(a)).flatten
       case _ =>
-        Some(ParameterValue(toPostgresqlParameter(a)))
+        Some(toPostgresqlParameter(a))
     }
   }
 }

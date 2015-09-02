@@ -5,7 +5,7 @@ import java.math.BigDecimal
 import java.sql.{Array => JdbcArray, _}
 
 class UpdatableRow private[jdbc] (
-  override protected[jdbc] val underlying: ResultSet
+  override protected[sdbc] val underlying: ResultSet
 ) extends MutableRow(underlying) {
 
   def update[T](columnIndex: Int, x: T)(implicit updater: Updater[T]): Unit = {

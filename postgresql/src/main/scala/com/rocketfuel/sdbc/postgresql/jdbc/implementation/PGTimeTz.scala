@@ -1,11 +1,13 @@
 package com.rocketfuel.sdbc.postgresql.jdbc.implementation
 
-import java.sql.SQLException
 import java.time.OffsetTime
 
+import com.rocketfuel.sdbc.base.ToParameter
 import org.postgresql.util.PGobject
 
 class PGTimeTz() extends PGobject() {
+
+  setType("timetz")
 
   var offsetTime: Option[OffsetTime] = None
 
@@ -24,7 +26,7 @@ class PGTimeTz() extends PGobject() {
 
 }
 
-object PGTimeTz {
+object PGTimeTz extends ToParameter {
   def apply(value: String): PGTimeTz = {
     val tz = new PGTimeTz()
     tz.setValue(value)
@@ -36,19 +38,14 @@ object PGTimeTz {
     tz.offsetTime = Some(value)
     tz
   }
+
+  val toParameter: PartialFunction[Any, Any] = {
+    case o: OffsetTime => PGTimeTz(o)
+  }
 }
 
 trait PGTimeTzImplicits {
   implicit def OffsetTimeToPGobject(o: OffsetTime): PGobject = {
     PGTimeTz(o)
-  }
-  
-  implicit def PGobjectToOffsetTime(x: PGobject): OffsetTime = {
-    x match {
-      case p: PGTimeTz =>
-        p.offsetTime.get
-      case _ =>
-        throw new SQLException("column does not contain a ")
-    }
   }
 }

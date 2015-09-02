@@ -5,6 +5,7 @@ import java.sql.PreparedStatement
 import com.rocketfuel.sdbc.base.{ParameterValue, ToParameter}
 import com.rocketfuel.sdbc.base.jdbc._
 import org.postgresql.util.PGobject
+import scala.collection.convert.decorateAsJava._
 
 //PostgreSQL doesn't support Byte, so we don't use the default setters.
 trait Setters
@@ -26,7 +27,7 @@ trait Setters
   with QUUIDImplicits
   with QInstantImplicits
   with QLocalDateImplicits
-  with QLocalTimeImplicits
+  with PGLocalTimeImplicits
   with QLocalDateTimeImplicits
   with PGTimeTzImplicits
   with PGTimestampTzImplicits
@@ -34,7 +35,8 @@ trait Setters
   with QXMLImplicits
   with QSQLXMLImplicits
   with QBlobImplicits
-  with PGJsonImplicits {
+  with PGJsonImplicits
+  with QMapImplicits {
 
   val toPostgresqlParameter: PartialFunction[Any, Any] =
     QBoolean.toParameter orElse
@@ -56,13 +58,16 @@ trait Setters
       QUUID.toParameter orElse
       QInstant.toParameter orElse
       QLocalDate.toParameter orElse
-      QLocalTime.toParameter orElse
+      PGLocalTime.toParameter orElse
       QLocalDateTime.toParameter orElse
       QXML.toParameter orElse
       QSQLXML.toParameter orElse
       QBlob.toParameter orElse
       QPGObject.toParameter orElse
-      QMap.toParameter
+      QMap.toParameter orElse
+      PGTimeTz.toParameter orElse
+      PGTimestampTz.toParameter orElse
+      PGJson.toParameter
 
 }
 
@@ -92,7 +97,22 @@ trait QPGObjectImplicits {
 object QMap extends ToParameter {
   override val toParameter: PartialFunction[Any, Any] = {
     case i: Map[_, _] => //Technically, this should be a Map[String, String]
-      import scala.collection.convert.decorateAsJava._
       i.asJava
+  }
+}
+
+trait QMapImplicits {
+  implicit val MapIsParameter: IsParameter[java.util.Map[String, String]] = new IsParameter[java.util.Map[String, String]] {
+    override def set(
+      preparedStatement: PreparedStatement,
+      parameterIndex: Int,
+      parameter: java.util.Map[String, String]
+    ): Unit = {
+      preparedStatement.setObject(parameterIndex, parameter)
+    }
+  }
+
+  implicit def MapStringStringToParameterValue(value: Map[String, String]): ParameterValue = {
+    ParameterValue(value.asJava)
   }
 }

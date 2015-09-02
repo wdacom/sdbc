@@ -43,6 +43,8 @@ abstract class PostgreSqlSuite
 
   override protected def beforeAll(): Unit = {
     pgBeforeAll()
+    createLTree()
+    createHstore()
   }
 
   override protected def afterAll(): Unit = {

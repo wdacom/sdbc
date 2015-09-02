@@ -22,7 +22,7 @@ class Cidr() extends PGInetAddress() {
   override def setValue(value: String): Unit = {
     val parts = value.split('/')
     super.setValue(parts(0))
-    netmask = Some(value.toShort)
+    netmask = Some(parts(1).toShort)
   }
 
   override def equals(obj: Any): Boolean = {

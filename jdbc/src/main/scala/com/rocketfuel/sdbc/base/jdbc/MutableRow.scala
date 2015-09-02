@@ -54,9 +54,9 @@ class MutableRow private[jdbc] (
     }
   }
 
-  def asIntMap(implicit getter: Getter[ParameterValue]): IndexedSeq[Option[ParameterValue]] = {
+  def asIntMap(implicit getter: Getter[ParameterValue]): IndexedSeq[Option[Any]] = {
     IndexedSeq.tabulate(underlying.getMetaData.getColumnCount) { ix =>
-      getter(this, IntIndex(ix))
+      getter(this, IntIndex(ix)).map(_.value)
     }
   }
 

@@ -5,7 +5,7 @@ import java.nio.ByteBuffer
 import java.sql.Timestamp
 import java.util.UUID
 
-import com.rocketfuel.sdbc.postgresql.jdbc.implementation.{PGTimeTz, PGTimestampTz}
+import com.rocketfuel.sdbc.postgresql.jdbc.implementation._
 import org.scalatest.FunSuite
 import scodec.bits.ByteVector
 
@@ -29,7 +29,7 @@ class StringContextSpec extends FunSuite {
     val b = Array[Byte](1,2,3)
     val e = execute"$b"
 
-    assertResult(Map("0" -> Some(b)))(e.parameterValues)
+    assertResult(Map("0" -> Some(ByteVector(b))))(e.parameterValues)
   }
 
   test("ByteBuffer interpolation works with execute") {
@@ -37,14 +37,14 @@ class StringContextSpec extends FunSuite {
     val b = ByteBuffer.wrap(a)
     val e = execute"$b"
 
-    assertResult(Map("0" -> Some(ByteVector(a).toArray)))(e.parameterValues)
+    assertResult(Map("0" -> Some(ByteVector(a))))(e.parameterValues)
   }
 
   test("ByteVector interpolation works with execute") {
     val b = ByteVector(Vector[Byte](1, 2, 3))
     val e = execute"$b"
 
-    assertResult(Map("0" -> Some(b.toArray)))(e.parameterValues)
+    assertResult(Map("0" -> Some(b)))(e.parameterValues)
   }
 
   test("java.util.Date interpolation works with execute") {
@@ -198,7 +198,7 @@ class StringContextSpec extends FunSuite {
     val t = java.time.LocalTime.now()
     val e = execute"$t"
 
-    assertResult(Map("0" -> Some(java.sql.Time.valueOf(t))))(e.parameterValues)
+    assertResult(Map("0" -> Some(PGLocalTime(t))))(e.parameterValues)
   }
 
   test("LocalDateTime interpolation works with execute") {

@@ -27,9 +27,14 @@ case class Batch private [jdbc] (
   protected def prepare()(implicit connection: Connection): PreparedStatement = {
     val prepared = connection.prepareStatement(queryText)
     for (batch <- parameterValueBatches) {
-      for ((name, value) <- batch) {
+      for ((name, maybeValue) <- batch) {
         for (index <- parameterPositions(name)) {
-          parameterSetter.setAny(prepared, index, value)
+          maybeValue match {
+            case None =>
+              parameterSetter.setNone(prepared, index)
+            case Some(value) =>
+              parameterSetter.setAny(prepared, index, value)
+          }
         }
       }
       prepared.addBatch()
