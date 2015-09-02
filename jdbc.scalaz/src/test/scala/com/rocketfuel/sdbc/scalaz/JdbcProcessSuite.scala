@@ -25,9 +25,9 @@ abstract class JdbcProcessSuite
 
   implicit val LongInsertable = new Updatable[LongKey] {
     val update = Update("INSERT INTO tbl (i) VALUES ($i)")
-    
+
     override def update(key: LongKey): Update = {
-      update.on("i" -> key.key)  
+      update.on("i" -> key.key)
     }
   }
 

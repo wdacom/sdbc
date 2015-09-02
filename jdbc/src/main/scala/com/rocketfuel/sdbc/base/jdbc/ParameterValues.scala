@@ -47,7 +47,7 @@ trait QIntImplicits {
       )
     }
   }
-  
+
   implicit def IntToParameterValue(x: Int): ParameterValue = ParameterValue(x)
 
   implicit def BoxedIntToParameterValue(x: java.lang.Integer): ParameterValue = Int.unbox(x)
@@ -92,7 +92,7 @@ trait QByteImplicits {
       )
     }
   }
-  
+
   implicit def ByteToParameterValue(x: Byte): ParameterValue = ParameterValue(x)
 
   implicit def BoxedByteToParameterValue(x: java.lang.Byte): ParameterValue = Byte.unbox(x)
@@ -141,7 +141,7 @@ trait QFloatImplicits {
       )
     }
   }
-  
+
   implicit def FloatToParameterValue(x: Float): ParameterValue = ParameterValue(x)
 
   implicit def BoxedFloatToParameterValue(x: java.lang.Float): ParameterValue = Float.unbox(x)
@@ -163,7 +163,7 @@ trait QDoubleImplicits {
       )
     }
   }
-  
+
   implicit def DoubleToParameterValue(x: Double): ParameterValue = ParameterValue(x)
 
   implicit def BoxedDoubleToParameterValue(x: java.lang.Double): ParameterValue = Double.unbox(x)
@@ -185,7 +185,7 @@ trait QBigDecimalImplicits {
       )
     }
   }
-  
+
   implicit def JavaBigDecimalToParameterValue(x: java.math.BigDecimal): ParameterValue = ParameterValue(x)
 
   implicit def ScalaBigDecimalToParameterValue(x: scala.BigDecimal): ParameterValue = x.underlying

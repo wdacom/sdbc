@@ -16,7 +16,7 @@ object QUUID extends ToParameter with QUUIDImplicits {
       preparedStatement.setString(parameterIndex, parameter.toString)
     }
   }
-  
+
   override val toParameter: PartialFunction[Any, AnyParameter] = {
     case u: UUID => u
   }
@@ -42,7 +42,7 @@ trait QHierarchyIdImplicits {
       preparedStatement.setString(parameterIndex, parameter.toString)
     }
   }
-  
+
   implicit def HierarchyIdToParameterValue(x: HierarchyId): ParameterValue[HierarchyId] = {
     QHierarchyId(x)
   }
