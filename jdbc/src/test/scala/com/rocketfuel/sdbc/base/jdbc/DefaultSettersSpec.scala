@@ -10,19 +10,19 @@ class DefaultSettersSpec
   with StringGetter {
 
   test("implicit Int conversion works") {
-    assertCompiles("val _: Option[ParameterValue[_]] = 3")
+    assertCompiles("val _: Option[ParameterValue] = 3")
   }
 
   test("implicit Option[String] conversion works") {
-    assertCompiles("val _: Option[ParameterValue[_]] = Some(\"hello\")")
+    assertCompiles("val _: Option[ParameterValue] = Some(\"hello\")")
   }
 
   test("implicit scala.BigDecimal conversion works") {
-    assertCompiles("val _: Option[ParameterValue[_]] = BigDecimal(1)")
+    assertCompiles("val _: Option[ParameterValue] = BigDecimal(1)")
   }
 
   test("Row#get works") {
-    assertCompiles("val row: Row = ???; val _ = row[String](???)")
+    assertCompiles("val row: Row = ???; val _ = row.get[String](???)")
   }
 
 }

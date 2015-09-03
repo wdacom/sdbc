@@ -1,13 +1,13 @@
 package com.rocketfuel.sdbc.base.jdbc
 
+import java.sql.PreparedStatement
+
 import org.scalatest.FunSuite
 
 class StringContextSpec
   extends FunSuite
   with StringContextMethods
   with DefaultSetters {
-
-  implicit val parameterSetter: ParameterSetter = ???
 
   test("empty string is identity") {
     val s = select""
@@ -88,6 +88,12 @@ class StringContextSpec
 
   }
 
-  implicit val ParameterGetter: Getter[ParameterValue] = ???
+  implicit val ParameterGetter: Getter[ParameterValue] = new Getter[ParameterValue] {
+    override def apply(v1: Row, v2: Index): Option[ParameterValue] = ???
+  }
+
+  implicit val parameterSetter: ParameterSetter = new ParameterSetter {
+    def setAny(preparedStatement: PreparedStatement, parameterIndex: Int, parameter: Any): Unit = ???
+  }
 
 }
