@@ -9,7 +9,7 @@ import com.rocketfuel.sdbc.base.CompiledStatement
 case class Select[T] private [jdbc] (
   override val statement: CompiledStatement,
   override val parameterValues: Map[String, Option[Any]]
-)(implicit val converter: MutableRow => T,
+)(implicit val converter: Row => T,
   parameterSetter: ParameterSetter
 ) extends base.Select[Connection, T]
   with ParameterizedQuery[Select[T]]
@@ -74,7 +74,7 @@ object Select {
   def apply[T](
     queryText: String,
     hasParameters: Boolean = true
-  )(implicit converter: MutableRow => T,
+  )(implicit converter: Row => T,
     parameterSetter: ParameterSetter
   ): Select[T] = {
     Select[T](

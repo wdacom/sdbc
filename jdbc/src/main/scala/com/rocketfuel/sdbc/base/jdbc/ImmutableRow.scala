@@ -166,7 +166,7 @@ case class ImmutableRow private[jdbc] (
 }
 
 object ImmutableRow {
-  implicit def apply(row: MutableRow)(implicit getter: Getter[ParameterValue]): ImmutableRow = {
+  implicit def apply(row: Row)(implicit getter: Getter[ParameterValue]): ImmutableRow = {
     ImmutableRow(
       columnTypes = row.columnTypes,
       columnNames = row.columnNames,

@@ -6,7 +6,7 @@ trait ReadSelect {
   def readSelect[T](
     name: String,
     hasParameters: Boolean = true
-  )(implicit getter: MutableRow => T,
+  )(implicit getter: Row => T,
     parameterSetter: ParameterSetter
   ): Select[T] = {
     val queryText = readResource("queries", name + ".sql")
