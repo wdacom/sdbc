@@ -9,12 +9,12 @@ case class TestClass(
 
 object TestClass {
 
-  implicit def apply(row: MutableRow): TestClass = {
+  implicit def apply(row: Row): TestClass = {
     TestClass(row.get[Int]("id").get, row.get[String]("value").get)
   }
 
   implicit val selectableByValue = new Selectable[Value, TestClass] {
-    val query = Select[TestClass]("SELECT * FROM test_class WHERE value = $value")
+    val query = Select[TestClass]("SELECT * FROM test_class WHERE value = @value")
 
     override def select(key: Value): Select[TestClass] = {
       query.on("value" -> key.value)
@@ -22,7 +22,7 @@ object TestClass {
   }
 
   implicit val selectableById = new Selectable[Id, TestClass] {
-    val query = Select[TestClass]("SELECT * FROM test_class WHERE id = $id")
+    val query = Select[TestClass]("SELECT * FROM test_class WHERE id = @id")
 
     override def select(key: Id): Select[TestClass] = {
       query.on("id" -> key.id)
@@ -38,7 +38,7 @@ object TestClass {
   }
 
   implicit val insertValue = new Updatable[Value] {
-    val query = Update("INSERT INTO test_class (value) VALUES ($value)")
+    val query = Update("INSERT INTO test_class (value) VALUES (@value)")
 
     override def update(key: Value): Update = {
       query.on("value" -> key.value)
