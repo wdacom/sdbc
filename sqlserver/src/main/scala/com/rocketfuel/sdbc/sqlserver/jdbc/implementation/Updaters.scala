@@ -32,9 +32,9 @@ trait Updaters
   with LocalDateUpdater
   with LocalTimeUpdater {
 
-  implicit val offsetDateTimeGetter: Getter[OffsetDateTime] = new Getter[OffsetDateTime] {
-    override def apply(row: Row, ix: Index): Option[OffsetDateTime] = {
-      Option(row.getString(ix(row))).map(s => OffsetDateTime.from(offsetDateTimeFormatter.parse(s)))
+  implicit val OffsetDateTimeUpdater: Updater[OffsetDateTime] = new Updater[OffsetDateTime] {
+    override def update(row: UpdatableRow, columnIndex: Int, x: OffsetDateTime): Unit = {
+      row.updateString(columnIndex, offsetDateTimeFormatter.format(x))
     }
   }
 
