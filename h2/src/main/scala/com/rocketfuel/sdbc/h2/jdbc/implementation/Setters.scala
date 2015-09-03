@@ -9,7 +9,7 @@ trait Setters
   with QLocalTimeImplicits
   with QLocalDateTimeImplicits {
 
-  val toH2Parameter =
+  val toH2Parameter: PartialFunction[Any, Any] =
     toDefaultParameter orElse
       QInstant.toParameter orElse
       QLocalDate.toParameter orElse

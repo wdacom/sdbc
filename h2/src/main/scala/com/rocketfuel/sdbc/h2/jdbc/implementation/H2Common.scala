@@ -1,10 +1,14 @@
 package com.rocketfuel.sdbc.h2.jdbc.implementation
 
+import java.io.{InputStream, Reader}
 import java.nio.file.Path
-import java.sql.DriverManager
+import java.sql.{PreparedStatement, DriverManager}
+import java.util.UUID
 
 import com.rocketfuel.sdbc.base.jdbc
-import com.rocketfuel.sdbc.base.jdbc.DBMS
+import com.rocketfuel.sdbc.base.jdbc.{ParameterSetter, DBMS}
+import com.rocketfuel.sdbc.h2.jdbc.Serialized
+import scodec.bits.ByteVector
 
 abstract class H2Common
   extends DBMS
@@ -70,45 +74,95 @@ abstract class H2Common
     }
   }
 
-  override implicit val ParameterGetter: Getter[ParameterValue[_]] = {
-    (row: MutableRow, ix: Index) =>
+  override implicit val parameterSetter: ParameterSetter = new ParameterSetter {
+    /**
+     * Pattern match to get the IsParameter instance for
+     * a value, and then call setParameter.
+     *
+     * This method is to be implemented on a per-DBMS basis.
+     * @param preparedStatement
+     * @param parameterIndex
+     * @param parameter
+     */
+    override def setAny(preparedStatement: PreparedStatement, parameterIndex: Int, parameter: Any): Unit = {
+      parameter match {
+        case b: Boolean =>
+          setParameter[Boolean](preparedStatement, parameterIndex, b)
+        case b: ByteVector =>
+          setParameter[ByteVector](preparedStatement, parameterIndex, b)
+        case b: java.sql.Date =>
+          setParameter[java.sql.Date](preparedStatement, parameterIndex, b)
+        case b: java.math.BigDecimal =>
+          setParameter[java.math.BigDecimal](preparedStatement, parameterIndex, b)
+        case b: Double =>
+          setParameter[Double](preparedStatement, parameterIndex, b)
+        case b: Float =>
+          setParameter[Float](preparedStatement, parameterIndex, b)
+        case b: Int =>
+          setParameter[Int](preparedStatement, parameterIndex, b)
+        case b: Long =>
+          setParameter[Long](preparedStatement, parameterIndex, b)
+        case b: Short =>
+          setParameter[Short](preparedStatement, parameterIndex, b)
+        case b: Byte =>
+          setParameter[Byte](preparedStatement, parameterIndex, b)
+        case b: String =>
+          setParameter[String](preparedStatement, parameterIndex, b)
+        case b: java.sql.Time =>
+          setParameter[java.sql.Time](preparedStatement, parameterIndex, b)
+        case b: java.sql.Timestamp =>
+          setParameter[java.sql.Timestamp](preparedStatement, parameterIndex, b)
+        case b: Reader =>
+          setParameter[Reader](preparedStatement, parameterIndex, b)
+        case b: InputStream =>
+          setParameter[InputStream](preparedStatement, parameterIndex, b)
+        case b: UUID =>
+          setParameter[UUID](preparedStatement, parameterIndex, b)
+        case b: Serialized =>
+          setParameter[Serialized](preparedStatement, parameterIndex, b)
+      }
+    }
+  }
+
+  override implicit val ParameterGetter: Getter[ParameterValue] = {
+    (row: Row, ix: Index) =>
       val columnType = row.getMetaData.getColumnTypeName(ix(row) + 1)
 
       columnType match {
         case "INTEGER" =>
-          IntGetter(row, ix).map(QInt.apply)
+          IntGetter(row, ix)
         case "BOOLEAN" =>
-          BooleanGetter(row, ix).map(QBoolean.apply)
+          BooleanGetter(row, ix)
         case "TINYINT" =>
-          ByteGetter(row, ix).map(QByte.apply)
+          ByteGetter(row, ix)
         case "SMALLINT" =>
-          ShortGetter(row, ix).map(QShort.apply)
+          ShortGetter(row, ix)
         case "BIGINT" =>
-          LongGetter(row, ix).map(QLong.apply)
+          LongGetter(row, ix)
         case "DECIMAL" =>
-          JavaBigDecimalGetter(row, ix).map(QBigDecimal.apply)
+          JavaBigDecimalGetter(row, ix)
         case "REAL" =>
-          FloatGetter(row, ix).map(QFloat.apply)
+          FloatGetter(row, ix)
         case "TIME" =>
-          TimeGetter(row, ix).map(QTime.apply)
+          TimeGetter(row, ix)
         case "DATE" =>
-          DateGetter(row, ix).map(QDate.apply)
+          DateGetter(row, ix)
         case "TIMESTAMP" =>
-          TimestampGetter(row, ix).map(QTimestamp.apply)
+          TimestampGetter(row, ix)
         case "BLOB" | "VARBINARY" =>
-          ByteVectorGetter(row, ix).map(bv => QBytes(bv.toArray))
+          ByteVectorGetter(row, ix)
         case "OTHER" =>
-          SerializedGetter(row, ix).map(QSerialized)
+          SerializedGetter(row, ix)
         case "CHAR" | "VARCHAR" | "VARCHAR_IGNORECASE" =>
-          StringGetter(row, ix).map(QString.apply)
+          StringGetter(row, ix)
         case "UUID" =>
-          UUIDGetter(row, ix).map(QUUID.apply)
+          UUIDGetter(row, ix)
         case "ARRAY" =>
           throw new NotImplementedError("H2.ParameterGetter for ARRAY")
       }
   }
 
-  override protected def toParameter(a: Any): Option[jdbc.ParameterValue[_]] = {
+  override protected def toParameter(a: Any): Option[Any] = {
     a match {
       case null | None | Some(null) =>
         None
