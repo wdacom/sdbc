@@ -99,7 +99,7 @@ package object jdbc
     parameterValues: Map[String, Option[Any]],
     parameterPositions: Map[String, Set[Int]]
   )(implicit connection: Connection,
-    parameterSetter: ParameterSetter
+    parameterSetter: jdbc.ParameterSetter
   ): PreparedStatement = {
     val preparedStatement = connection.prepareStatement(queryText)
 
@@ -112,7 +112,7 @@ package object jdbc
     preparedStatement: PreparedStatement,
     parameterValues: Map[String, Option[Any]],
     parameterPositions: Map[String, Set[Int]]
-  )(implicit parameterSetter: ParameterSetter
+  )(implicit parameterSetter: jdbc.ParameterSetter
   ): Unit = {
     for ((key, maybeValue) <- parameterValues) {
       val setter: Int => Unit = {
