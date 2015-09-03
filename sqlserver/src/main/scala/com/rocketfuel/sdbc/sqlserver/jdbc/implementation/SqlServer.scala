@@ -5,6 +5,7 @@ import java.sql.PreparedStatement
 import java.time.OffsetDateTime
 import java.util.UUID
 
+import com.rocketfuel.CISet
 import com.rocketfuel.sdbc.base.jdbc._
 import com.rocketfuel.sdbc.sqlserver.jdbc.HierarchyId
 import scodec.bits.ByteVector
@@ -32,7 +33,7 @@ abstract class SqlServer
 
   override def driverClassName = "net.sourceforge.jtds.jdbc.Driver"
   override def dataSourceClassName ="net.sourceforge.jtds.jdbcx.JtdsDataSource"
-  override def jdbcSchemes = Set("jtds:sqlserver")
+  override def jdbcSchemes = CISet("jtds:sqlserver")
   override def productName: String = "Microsoft SQL Server"
   override val supportsIsValid = false
 

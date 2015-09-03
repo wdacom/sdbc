@@ -3,6 +3,7 @@ package com.rocketfuel.sdbc.postgresql.jdbc.implementation
 import java.io.{InputStream, Reader}
 import java.sql.PreparedStatement
 import java.util.UUID
+import com.rocketfuel.CISet
 import com.rocketfuel.sdbc.base.jdbc._
 import com.rocketfuel.sdbc.postgresql.jdbc
 import com.rocketfuel.sdbc.postgresql.jdbc.Cidr
@@ -23,7 +24,7 @@ abstract class PostgreSqlCommon
 
   override def dataSourceClassName = "org.postgresql.ds.PGSimpleDataSource"
   override def driverClassName = "org.postgresql.Driver"
-  override def jdbcSchemes = Set("postgresql")
+  override def jdbcSchemes = CISet("postgresql")
   override def productName: String = "PostgreSQL"
   override val supportsIsValid: Boolean = true
 

@@ -5,7 +5,7 @@ import java.nio.file.Path
 import java.sql.{PreparedStatement, DriverManager}
 import java.util.UUID
 
-import com.rocketfuel.sdbc.base.jdbc
+import com.rocketfuel.CISet
 import com.rocketfuel.sdbc.base.jdbc.{ParameterSetter, DBMS}
 import com.rocketfuel.sdbc.h2.jdbc.Serialized
 import scodec.bits.ByteVector
@@ -28,7 +28,7 @@ abstract class H2Common
 
   //http://www.h2database.com/html/cheatSheet.html
   override def jdbcSchemes: Set[String] = {
-    Set(
+    CISet(
       "h2",
       "h2:mem",
       "h2:tcp"
