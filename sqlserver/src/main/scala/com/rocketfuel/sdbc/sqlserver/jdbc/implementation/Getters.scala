@@ -14,9 +14,13 @@ trait Getters
   with InstantGetter
   with LocalDateGetter
   with LocalDateTimeGetter
-  with LocalTimeGetter
-  with OffsetDateTimeGetter {
-  self: HasOffsetDateTimeFormatter =>
+  with LocalTimeGetter {
+
+  implicit val OffsetDateTimeGetter: Getter[OffsetDateTime] = new Getter[OffsetDateTime] {
+    override def apply(row: Row, ix: Index): Option[OffsetDateTime] = {
+      Option(row.getString(ix(row))).map(s => OffsetDateTime.from(offsetDateTimeFormatter.parse(s)))
+    }
+  }
 
   override implicit val UUIDGetter: Getter[UUID] = new Parser[UUID] {
     override def parse(asString: String): UUID = {
@@ -63,7 +67,7 @@ trait Getters
           for {
             asString <- Option(row.getString(ix(row)))
           } yield {
-            val parsed = offsetDateTimeFormatter.formatter.parse(asString)
+            val parsed = offsetDateTimeFormatter.parse(asString)
             OffsetDateTime.from(parsed).toInstant
           }
       }

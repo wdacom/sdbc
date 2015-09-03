@@ -150,7 +150,7 @@ abstract class PostgreSqlCommon
 
   override def toParameter(a: Any): Option[Any] = {
     a match {
-      case null | None | Some(null) =>
+      case null | None =>
         None
       case Some(a) =>
         Some(toParameter(a)).flatten

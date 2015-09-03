@@ -189,9 +189,9 @@ trait TimeGetter {
 trait LocalDateTimeGetter {
 
   implicit val LocalDateTimeGetter = new Getter[LocalDateTime] {
-      override def apply(row: Row, ix: Index): Option[LocalDateTime] = {
-        Option(row.getTimestamp(ix(row))).map(_.toLocalDateTime)
-      }
+    override def apply(row: Row, ix: Index): Option[LocalDateTime] = {
+      Option(row.getTimestamp(ix(row))).map(_.toLocalDateTime)
+    }
   }
 
 }

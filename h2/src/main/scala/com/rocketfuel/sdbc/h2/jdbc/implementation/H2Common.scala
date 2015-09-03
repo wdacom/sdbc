@@ -164,7 +164,7 @@ abstract class H2Common
 
   override protected def toParameter(a: Any): Option[Any] = {
     a match {
-      case null | None | Some(null) =>
+      case null | None =>
         None
       case Some(a) =>
         Some(toParameter(a)).flatten
