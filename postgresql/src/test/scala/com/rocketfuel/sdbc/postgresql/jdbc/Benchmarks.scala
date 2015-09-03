@@ -237,7 +237,7 @@ class Benchmarks
 
   object TestTable {
 
-    implicit def apply(row: MutableRow): TestTable = {
+    implicit def apply(row: Row): TestTable = {
       val id = row.get[Long]("id").get
       val str1 = row.get[String]("str1").get
       val uuid = row.get[UUID]("uuid").get
