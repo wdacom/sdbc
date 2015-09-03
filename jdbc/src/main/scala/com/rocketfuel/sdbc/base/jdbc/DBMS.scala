@@ -40,23 +40,48 @@ abstract class DBMS
 
   type Select[T] = jdbc.Select[T]
 
-  val Select = jdbc.Select
+  def Select[T](
+    queryText: String,
+    hasParameters: Boolean = true
+  )(implicit converter: Row => T): Select[T] = {
+    jdbc.Select[T](queryText, hasParameters)
+  }
 
   type SelectForUpdate = jdbc.SelectForUpdate
 
-  val SelectForUpdate = jdbc.SelectForUpdate
+  def SelectForUpdate(
+    queryText: String,
+    hasParameters: Boolean = true
+  ): SelectForUpdate = {
+    jdbc.SelectForUpdate(queryText, hasParameters)
+  }
 
   type Update = jdbc.Update
 
-  val Update = jdbc.Update
+  def Update(
+    queryText: String,
+    hasParameters: Boolean = true
+  ): Update = {
+    jdbc.Update(queryText, hasParameters)
+  }
 
   type Batch = jdbc.Batch
 
-  val Batch = jdbc.Batch
+  def Batch(
+    queryText: String,
+    hasParameters: Boolean = true
+  ): Batch = {
+    jdbc.Batch(queryText, hasParameters)
+  }
 
   type Execute = jdbc.Execute
 
-  val Execute = jdbc.Execute
+  def Execute(
+    queryText: String,
+    hasParameters: Boolean = true
+  ): Execute = {
+    jdbc.Execute(queryText, hasParameters)
+  }
 
   type Pool = jdbc.Pool
 
