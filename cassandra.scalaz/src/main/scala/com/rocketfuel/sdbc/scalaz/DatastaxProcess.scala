@@ -46,7 +46,7 @@ object DatastaxProcess {
         execute: Execute
       )(implicit session: Session
       ): Sink[Task, ParameterList] = {
-        sink.lift[Task, Seq[(String, Option[ParameterValue[_]])]] { params =>
+        sink.lift[Task, Seq[(String, Option[ParameterValue])]] { params =>
           runExecute(execute.on(params: _*))
         }
       }
@@ -68,7 +68,7 @@ object DatastaxProcess {
         select: Select[Value]
       )(implicit session: Session
       ): Channel[Task, ParameterList, Process[Task, Value]] = {
-        channel.lift[Task, Seq[(String, Option[ParameterValue[_]])], Process[Task, Value]] { params =>
+        channel.lift[Task, Seq[(String, Option[ParameterValue])], Process[Task, Value]] { params =>
           Task.delay(runSelect[Value](select.on(params: _*)))
         }
       }
