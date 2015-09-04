@@ -9,9 +9,10 @@ import scala.concurrent.{Promise, Future, ExecutionContext}
 
 package object implementation {
 
-  type ParameterValue[+T] = base.ParameterValue[T, core.BoundStatement, Int]
+  type ParameterValue = base.ParameterValue
+  val ParameterValue = base.ParameterValue
 
-  type ParameterList = Seq[(String, Option[ParameterValue[_]])]
+  type ParameterList = Seq[(String, Option[ParameterValue])]
 
   type ParameterizedQuery[Self <: ParameterizedQuery[Self]] = base.ParameterizedQuery[Self, core.BoundStatement, Int]
 
@@ -42,7 +43,7 @@ package object implementation {
 
   private [datastax] def prepare(
     statement: base.CompiledStatement,
-    parameterValues: Map[String, Option[ParameterValue[_]]],
+    parameterValues: Map[String, Option[Any]],
     queryOptions: QueryOptions
   )(implicit session: Session
   ): core.BoundStatement = {

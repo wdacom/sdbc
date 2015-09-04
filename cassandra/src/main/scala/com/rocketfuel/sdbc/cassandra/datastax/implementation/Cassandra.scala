@@ -18,7 +18,7 @@ abstract class Cassandra
   with SelectableMethods
   with StringContextMethods {
 
-  type ParameterValue[+T] = implementation.ParameterValue[T]
+  type ParameterValue = implementation.ParameterValue
 
   type ParameterList = implementation.ParameterList
 

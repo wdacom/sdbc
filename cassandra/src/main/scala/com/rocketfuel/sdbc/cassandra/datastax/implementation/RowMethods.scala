@@ -11,12 +11,12 @@ trait RowMethods {
       getter(underlying, ix)
     }
 
-    def getParameters(implicit getter: RowGetter[ParameterValue[_]]): IndexedSeq[Option[ParameterValue[_]]] = {
-      IndexedSeq.tabulate(underlying.getColumnDefinitions.size())(ix => get[ParameterValue[_]](ix))
+    def getParameters(implicit getter: RowGetter[ParameterValue]): IndexedSeq[Option[ParameterValue]] = {
+      IndexedSeq.tabulate(underlying.getColumnDefinitions.size())(ix => get[ParameterValue](ix))
     }
 
-    def getParametersByName(implicit getter: RowGetter[ParameterValue[_]]): Map[String, Option[ParameterValue[_]]] = {
-      getParameters.zipWithIndex.foldLeft(Map.empty[String, Option[ParameterValue[_]]]) {
+    def getParametersByName(implicit getter: RowGetter[ParameterValue]): Map[String, Option[ParameterValue]] = {
+      getParameters.zipWithIndex.foldLeft(Map.empty[String, Option[ParameterValue]]) {
         case (accum, (value, ix)) =>
           accum + (underlying.getColumnDefinitions.getName(ix) -> value)
       }

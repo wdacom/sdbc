@@ -9,7 +9,7 @@ import scala.collection.convert.decorateAsScala._
 
 case class Select[T] private [cassandra] (
   override val statement: CompiledStatement,
-  override val parameterValues: Map[String, Option[ParameterValue[_]]],
+  override val parameterValues: Map[String, Option[Any]],
   override val queryOptions: QueryOptions
 )(implicit val converter: CRow => T)
   extends base.Select[Session, T]
@@ -38,7 +38,7 @@ case class Select[T] private [cassandra] (
 
   override def subclassConstructor(
     statement: CompiledStatement,
-    parameterValues: Map[String, Option[ParameterValue[_]]]
+    parameterValues: Map[String, Option[Any]]
   ): Select[T] = {
     copy(
       statement = statement,
@@ -56,7 +56,7 @@ object Select {
   ): Select[T] = {
     Select[T](
       statement = CompiledStatement(queryText, hasParameters),
-      parameterValues = Map.empty[String, Option[ParameterValue[_]]],
+      parameterValues = Map.empty[String, Option[ParameterValue]],
       queryOptions
     )
   }

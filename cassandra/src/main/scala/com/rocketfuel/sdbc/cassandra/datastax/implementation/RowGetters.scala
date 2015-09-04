@@ -513,9 +513,9 @@ trait RowGetters {
     }
   }
 
-  implicit val ParameterGetter: RowGetter[ParameterValue[_]] =
-    new RowGetter[ParameterValue[_]] {
-      override def apply(row: CRow, ix: Index): Option[ParameterValue[_]] = {
+  implicit val ParameterGetter: RowGetter[ParameterValue] =
+    new RowGetter[ParameterValue] {
+      override def apply(row: CRow, ix: Index): Option[ParameterValue] = {
 
         Option(row.getObject(ix(row))).flatMap {
           case map: java.util.Map[_, _] =>

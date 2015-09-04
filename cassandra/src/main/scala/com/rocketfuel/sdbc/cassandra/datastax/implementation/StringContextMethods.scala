@@ -12,7 +12,7 @@ import scodec.bits.ByteVector
 trait StringContextMethods {
 
   implicit class CassandraStringContextMethods(sc: StringContext) {
-    private def byNumberName(args: Seq[Any]): Map[String, Option[ParameterValue[_]]] = {
+    private def byNumberName(args: Seq[Any]): Map[String, Option[ParameterValue]] = {
       val argNames = 0.until(sc.parts.count(_.isEmpty)).map(_.toString)
       val parameters = argNames.zip(args.map(toParameter)).toMap
       parameters
@@ -29,12 +29,12 @@ trait StringContextMethods {
     }
   }
 
-  private def toParameterNonOption(a: Any): implementation.ParameterValue[_] = {
+  private def toParameterNonOption(a: Any): Any = {
     a match {
       case b: Boolean => b
-      case b: java.lang.Boolean => b
-      case b: ByteVector => b
-      case b: ByteBuffer => b
+      case b: java.lang.Boolean => b.booleanValue
+      case b: ByteVector => b.toArray
+      case b: ByteBuffer => ByteVector(b).toArray
       case a: Array[Byte] => a
       case d: java.sql.Date => d
       case d: java.math.BigDecimal => d
@@ -68,9 +68,9 @@ trait StringContextMethods {
    * @param a
    * @return
    */
-  private def toParameter(a: Any): Option[implementation.ParameterValue[_]] = {
+  private def toParameter(a: Any): Option[implementation.ParameterValue] = {
     a match {
-      case null | None | Some(null) =>
+      case null | None =>
         None
       case Some(a) =>
         Some(toParameter(a)).flatten
