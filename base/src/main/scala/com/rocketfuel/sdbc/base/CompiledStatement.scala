@@ -98,13 +98,12 @@ object CompiledStatement {
 
   private def findParameterPositions(parts: Seq[QueryPart]): Map[String, Set[Int]] = {
     parts.collect{case p: Parameter => p}.zipWithIndex.foldLeft(Map.empty[String, Set[Int]]){
-      case (positionMap, (Parameter(name), index0)) =>
-        val index1 = index0 + 1
+      case (positionMap, (Parameter(name), index)) =>
         positionMap.get(name) match {
           case None =>
-            positionMap + (name -> Set(index1))
+            positionMap + (name -> Set(index))
           case Some(parameterPositions) =>
-            positionMap + (name -> (parameterPositions + index1))
+            positionMap + (name -> (parameterPositions + index))
         }
     }
   }

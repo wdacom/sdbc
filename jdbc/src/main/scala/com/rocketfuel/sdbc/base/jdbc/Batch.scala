@@ -31,9 +31,9 @@ case class Batch private [jdbc] (
         for (index <- parameterPositions(name)) {
           maybeValue match {
             case None =>
-              parameterSetter.setNone(prepared, index)
+              parameterSetter.setNone(prepared, index + 1)
             case Some(value) =>
-              parameterSetter.setAny(prepared, index, value)
+              parameterSetter.setAny(prepared, index + 1, value)
           }
         }
       }

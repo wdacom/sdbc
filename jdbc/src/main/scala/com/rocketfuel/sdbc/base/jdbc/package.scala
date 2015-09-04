@@ -118,9 +118,9 @@ package object jdbc
       val setter: Int => Unit = {
         maybeValue match {
           case None =>
-            (parameterIndex: Int) => parameterSetter.setNone(preparedStatement, parameterIndex)
+            (parameterIndex: Int) => parameterSetter.setNone(preparedStatement, parameterIndex + 1)
           case Some(value) =>
-            (parameterIndex: Int) => parameterSetter.setAny(preparedStatement, parameterIndex, value)
+            (parameterIndex: Int) => parameterSetter.setAny(preparedStatement, parameterIndex + 1, value)
         }
       }
       val parameterIndices = parameterPositions(key)
