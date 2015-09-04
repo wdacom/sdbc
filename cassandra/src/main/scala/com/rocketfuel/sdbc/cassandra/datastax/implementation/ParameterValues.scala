@@ -7,6 +7,7 @@ import java.util.{Date, UUID}
 import com.datastax.driver.core._
 import com.rocketfuel.sdbc.base
 import scodec.bits.ByteVector
+import scala.collection.convert.decorateAsJava._
 
 trait ParameterValues {
 
@@ -72,12 +73,12 @@ trait ParameterValues {
     ParameterValue(value)
   }
 
-  implicit def SeqToParameter[_](value: Seq[_]): ParameterValue = {
+  implicit def JavaListToParameter[T](value: java.util.List[T]): ParameterValue = {
     ParameterValue(value)
   }
 
-  implicit def JavaListToParameter[T](value: java.util.List[T]): ParameterValue = {
-    ParameterValue(value)
+  implicit def SeqToParameter[_](value: Seq[_]): ParameterValue = {
+    value.asJava
   }
 
   implicit def LongToParameter(value: Long): ParameterValue = {
@@ -93,15 +94,15 @@ trait ParameterValues {
   }
 
   implicit def MapToParameter(value: Map[_, _]): ParameterValue = {
-    ParameterValue(value)
-  }
-
-  implicit def SetToParameter(value: Set[_]): ParameterValue = {
-    ParameterValue(value)
+    value.asJava
   }
 
   implicit def JavaSetToParameter(value: java.util.Set[_]): ParameterValue = {
     ParameterValue(value)
+  }
+
+  implicit def SetToParameter(value: Set[_]): ParameterValue = {
+    value.asJava
   }
 
   implicit def StringToParameter(value: String): ParameterValue = {
