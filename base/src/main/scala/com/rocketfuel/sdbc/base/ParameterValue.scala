@@ -8,6 +8,19 @@ trait IsParameter[T, Statement, Index] {
 
 trait ParameterSetter[Statement, Index] {
 
+  def set(
+    preparedStatement: Statement,
+    parameterIndex: Index,
+    maybeParameter: Option[Any]
+  ): Unit = {
+    maybeParameter match {
+      case None =>
+        setNone(preparedStatement, parameterIndex)
+      case Some(parameter) =>
+        setAny(preparedStatement, parameterIndex, parameter)
+    }
+  }
+
   def setNone(
     preparedStatement: Statement,
     parameterIndex: Index
