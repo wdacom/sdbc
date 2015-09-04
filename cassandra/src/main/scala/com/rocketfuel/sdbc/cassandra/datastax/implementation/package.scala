@@ -57,11 +57,11 @@ package object implementation {
       maybeValue match {
         case None =>
           for (parameterIndex <- parameterIndices) {
-            forBinding.setToNull(parameterIndex - 1)
+            ParameterSetter.setNone(forBinding, parameterIndex)
           }
         case Some(value) =>
           for (parameterIndex <- parameterIndices) {
-            value.set(forBinding, parameterIndex - 1)
+            ParameterSetter.setAny(forBinding, parameterIndex, value)
           }
       }
     }

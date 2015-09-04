@@ -12,7 +12,7 @@ import scodec.bits.ByteVector
 trait StringContextMethods {
 
   implicit class CassandraStringContextMethods(sc: StringContext) {
-    private def byNumberName(args: Seq[Any]): Map[String, Option[ParameterValue]] = {
+    private def byNumberName(args: Seq[Any]): Map[String, Option[Any]] = {
       val argNames = 0.until(sc.parts.count(_.isEmpty)).map(_.toString)
       val parameters = argNames.zip(args.map(toParameter)).toMap
       parameters
@@ -33,27 +33,24 @@ trait StringContextMethods {
     a match {
       case b: Boolean => b
       case b: java.lang.Boolean => b.booleanValue
-      case b: ByteVector => b.toArray
-      case b: ByteBuffer => ByteVector(b).toArray
-      case a: Array[Byte] => a
-      case d: java.sql.Date => d
+      case b: ByteVector => b
+      case b: ByteBuffer => ByteVector(b)
+      case a: Array[Byte] => ByteVector(a)
+      case d: java.util.Date => d
       case d: java.math.BigDecimal => d
-      case d: BigDecimal => d
+      case d: BigDecimal => d.underlying()
       case d: Double => d
-      case d: java.lang.Double => d
+      case d: java.lang.Double => d.doubleValue()
       case f: Float => f
-      case f: java.lang.Float => f
+      case f: java.lang.Float => f.floatValue()
       case i: InetAddress => i
       case i: Int => i
-      case i: java.lang.Integer => i
-      case s: Seq[_] => s
+      case i: java.lang.Integer => i.intValue()
       case l: java.util.List[_] => l
       case l: Long => l
-      case l: java.lang.Long => l
+      case l: java.lang.Long => l.longValue()
       case m: java.util.Map[_, _] => m
-      case m: Map[_, _] => m
       case s: java.util.Set[_] => s
-      case s: Set[_] => s
       case s: String => s
       case u: java.util.UUID => u
       case t: Token => t
@@ -68,7 +65,7 @@ trait StringContextMethods {
    * @param a
    * @return
    */
-  private def toParameter(a: Any): Option[implementation.ParameterValue] = {
+  private def toParameter(a: Any): Option[Any] = {
     a match {
       case null | None =>
         None
