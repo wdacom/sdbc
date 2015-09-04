@@ -15,7 +15,7 @@ class RichResultSetSpec
     Execute("CREATE TABLE spc.tbl (x int PRIMARY KEY)").execute()
 
     forAll { (randoms: Seq[Int]) =>
-      val insert = Execute("INSERT INTO spc.tbl (x) VALUES ($x)")
+      val insert = Execute("INSERT INTO spc.tbl (x) VALUES (@x)")
 
       for (random <- randoms) {
         insert.on("x" -> random).execute()
@@ -37,7 +37,7 @@ class RichResultSetSpec
       //Note: Peng verified that values in tuples are nullable, so we need
       //to support that.
 
-      val insert = Execute("INSERT INTO spc.tbl (x) VALUES ($x)")
+      val insert = Execute("INSERT INTO spc.tbl (x) VALUES (@x)")
 
       for (tuple <- tuples) {
         insert.on("x" -> tuple).execute()
@@ -58,7 +58,7 @@ class RichResultSetSpec
     Execute("CREATE TABLE spc.tbl (x tuple<int, int> PRIMARY KEY)").execute()
 
     forAll { (tuples: Seq[(Option[Int], Option[Int])]) =>
-      val insert = Execute("INSERT INTO spc.tbl (x) VALUES ($x)")
+      val insert = Execute("INSERT INTO spc.tbl (x) VALUES (@x)")
 
       for (tuple <- tuples) {
         insert.on("x" -> tuple).execute()
@@ -77,7 +77,7 @@ class RichResultSetSpec
     Execute("CREATE TABLE spc.tbl (id int PRIMARY KEY, x set<text>)").execute()
 
     forAll(Gen.nonEmptyListOf(Gen.nonEmptyContainerOf[Set, String](Gen.alphaStr))) { sets =>
-      val insert = Execute("INSERT INTO spc.tbl (id, x) VALUES ($id, $x)")
+      val insert = Execute("INSERT INTO spc.tbl (id, x) VALUES (@id, @x)")
 
       for ((set, id) <- sets.zipWithIndex) {
         insert.on( "id" -> id, "x" -> set).execute()
@@ -103,7 +103,7 @@ class RichResultSetSpec
     Execute("CREATE TABLE spc.tbl (id int PRIMARY KEY, x map<text, text>)").execute()
 
     forAll(Gen.nonEmptyListOf[Map[String, String]](Gen.nonEmptyMap[String, String](genStringTuple))) { maps =>
-      val insert = Execute("INSERT INTO spc.tbl (id, x) VALUES ($id, $x)")
+      val insert = Execute("INSERT INTO spc.tbl (id, x) VALUES (@id, @x)")
 
       for ((map, id) <- maps.zipWithIndex) {
         insert.on("id" -> id, "x" -> map).execute()
