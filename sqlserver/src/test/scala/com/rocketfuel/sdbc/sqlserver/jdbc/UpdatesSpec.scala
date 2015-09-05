@@ -78,5 +78,26 @@ class UpdatesSpec extends SqlServerSuite {
   testUpdate[UUID]("uuid")(UUID.randomUUID())(UUID.randomUUID())
 
   testUpdate[HierarchyId]("hierarchyid")(HierarchyId())(HierarchyId(1, 2))
+  test(s"Update None") {implicit connection =>
+    val before = Some(1)
+    val after = None
+
+    Update(s"CREATE TABLE tbl (id int identity PRIMARY KEY, v int)").update()
+
+    update"INSERT INTO tbl (v) VALUES ($before)".update()
+
+    for (row <- selectForUpdate"SELECT id, v FROM tbl".iterator()) {
+      row("v") = after
+      row.updateRow()
+    }
+
+    val maybeRow = Select[Option[Int]]("SELECT v FROM tbl").iterator.toStream.headOption
+
+    assert(maybeRow.nonEmpty, "There was a row")
+
+    val maybeValue = maybeRow.get
+
+    assert(maybeValue.isEmpty)
+  }
 
 }

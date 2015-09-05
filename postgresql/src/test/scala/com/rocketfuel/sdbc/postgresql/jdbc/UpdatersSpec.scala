@@ -82,4 +82,26 @@ class UpdatersSpec
 
   testUpdate[JValue]("json")(JsonMethods.parse("{}"))(JsonMethods.parse("""{"a": 1}"""))
 
+  test(s"Update None") {implicit connection =>
+    val before = Some(1)
+    val after = None
+
+    Update(s"CREATE TABLE tbl (id serial PRIMARY KEY, v int)").update()
+
+    update"INSERT INTO tbl (v) VALUES ($before)".update()
+
+    for (row <- selectForUpdate"SELECT id, v FROM tbl".iterator()) {
+      row("v") = after
+      row.updateRow()
+    }
+
+    val maybeRow = Select[Option[Int]]("SELECT v FROM tbl").iterator.toStream.headOption
+
+    assert(maybeRow.nonEmpty, "There was a row")
+
+    val maybeValue = maybeRow.get
+
+    assert(maybeValue.isEmpty)
+  }
+
 }

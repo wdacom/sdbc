@@ -6,6 +6,10 @@ import java.math.{BigDecimal => JBigDecimal}
 class SettersSpec
   extends FunSuite {
 
+  test("implicit None conversion works") {
+    assertCompiles("val _: Option[ParameterValue] = None")
+  }
+
   test("implicit Seq[Int] conversion works") {
     assertCompiles("val _: Option[ParameterValue] = Seq(1,2,3)")
   }
