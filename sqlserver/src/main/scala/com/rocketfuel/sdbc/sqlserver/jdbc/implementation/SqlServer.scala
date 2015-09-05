@@ -99,35 +99,35 @@ abstract class SqlServer
       val columnType = row.columnTypes(columnIndex(row))
 
       columnType match {
-        case "int4" | "serial" =>
+        case "int" =>
           IntGetter(row, ix).map(ParameterValue)
         case "bit" =>
           BooleanGetter(row, ix)
-        case "int1" =>
+        case "tinyint" =>
           ByteGetter(row, ix)
-        case "int2" =>
+        case "smallint" =>
           ShortGetter(row, ix)
-        case "int8" | "bigserial" =>
+        case "bigint" =>
           LongGetter(row, ix)
-        case "numeric" =>
+        case "decimal" =>
           JavaBigDecimalGetter(row, ix)
-        case "float4" =>
+        case "real" =>
           FloatGetter(row, ix)
-        case "float8" =>
+        case "float" =>
           DoubleGetter(row, ix)
         case "time" =>
           LocalTimeGetter(row, ix)
         case "date" =>
           DateGetter(row, ix)
-        case "timestamp" =>
+        case "datetime2" =>
           TimestampGetter(row, ix)
-        case "timestamptz" =>
+        case "datetimeoffset" =>
           OffsetDateTimeGetter(row, ix)
-        case "bytea" =>
+        case "varbinary" =>
           ArrayByteGetter(row, ix)
-        case "varchar" | "bpchar" | "text" =>
+        case "varchar" =>
           StringGetter(row, ix)
-        case "uuid" =>
+        case "uniqueidentifier" =>
           UUIDGetter(row, ix)
         case "xml" =>
           XMLGetter(row, ix)

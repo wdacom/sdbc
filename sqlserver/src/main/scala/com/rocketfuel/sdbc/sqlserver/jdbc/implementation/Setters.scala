@@ -68,7 +68,7 @@ trait QUUIDImplicits {
 
 object QHierarchyId extends ToParameter {
   override val toParameter: PartialFunction[Any, Any] = {
-    case h: HierarchyId => h
+    case h: HierarchyId => h.toString
   }
 }
 
