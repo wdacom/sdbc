@@ -1,9 +1,10 @@
 package com.rocketfuel.sdbc.sqlserver.jdbc.implementation
 
 import java.sql.SQLException
-import java.time.{Instant, OffsetDateTime}
+import java.time.{LocalTime, Instant, OffsetDateTime}
 import java.util.UUID
 
+import com.rocketfuel.sdbc.base
 import com.rocketfuel.sdbc.base.jdbc._
 import com.rocketfuel.sdbc.sqlserver.jdbc.HierarchyId
 
@@ -13,8 +14,13 @@ trait Getters
   extends DefaultGetters
   with InstantGetter
   with LocalDateGetter
-  with LocalDateTimeGetter
-  with LocalTimeGetter {
+  with LocalDateTimeGetter {
+
+  implicit val LocalTimeGetter: Getter[LocalTime] = new Getter[LocalTime] {
+    override def apply(row: Row, ix: Index): Option[LocalTime] = {
+      Option(row.getString(ix(row))).map(LocalTime.parse)
+    }
+  }
 
   implicit val OffsetDateTimeGetter: Getter[OffsetDateTime] = new Getter[OffsetDateTime] {
     override def apply(row: Row, ix: Index): Option[OffsetDateTime] = {

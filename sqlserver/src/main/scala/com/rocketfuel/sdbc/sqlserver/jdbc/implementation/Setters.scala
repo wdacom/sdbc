@@ -1,7 +1,7 @@
 package com.rocketfuel.sdbc.sqlserver.jdbc.implementation
 
 import java.sql.PreparedStatement
-import java.time.OffsetDateTime
+import java.time.{LocalTime, OffsetDateTime}
 import java.util.UUID
 
 import com.rocketfuel.sdbc.base.{ToParameter, jdbc}
@@ -9,6 +9,25 @@ import com.rocketfuel.sdbc.base.jdbc._
 import com.rocketfuel.sdbc.sqlserver.jdbc.HierarchyId
 
 import scala.xml.Node
+
+trait QLocalTimeImplicits {
+  implicit val LocalTimeIsParameter: IsParameter[LocalTime] = new IsParameter[LocalTime] {
+    override def set(preparedStatement: PreparedStatement, parameterIndex: Int, parameter: LocalTime): Unit = {
+      preparedStatement.setString(parameterIndex, parameter.toString)
+    }
+  }
+
+  implicit def LocalTimeToParameterValue(l: LocalTime): ParameterValue = {
+    ParameterValue(l)
+  }
+}
+
+object QLocalTime extends ToParameter {
+  override val toParameter: PartialFunction[Any, Any] = {
+    case o: LocalTime =>
+      o.toString
+  }
+}
 
 object QOffsetDateTime extends ToParameter {
   override val toParameter: PartialFunction[Any, Any] = {

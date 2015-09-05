@@ -1,6 +1,6 @@
 package com.rocketfuel.sdbc.sqlserver.jdbc.implementation
 
-import java.time.OffsetDateTime
+import java.time.{LocalTime, OffsetDateTime}
 import java.util.UUID
 
 import com.rocketfuel.sdbc.base.jdbc._
@@ -29,8 +29,13 @@ trait Updaters
   with UpdateReader
   with LocalDateTimeUpdater
   with InstantUpdater
-  with LocalDateUpdater
-  with LocalTimeUpdater {
+  with LocalDateUpdater {
+
+  implicit val LocalTimeUpdater = new Updater[LocalTime] {
+    override def update(row: UpdatableRow, columnIndex: Int, x: LocalTime): Unit = {
+      row.updateString(columnIndex, x.toString)
+    }
+  }
 
   implicit val OffsetDateTimeUpdater: Updater[OffsetDateTime] = new Updater[OffsetDateTime] {
     override def update(row: UpdatableRow, columnIndex: Int, x: OffsetDateTime): Unit = {
