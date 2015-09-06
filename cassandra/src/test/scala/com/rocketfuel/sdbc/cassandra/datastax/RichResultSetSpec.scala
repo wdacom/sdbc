@@ -29,6 +29,25 @@ class RichResultSetSpec
     }
   }
 
+  test("iterator() works on several nullable results") {implicit connection =>
+    Execute("CREATE KEYSPACE spc WITH REPLICATION = {'class': 'SimpleStrategy', 'replication_factor': 1}").execute()
+    Execute("CREATE TABLE spc.tbl (x int PRIMARY KEY, y int)").execute()
+
+    forAll { (randoms: Seq[Option[Int]]) =>
+      val insert = Execute("INSERT INTO spc.tbl (x, y) VALUES (@x, @y)")
+
+      for ((random, ix) <- randoms.zipWithIndex) {
+        insert.on("x" -> ix, "y" -> random).execute()
+      }
+
+      val results = Select[Option[Int]]("SELECT y FROM spc.tbl").iterator()
+
+      assertResult(randoms.toSet)(results.toSet)
+
+      RichResultSetSpec.truncate.execute()
+    }
+  }
+
   test("Insert and select works for tuples.") { implicit connection =>
     Execute("CREATE KEYSPACE spc WITH REPLICATION = {'class': 'SimpleStrategy', 'replication_factor': 1}").execute()
     Execute("CREATE TABLE spc.tbl (x tuple<int, int> PRIMARY KEY)").execute()
