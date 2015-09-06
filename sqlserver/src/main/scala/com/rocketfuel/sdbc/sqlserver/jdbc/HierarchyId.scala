@@ -27,7 +27,7 @@ object HierarchyId {
       case _ =>
         //There is an empty string at the beginning due to the leading '/',
         //so be sure to drop it.
-        val pathParts = path.split('/').toVector.drop(1).map(HierarchyNode.fromString)
+        val pathParts = path.split('/').drop(1).map(HierarchyNode.fromString)
         HierarchyId(pathParts: _*)
     }
   }

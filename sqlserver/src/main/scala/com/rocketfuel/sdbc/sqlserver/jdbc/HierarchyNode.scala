@@ -21,8 +21,4 @@ trait HierarchyNodeImplicits {
   implicit def SeqIntToHierarchyNode(path: Seq[Int]): HierarchyNode = {
     HierarchyNode(path.head, path.tail: _*)
   }
-
-  implicit def StringToHierarchyNode(s: String): HierarchyNode = {
-    HierarchyNode.fromString(s)
-  }
 }
