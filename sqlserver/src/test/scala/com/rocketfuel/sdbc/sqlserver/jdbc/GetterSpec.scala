@@ -69,6 +69,8 @@ class GetterSpec
 
   testSelect[HierarchyId]("SELECT CAST('/1/2/3/' AS hierarchyid).ToString()", HierarchyId(1, 2, 3).some)
 
+  testSelect[HierarchyId]("SELECT CAST('/1/2.1/3/' AS hierarchyid).ToString()", HierarchyId(1, Seq(2, 1), 3).some)
+
   testSelect[UUID](s"SELECT CAST('$uuid' AS uniqueidentifier)", uuid.some)
 
 }

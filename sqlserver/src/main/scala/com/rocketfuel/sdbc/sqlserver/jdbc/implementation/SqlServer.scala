@@ -7,7 +7,7 @@ import java.util.UUID
 
 import com.rocketfuel.CISet
 import com.rocketfuel.sdbc.base.jdbc._
-import com.rocketfuel.sdbc.sqlserver.jdbc.HierarchyId
+import com.rocketfuel.sdbc.sqlserver.jdbc.{HierarchyNodeImplicits, HierarchyId}
 import scodec.bits.ByteVector
 
 import scala.xml.Node
@@ -29,7 +29,8 @@ abstract class SqlServer
   extends DBMS
   with Setters
   with Getters
-  with Updaters {
+  with Updaters
+  with HierarchyNodeImplicits {
 
   override def driverClassName = "net.sourceforge.jtds.jdbc.Driver"
   override def dataSourceClassName ="net.sourceforge.jtds.jdbcx.JtdsDataSource"
