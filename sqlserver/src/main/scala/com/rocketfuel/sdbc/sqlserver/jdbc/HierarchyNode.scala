@@ -2,10 +2,7 @@ package com.rocketfuel.sdbc.sqlserver.jdbc
 
 case class HierarchyNode(start: Int, path: Int*) {
   override def toString: String = {
-    start.toString  + {
-      if (path.isEmpty) ""
-      else path.mkString(".", ".", "")
-    }
+    (start +: path).mkString(".")
   }
 }
 
