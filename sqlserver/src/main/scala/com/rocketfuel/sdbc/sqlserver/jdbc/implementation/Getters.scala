@@ -36,7 +36,7 @@ trait Getters
 
   implicit val HierarchyIdGetter = new Parser[HierarchyId] {
     override def parse(asString: String): HierarchyId = {
-      HierarchyId(asString)
+      HierarchyId.fromString(asString)
     }
   }
 
