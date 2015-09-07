@@ -14,6 +14,14 @@ trait SessionMethods {
     ): Iterator[T] = {
       Select[T](queryText).on(parameters: _*).iterator()(pool)
     }
+
+    def option[T](
+      queryText: String,
+      parameters: (String, Option[ParameterValue])*
+    )(implicit converter: CRow => T
+    ): Option[T] = {
+      Select[T](queryText).on(parameters: _*).option()(pool)
+    }
   }
 
 }

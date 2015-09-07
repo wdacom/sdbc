@@ -117,6 +117,14 @@ abstract class DBMS
       SelectForUpdate(queryText).on(parameters: _*).iterator()(connection)
     }
 
+    def option[T](
+      queryText: String,
+      parameters: (String, Option[ParameterValue])*
+    )(implicit converter: Row => T
+    ): Option[T] = {
+      Select[T](queryText).on(parameters: _*).option()(connection)
+    }
+
     def update(
       queryText: String,
       parameterValues: (String, Option[ParameterValue])*
