@@ -61,14 +61,14 @@ trait ParameterSetter[Statement, Index] {
 }
 
 trait ParameterValueImplicits {
-  implicit def ToOptionParameterValue[T, Statement, Index](
+  implicit def ToOptionParameterValue[T](
     v: T
   )(implicit conversion: T => ParameterValue
   ): Option[ParameterValue] = {
     Some(conversion(v))
   }
 
-  implicit def OptionToOptionParameterValue[T, Statement, Index](
+  implicit def OptionToOptionParameterValue[T](
     v: Option[T]
   )(implicit conversion: T => ParameterValue
   ): Option[ParameterValue] = {
