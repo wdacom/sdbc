@@ -2,6 +2,10 @@ package com.rocketfuel.sdbc.base
 
 import com.rocketfuel.Logging
 
+/**
+ * An update is a Batch of one statement. I.E. the iterator will have one element.
+ * @tparam UnderlyingConnection
+ */
 abstract class Update[UnderlyingConnection] extends Batch[UnderlyingConnection] {
   self: Logging =>
 
@@ -9,6 +13,10 @@ abstract class Update[UnderlyingConnection] extends Batch[UnderlyingConnection] 
 
   override def iterator()(implicit connection: UnderlyingConnection): Iterator[Long] = {
     Iterator(update())
+  }
+
+  override def option()(implicit connection: UnderlyingConnection): Option[Long] = {
+    Some(update())
   }
 
 }

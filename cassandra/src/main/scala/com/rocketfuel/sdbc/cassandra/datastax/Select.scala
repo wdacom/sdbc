@@ -17,14 +17,14 @@ case class Select[T] private [cassandra] (
   with implementation.HasQueryOptions
   with Logging {
 
-  def iterator()(implicit session: Session): Iterator[T] = {
-    logger.debug(s"""Retrieving an iterator using "$originalQueryText" with parameters $parameterValues.""")
+  override def iterator()(implicit session: Session): Iterator[T] = {
+    logger.debug(s"""Selecting "$originalQueryText" with parameters $parameterValues.""")
     val prepared = implementation.prepare(statement, parameterValues, queryOptions)
     session.execute(prepared).iterator.asScala.map(converter)
   }
 
   def iteratorAsync()(implicit session: Session, ec: ExecutionContext): Future[Iterator[T]] = {
-    logger.debug(s"""Asynchronously retrieving an iterator asynchronously using "$originalQueryText" with parameters $parameterValues.""")
+    logger.debug(s"""Asynchronously selecting "$originalQueryText" with parameters $parameterValues.""")
 
     val prepared = implementation.prepare(statement, parameterValues, queryOptions)
     val toListen = session.executeAsync(prepared)
@@ -33,6 +33,18 @@ case class Select[T] private [cassandra] (
       result <- implementation.toScalaFuture(toListen)
     } yield {
       result.iterator().asScala.map(converter)
+    }
+  }
+
+  override def option()(implicit session: Session): Option[T] = {
+    iterator().toStream.headOption
+  }
+
+  def optionAsync()(implicit session: Session, ec: ExecutionContext): Future[Option[T]] = {
+    for {
+      result <- iteratorAsync()
+    } yield {
+      result.toStream.headOption
     }
   }
 

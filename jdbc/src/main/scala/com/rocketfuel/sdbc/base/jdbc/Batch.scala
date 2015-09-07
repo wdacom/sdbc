@@ -10,7 +10,8 @@ case class Batch private [jdbc] (
   statement: CompiledStatement,
   parameterValues: Map[String, Option[Any]],
   parameterValueBatches: Seq[Map[String, Option[Any]]]
-)(implicit parameterSetter: ParameterSetter) extends base.Batch[Connection]
+)(implicit parameterSetter: ParameterSetter
+) extends base.Batch[Connection]
   with ParameterizedQuery[Batch]
   with Logging {
 
@@ -43,7 +44,7 @@ case class Batch private [jdbc] (
   }
 
   def seq()(implicit connection: Connection): Seq[Long] = {
-    logger.debug(s"""Executing batch "$originalQueryText".""")
+    logger.debug(s"""Batching "$originalQueryText".""")
     val prepared = prepare()
     val result = try {
       prepared.executeLargeBatch()
@@ -57,6 +58,15 @@ case class Batch private [jdbc] (
 
   override def iterator()(implicit connection: Connection): Iterator[Long] = {
     seq().toIterator
+  }
+
+  /**
+   * Get the total count of updated or inserted rows.
+   * @param connection
+   * @return
+   */
+  override def option()(implicit connection: Connection): Option[Long] = {
+    Some(seq().sum)
   }
 
   override protected def subclassConstructor(

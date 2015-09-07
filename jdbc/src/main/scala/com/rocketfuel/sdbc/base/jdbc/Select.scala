@@ -17,8 +17,7 @@ case class Select[T] private [jdbc] (
   with Logging {
 
   private def executeQuery()(implicit connection: Connection): ResultSet = {
-    logger.debug(s"""Retrieving a ResultSet using "$originalQueryText" with parameters $parameterValues.""")
-
+    logger.debug(s"""Selecting "$originalQueryText" with parameters $parameterValues.""")
     val prepared = prepare(
       queryText = queryText,
       parameterValues = parameterValues,
@@ -35,8 +34,6 @@ case class Select[T] private [jdbc] (
    * @return
    */
   override def iterator()(implicit connection: Connection): Iterator[T] = {
-    logger.debug(s"""Retrieving an iterator using "$originalQueryText" with parameters $parameterValues.""")
-
     executeQuery().iterator().map(converter)
   }
 
@@ -45,9 +42,7 @@ case class Select[T] private [jdbc] (
    * @param connection
    * @return
    */
-  def option()(implicit connection: Connection): Option[T] = {
-    logger.debug(s"""Retrieving a value using "$originalQueryText" with parameters $parameterValues.""")
-
+  override def option()(implicit connection: Connection): Option[T] = {
     val results = executeQuery()
 
     val iterator = results.iterator()

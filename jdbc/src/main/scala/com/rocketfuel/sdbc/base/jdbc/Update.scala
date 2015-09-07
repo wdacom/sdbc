@@ -13,7 +13,7 @@ case class Update private [jdbc] (
   with Logging {
 
   override def update()(implicit connection: Connection): Long = {
-    logger.debug(s"""Executing "$originalQueryText" with parameters $parameterValues.""")
+    logger.debug(s"""Updating "$originalQueryText" with parameters $parameterValues.""")
     val prepared = prepare(
       queryText = queryText,
       parameterValues = parameterValues,

@@ -15,12 +15,20 @@ case class SelectForUpdate private[jdbc] (
   with ResultSetImplicits
   with Logging {
 
-  override def iterator()(implicit connection: Connection): Iterator[UpdatableRow] = {
-    logger.debug(s"""Retrieving an iterator of updatable rows using "$originalQueryText" with parameters $parameterValues.""")
+  private def executeQuery()(implicit connection: Connection): ResultSet = {
+    logger.debug(s"""Selecting for update "$originalQueryText" with parameters $parameterValues.""")
     val preparedStatement = connection.prepareStatement(queryText, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE)
     bind(preparedStatement, parameterValues, parameterPositions)
 
-    preparedStatement.executeQuery().updatableIterator()
+    preparedStatement.executeQuery()
+  }
+
+  override def iterator()(implicit connection: Connection): Iterator[UpdatableRow] = {
+    executeQuery().updatableIterator()
+  }
+
+  override def option()(implicit connection: Connection): Option[UpdatableRow] = {
+    executeQuery().updatableIterator().toStream.headOption
   }
 
   override protected def subclassConstructor(
