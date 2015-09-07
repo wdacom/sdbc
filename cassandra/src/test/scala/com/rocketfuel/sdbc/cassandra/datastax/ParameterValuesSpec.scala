@@ -131,8 +131,4 @@ class ParameterValuesSpec extends FunSuite {
     assertCompiles("val _: Option[ParameterValue] = java.math.BigInteger.valueOf(0L)")
   }
 
-  test("implicit None conversion works") {
-    assertCompiles("val _: Option[ParameterValue] = None")
-  }
-
 }
