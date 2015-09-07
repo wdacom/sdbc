@@ -15,6 +15,15 @@ trait UpdaterImplicits {
     }
   }
 
+  /**
+   * This implicit is used if None is used on the right side of an update.
+   *
+   * {{{
+   *   val row: MutableRow = ???
+   *
+   *   row("columnName") = None
+   * }}}
+   */
   implicit val NoneUpdater: Updater[None.type] = new Updater[None.type] {
     override def update(row: UpdatableRow, columnIndex: Int, x: None.type): Unit = {
       row.updateObject(columnIndex, null)
