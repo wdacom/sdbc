@@ -2,7 +2,7 @@ package com.rocketfuel.sdbc.h2.jdbc
 
 class EnumerateTypesSpec extends H2Suite {
 
-  test("list type map") {implicit connection =>
+  ignore("list type map") {implicit connection =>
 
     Update(
       """CREATE TABLE tbl (
