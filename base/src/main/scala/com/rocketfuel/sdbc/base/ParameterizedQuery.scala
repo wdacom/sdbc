@@ -1,20 +1,24 @@
 package com.rocketfuel.sdbc.base
 
 /**
- * Given a query with named parameters beginning with '$',
- * construct the query for use with JDBC, so that named
- * parameters are replaced by '?', and each parameter
+ * Given a query with named parameters beginning with '@',
+ * construct the query for use with JDBC, so that names
+ * are replaced by '?', and each parameter
  * has a map to its positions in the query.
  *
- * Identifiers must start with a letter or underscore, and then
- * any character after the first one can be a letter, number,
- * underscore, or '\$'. An identifier that does not follow
- * this scheme must be quoted by backticks.
+ * Parameter names must start with a unicode letter or underscore, and then
+ * any character after the first one can be a unicode letter, unicode number,
+ * or underscore. A parameter that does not follow
+ * this scheme must be quoted by backticks. Parameter names
+ * are case sensitive.
  *
  * Examples of identifiers:
- * \$hello
- * \$`hello there`
- * \$_i_am_busy
+ *
+ * {{{"@hello"}}}
+ *
+ * {{{"@`hello there`"}}}
+ *
+ * {{{"@_i_am_busy"}}}
  */
 trait ParameterizedQuery[
   Self <: ParameterizedQuery[Self, UnderlyingQuery, Index],
