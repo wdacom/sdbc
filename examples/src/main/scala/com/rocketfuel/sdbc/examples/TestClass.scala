@@ -49,6 +49,6 @@ object TestClass {
 
   final case class Id(id: Int)
 
-  final case object All
+  case object All
 
 }
