@@ -29,10 +29,10 @@ object TestClass {
     }
   }
 
-  implicit val selectableAll = new Selectable[All, TestClass] {
+  implicit val selectableAll = new Selectable[All.type, TestClass] {
     val query = Select[TestClass]("SELECT * FROM test_class")
 
-    override def select(key: All): Select[TestClass] = {
+    override def select(key: All.type): Select[TestClass] = {
       query
     }
   }
@@ -49,6 +49,6 @@ object TestClass {
 
   final case class Id(id: Int)
 
-  final case class All()
+  final case object All
 
 }
