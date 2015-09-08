@@ -13,6 +13,12 @@ object TestClass {
     TestClass(row.get[Int]("id").get, row.get[String]("value").get)
   }
 
+  final case class Value(value: String)
+
+  final case class Id(id: Int)
+
+  case object All
+
   implicit val selectableByValue = new Selectable[Value, TestClass] {
     val query = Select[TestClass]("SELECT * FROM test_class WHERE value = @value")
 
@@ -44,11 +50,5 @@ object TestClass {
       query.on("value" -> key.value)
     }
   }
-
-  final case class Value(value: String)
-
-  final case class Id(id: Int)
-
-  case object All
 
 }
