@@ -1,5 +1,34 @@
 package com.rocketfuel.sdbc.sqlserver.jdbc
 
+/**
+ * Output of this test:
+ * int: int
+ * bit: bit
+ * tinyint: tinyint
+ * smallint: smallint
+ * bigint: bigint
+ * decimal: decimal
+ * float: float
+ * real: real
+ * time: nvarchar
+ * date: nvarchar
+ * smalldatetime: smalldatetime
+ * datetime: datetime
+ * datetime2: nvarchar
+ * datetimeoffset: narchar
+ * binary: binary
+ * varbinary: image
+ * image: image
+ * char: char
+ * varchar: varchar
+ * nvarchar: nvarchar
+ * text: text
+ * uniqueidentifier: uniqueidentifier
+ * hierarchy: varbinary
+ * money: money
+ * smallmoney: smallmoney
+ * xml: ntext
+ */
 class EnumerateTypesSpec extends SqlServerSuite {
 
   ignore("list type map") {implicit connection =>
