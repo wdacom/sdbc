@@ -1,6 +1,5 @@
 package com.rocketfuel.sdbc.postgresql.jdbc
 
-import com.rocketfuel.sdbc.base._
 import scalaz.Scalaz._
 
 class SeqGetterSpec
@@ -32,7 +31,7 @@ class SeqGetterSpec
     val expected: Seq[Option[ParameterValue]] =
       Seq(SeqGetterSpec.oneTwoThree, SeqGetterSpec.fourFiveSix).map(p => Some[ParameterValue](p))
 
-    testSelect[ParameterValue]("SELECT '{{1,2,3},{4,5,6}}'::int[][] --as ParameterValue", ParameterValue(jdbc.QSeq[Int](expected, "int4")).some)
+    testSelect[ParameterValue]("SELECT '{{1,2,3},{4,5,6}}'::int[][] --as ParameterValue", ParameterValue(QSeq[Int](expected, "int4")).some)
   }
 
 }

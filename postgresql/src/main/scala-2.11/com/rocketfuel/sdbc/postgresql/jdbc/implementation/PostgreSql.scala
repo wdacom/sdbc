@@ -4,7 +4,7 @@ import java.io.{InputStream, Reader}
 import java.sql.PreparedStatement
 import java.util.UUID
 
-import com.rocketfuel.sdbc.base
+import com.rocketfuel.sdbc.base.jdbc
 import com.rocketfuel.sdbc.base.jdbc._
 import org.json4s._
 import org.postgresql.util.PGobject
@@ -15,6 +15,9 @@ import scala.xml.Node
 abstract class PostgreSql
   extends PostgreSqlCommon
   with SeqParameter {
+
+  type QSeq[T] = jdbc.QSeq[T]
+  val QSeq = jdbc.QSeq
 
   override implicit val ParameterGetter: Getter[ParameterValue] = {
     (row: Row, columnIndex: Index) =>

@@ -5,6 +5,7 @@ import java.time.{OffsetDateTime, LocalDateTime, Instant}
 import java.util.UUID
 
 import com.rocketfuel.sdbc.base.jdbc
+import com.rocketfuel.sdbc.base.jdbc.QSeq
 
 import scala.reflect.runtime.universe._
 
