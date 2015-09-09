@@ -12,7 +12,6 @@ case class SelectForUpdate private[jdbc] (
 )(implicit parameterSetter: ParameterSetter
 ) extends base.Select[Connection, UpdatableRow]
   with ParameterizedQuery[SelectForUpdate]
-  with ResultSetImplicits
   with Logging {
 
   private def executeQuery()(implicit connection: Connection): ResultSet = {

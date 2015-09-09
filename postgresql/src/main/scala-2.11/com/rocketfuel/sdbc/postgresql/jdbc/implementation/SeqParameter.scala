@@ -6,7 +6,6 @@ import java.time.{Duration, LocalDateTime, OffsetDateTime, OffsetTime}
 import java.util.UUID
 
 import com.rocketfuel.sdbc.base.jdbc
-import com.rocketfuel.sdbc.base.jdbc.Index
 import com.rocketfuel.sdbc.postgresql.jdbc.{Cidr, LTree}
 import org.json4s._
 
@@ -47,19 +46,13 @@ trait SeqParameter extends jdbc.SeqParameter {
       case t if t =:= typeOf[InetAddress] => "inet"
       case t if t =:= typeOf[Cidr] => "cidr"
       case t if t =:= typeOf[Map[String, String]] => "hstore"
-      case t if t <:< typeOf[QSeq[_]] =>
-        innerTypeName(t)
-      case t if t <:< typeOf[Seq[_]] =>
-        innerTypeName(t)
-      case t => throw new Exception("PostgreSQL does not understand " + t.toString)
-    }
-  }
+      case t
+        if t <:< typeOf[jdbc.QSeq[_]]
+          || t <:< typeOf[Seq[_]] =>
 
-  //Override what would be the inferred Seq[Byte] getter, because you can't use ResultSet#getArray
-  //to get the bytes.
-  implicit val SeqByteGetter = new Getter[Seq[Byte]] {
-    override def apply(row: Row, ix: Index): Option[Seq[Byte]] = {
-      Option(row.getBytes(ix(row))).map(_.toSeq)
+        innerTypeName(t)
+
+      case t => throw new Exception("PostgreSQL does not understand " + t.toString)
     }
   }
 

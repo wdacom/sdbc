@@ -16,7 +16,7 @@ class UpdatableRow private[jdbc] (
     updater.update(this, columnLabel, x)
   }
 
-  def updateArray(columnIndex: Int, x: JdbcArray): Unit = underlying.updateArray(columnIndex: Int, x)
+  def updateArray(columnIndex: Int, x: JdbcArray): Unit = underlying.updateArray(columnIndex + 1, x)
 
   def updateArray(columnLabel: String, x: JdbcArray): Unit = underlying.updateArray(columnLabel: String, x)
 

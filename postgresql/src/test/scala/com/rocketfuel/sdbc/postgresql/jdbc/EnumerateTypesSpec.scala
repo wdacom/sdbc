@@ -30,7 +30,9 @@ class EnumerateTypesSpec extends PostgreSqlSuite {
         | j json,
         | jb jsonb,
         | array0 int[],
-        | array1 bigint[]
+        | array1 bigint[],
+        | h hstore,
+        | l ltree
         |)
       """.stripMargin
     ).update()
