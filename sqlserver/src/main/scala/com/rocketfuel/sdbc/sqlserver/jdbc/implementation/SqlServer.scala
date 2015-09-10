@@ -116,24 +116,14 @@ abstract class SqlServer
           FloatGetter(row, ix)
         case "float" =>
           DoubleGetter(row, ix)
-        case "time" =>
-          LocalTimeGetter(row, ix)
-        case "date" =>
-          DateGetter(row, ix)
-        case "datetime2" =>
+        case "datetime" | "smalldatetime" =>
           TimestampGetter(row, ix)
-        case "datetimeoffset" =>
-          OffsetDateTimeGetter(row, ix)
-        case "varbinary" =>
+        case "binary" | "varbinary" | "image" =>
           ArrayByteGetter(row, ix)
-        case "varchar" =>
+        case "char" | "nchar" | "varchar" | "nvarchar" | "text" | "ntext" =>
           StringGetter(row, ix)
         case "uniqueidentifier" =>
           UUIDGetter(row, ix)
-        case "xml" =>
-          XMLGetter(row, ix)
-        case "hierarchyid" =>
-          HierarchyIdGetter(row, ix)
       }
   }
 
