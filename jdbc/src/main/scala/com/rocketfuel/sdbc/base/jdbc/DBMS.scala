@@ -19,7 +19,7 @@ abstract class DBMS
   /**
    *
    */
-  implicit val parameterSetter: ParameterSetter
+  implicit val ParameterSetter: ParameterSetter
 
   type Index = jdbc.Index
 
@@ -40,47 +40,61 @@ abstract class DBMS
 
   type Select[T] = jdbc.Select[T]
 
-  def Select[T](
-    queryText: String,
-    hasParameters: Boolean = true
-  )(implicit converter: Row => T): Select[T] = {
-    jdbc.Select[T](queryText, hasParameters)
+  object Select {
+    def apply[T](
+      queryText: String,
+      hasParameters: Boolean = true
+    )(implicit converter: Row => T): Select[T] = {
+      jdbc.Select[T](queryText, hasParameters)
+    }
   }
 
   type SelectForUpdate = jdbc.SelectForUpdate
 
-  def SelectForUpdate(
-    queryText: String,
-    hasParameters: Boolean = true
-  ): SelectForUpdate = {
-    jdbc.SelectForUpdate(queryText, hasParameters)
+  object SelectForUpdate {
+    def apply(
+      queryText: String,
+      hasParameters: Boolean = true
+    ): SelectForUpdate = {
+      jdbc.SelectForUpdate(queryText, hasParameters)
+    }
   }
 
   type Update = jdbc.Update
 
-  def Update(
-    queryText: String,
-    hasParameters: Boolean = true
-  ): Update = {
-    jdbc.Update(queryText, hasParameters)
+  object Update {
+    def apply(
+      queryText: String,
+      hasParameters: Boolean = true
+    ): Update = {
+      jdbc.Update(queryText, hasParameters)
+    }
+
   }
 
   type Batch = jdbc.Batch
 
-  def Batch(
-    queryText: String,
-    hasParameters: Boolean = true
-  ): Batch = {
-    jdbc.Batch(queryText, hasParameters)
+  object Batch {
+    def apply(
+      queryText: String,
+      hasParameters: Boolean = true
+    ): Batch = {
+      jdbc.Batch(queryText, hasParameters)
+    }
   }
 
   type Execute = jdbc.Execute
 
-  def Execute(
-    queryText: String,
-    hasParameters: Boolean = true
-  ): Execute = {
-    jdbc.Execute(queryText, hasParameters)
+  object Execute {
+    def apply(
+      queryText: String,
+      hasParameters: Boolean = true
+    ): Execute = {
+      jdbc.Execute(
+          queryText,
+          hasParameters
+        )
+    }
   }
 
   type Pool = jdbc.Pool

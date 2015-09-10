@@ -1,19 +1,19 @@
 package com.rocketfuel.sdbc.postgresql.jdbc.implementation
 
 import java.net.InetAddress
-import java.sql.{Date, Time}
-import java.time.{Duration, LocalDateTime, OffsetDateTime, OffsetTime}
+import java.sql._
+import java.time._
 import java.util.UUID
-
-import com.rocketfuel.sdbc.base.jdbc
-import com.rocketfuel.sdbc.base.jdbc.Index
+import com.rocketfuel.sdbc.base.jdbc._
 import com.rocketfuel.sdbc.postgresql.jdbc.{Cidr, LTree}
 import org.json4s._
-
 import scala.reflect.runtime.universe._
 
-trait SeqParameter extends jdbc.SeqParameter {
-  self: PostgreSqlCommon =>
+trait SeqParameter {
+
+  def typeName[T](implicit tag: TypeTag[T]): String = {
+    typeName(tag.tpe)
+  }
 
   def typeName(tpe: Type): String = {
     tpe match {
@@ -47,19 +47,60 @@ trait SeqParameter extends jdbc.SeqParameter {
       case t if t =:= typeOf[InetAddress] => "inet"
       case t if t =:= typeOf[Cidr] => "cidr"
       case t if t =:= typeOf[Map[String, String]] => "hstore"
-      case t if t <:< typeOf[QSeq[_]] =>
+      case t
+        if t <:< typeOf[QSeq[_]]
+          || t <:< typeOf[Seq[_]] =>
+
         innerTypeName(t)
-      case t if t <:< typeOf[Seq[_]] =>
-        innerTypeName(t)
+
       case t => throw new Exception("PostgreSQL does not understand " + t.toString)
     }
   }
 
-  //Override what would be the inferred Seq[Byte] getter, because you can't use ResultSet#getArray
-  //to get the bytes.
-  implicit val SeqByteGetter = new Getter[Seq[Byte]] {
-    override def apply(row: Row, ix: Index): Option[Seq[Byte]] = {
-      Option(row.getBytes(ix(row))).map(_.toSeq)
+  def innerTypeName(tpe: Type): String = {
+    val innerType = tpe.dealias.typeArgs.head.dealias
+    typeName(innerType)
+  }
+
+  implicit def SeqOptionToOptionParameterValue[T](
+    v: Seq[Option[T]]
+  )(implicit conversion: T => ParameterValue,
+    ttag: TypeTag[T]
+  ): ParameterValue = {
+    ParameterValue(QSeq(v.map(_.map(conversion)), typeName[T]))
+  }
+
+  implicit def SeqToOptionParameterValue[T](
+    v: Seq[T]
+  )(implicit conversion: T => ParameterValue,
+    ttag: TypeTag[T]
+  ): ParameterValue = {
+    v.map(Some.apply)
+  }
+
+  implicit val QSeqIsParameter: IsParameter[QSeq[_]] = new IsParameter[QSeq[_]] {
+    override def set(preparedStatement: PreparedStatement, parameterIndex: Int, parameter: QSeq[_]): Unit = {
+      preparedStatement.setArray(parameterIndex, parameter.asJdbcArray(preparedStatement.getConnection))
+    }
+  }
+
+  implicit def SetterToSeqOptionUpdater[T](implicit conversion: T => ParameterValue, ttag: TypeTag[T]): Updater[Seq[Option[T]]] = {
+    new Updater[Seq[Option[T]]] {
+      override def update(row: UpdatableRow, columnIndex: Int, x: Seq[Option[T]]): Unit = {
+        val asParameterValue: ParameterValue = x
+        val ParameterValue(q: QSeq[_]) = asParameterValue
+        row.updateArray(columnIndex, q.asJdbcArray(row.getStatement.getConnection))
+      }
+    }
+  }
+
+  implicit def SetterToSeqUpdater[T](implicit conversion: T => ParameterValue, ttag: TypeTag[T]): Updater[Seq[T]] = {
+    new Updater[Seq[T]] {
+      val optionUpdater = implicitly[Updater[Seq[Option[T]]]]
+      override def update(row: UpdatableRow, columnIndex: Int, x: Seq[T]): Unit = {
+        val optValue = x.map(Some.apply)
+        optionUpdater.update(row, columnIndex, optValue)
+      }
     }
   }
 

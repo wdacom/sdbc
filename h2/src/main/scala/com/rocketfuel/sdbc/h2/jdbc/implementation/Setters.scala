@@ -14,6 +14,7 @@ trait Setters
       QInstant.toParameter orElse
       QLocalDate.toParameter orElse
       QLocalTime.toParameter orElse
-      QLocalDateTime.toParameter
+      QLocalDateTime.toParameter orElse
+      QSeq.toParameter
 
 }

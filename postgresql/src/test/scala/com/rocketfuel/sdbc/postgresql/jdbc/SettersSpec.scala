@@ -1,7 +1,8 @@
 package com.rocketfuel.sdbc.postgresql.jdbc
 
-import org.scalatest._
 import java.math.{BigDecimal => JBigDecimal}
+
+import org.scalatest._
 
 class SettersSpec
   extends FunSuite {

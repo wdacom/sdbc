@@ -72,4 +72,14 @@ class GettersSpec
 
   testSelect[UUID](s"SELECT CAST('$uuid' AS uuid)", uuid.some)
 
+  testSelect[Seq[Int]]("SELECT (1, 2, 3)", Seq(1, 2, 3).some)
+
+  testSelect[Seq[Option[Int]]]("SELECT (1, NULL, 3)", Seq(1.some, none[Int], 3.some).some)
+
+  testSelect[Seq[Seq[Int]]]("SELECT (())", Seq.empty.some)
+
+  testSelect[Seq[Seq[Int]]]("SELECT ((1, 2),)", Seq(Seq(1, 2)).some)
+
+  testSelect[Seq[Seq[Option[Int]]]]("SELECT ((1, NULL), (2, NULL))", Seq(Seq(Some(1), None), Seq(Some(2), None)).some)
+
 }

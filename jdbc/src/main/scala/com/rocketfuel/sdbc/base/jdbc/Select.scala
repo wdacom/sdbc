@@ -13,7 +13,6 @@ case class Select[T] private [jdbc] (
   parameterSetter: ParameterSetter
 ) extends base.Select[Connection, T]
   with ParameterizedQuery[Select[T]]
-  with ResultSetImplicits
   with Logging {
 
   private def executeQuery()(implicit connection: Connection): ResultSet = {

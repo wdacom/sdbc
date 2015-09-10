@@ -39,7 +39,7 @@ abstract class SqlServer
   override val supportsIsValid = false
 
 
-  override implicit val parameterSetter: ParameterSetter = new ParameterSetter {
+  override implicit val ParameterSetter: ParameterSetter = new ParameterSetter {
     /**
      * Pattern match to get the IsParameter instance for
      * a value, and then call setParameter.
