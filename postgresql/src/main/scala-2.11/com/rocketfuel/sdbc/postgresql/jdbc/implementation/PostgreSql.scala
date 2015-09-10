@@ -4,8 +4,8 @@ import java.io.{InputStream, Reader}
 import java.sql.PreparedStatement
 import java.util.UUID
 
-import com.rocketfuel.sdbc.base.jdbc
 import com.rocketfuel.sdbc.base.jdbc._
+import com.rocketfuel.sdbc.postgresql.jdbc.implementation
 import org.json4s._
 import org.postgresql.util.PGobject
 import scodec.bits.ByteVector
@@ -14,10 +14,11 @@ import scala.xml.Node
 
 abstract class PostgreSql
   extends PostgreSqlCommon
-  with SeqParameter {
+  with SeqParameter
+  with SeqGetter {
 
-  type QSeq[T] = jdbc.QSeq[T]
-  val QSeq = jdbc.QSeq
+  type QSeq[T] = implementation.QSeq[T]
+  val QSeq = implementation.QSeq
 
   override implicit val ParameterGetter: Getter[ParameterValue] = {
     (row: Row, columnIndex: Index) =>
@@ -80,7 +81,7 @@ abstract class PostgreSql
       }
   }
 
-  override implicit val parameterSetter: ParameterSetter = new ParameterSetter {
+  override implicit val ParameterSetter: ParameterSetter = new ParameterSetter {
     /**
      * Pattern match on parameters to get the IsParameter instance for
      * each value, and then call setParameter.

@@ -14,7 +14,61 @@ import scala.xml.Node
 abstract class PostgreSql
   extends PostgreSqlCommon {
 
-  override implicit val parameterSetter: ParameterSetter = new ParameterSetter {
+  override implicit val ParameterGetter: Getter[ParameterValue] = {
+    (row: Row, columnIndex: Index) =>
+      val ix = columnIndex(row)
+
+      val columnType = row.columnTypes(columnIndex(row))
+
+      columnType match {
+        case "int4" | "serial" =>
+          IntGetter(row, ix).map(ParameterValue)
+        case "bool" =>
+          BooleanGetter(row, ix)
+        case "int2" =>
+          ShortGetter(row, ix)
+        case "int8" | "bigserial" =>
+          LongGetter(row, ix)
+        case "numeric" =>
+          JavaBigDecimalGetter(row, ix)
+        case "float4" =>
+          FloatGetter(row, ix)
+        case "float8" =>
+          DoubleGetter(row, ix)
+        case "time" =>
+          LocalTimeGetter(row, ix)
+        case "timetz" =>
+          OffsetTimeGetter(row, ix)
+        case "date" =>
+          DateGetter(row, ix)
+        case "timestamp" =>
+          TimestampGetter(row, ix)
+        case "timestamptz" =>
+          OffsetDateTimeGetter(row, ix)
+        case "bytea" =>
+          ArrayByteGetter(row, ix)
+        case "varchar" | "bpchar" | "text" =>
+          StringGetter(row, ix)
+        case "uuid" =>
+          UUIDGetter(row, ix)
+        case "xml" =>
+          XMLGetter(row, ix)
+        case "json" | "jsonb" =>
+          JValueGetter(row, ix)
+        case "interval" =>
+          PGIntervalGetter(row, ix)
+        case "inet" =>
+          InetAddressGetter(row, ix)
+        case "hstore" =>
+          MapGetter(row, ix)
+        case "ltree" =>
+          LTreeGetter(row, ix)
+        case array if array.startsWith("_") =>
+          throw new UnsupportedOperationException("PostgreSQL array support requires Scala 2.11.")
+      }
+  }
+
+  override implicit val ParameterSetter: ParameterSetter = new ParameterSetter {
     /**
      * Pattern match on parameters to get the IsParameter instance for
      * each value, and then call setParameter.

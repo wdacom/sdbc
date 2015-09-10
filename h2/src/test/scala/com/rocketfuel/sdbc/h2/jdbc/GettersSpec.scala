@@ -10,6 +10,20 @@ import scalaz.Scalaz._
 class GettersSpec
   extends H2Suite {
 
+  def testSelect[T](query: String, expectedValue: Option[T])(implicit converter: Row => Option[T]): Unit = {
+    test(query) { implicit connection =>
+      val result = Select[Option[T]](query).option().flatten
+      (expectedValue, result) match {
+        case (Some(expectedArray: Array[_]), Some(resultArray: Array[_])) =>
+          assert(expectedArray.sameElements(resultArray))
+        case (Some(x), Some(y)) =>
+          assertResult(x)(y)
+        case (None, None) => true
+        case _ => false
+      }
+    }
+  }
+
   val uuid = UUID.randomUUID()
 
   testSelect[Int]("SELECT NULL", none[Int])
@@ -57,5 +71,15 @@ class GettersSpec
   }
 
   testSelect[UUID](s"SELECT CAST('$uuid' AS uuid)", uuid.some)
+
+  testSelect[Seq[Int]]("SELECT (1, 2, 3)", Seq(1, 2, 3).some)
+
+  testSelect[Seq[Option[Int]]]("SELECT (1, NULL, 3)", Seq(1.some, none[Int], 3.some).some)
+
+  testSelect[Seq[Seq[Int]]]("SELECT (())", Seq.empty.some)
+
+  testSelect[Seq[Seq[Int]]]("SELECT ((1, 2),)", Seq(Seq(1, 2)).some)
+
+  testSelect[Seq[Seq[Option[Int]]]]("SELECT ((1, NULL), (2, NULL))", Seq(Seq(Some(1), None), Seq(Some(2), None)).some)
 
 }
