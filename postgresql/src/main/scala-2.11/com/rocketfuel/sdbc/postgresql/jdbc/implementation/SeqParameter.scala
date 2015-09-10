@@ -11,7 +11,7 @@ import org.json4s._
 
 import scala.reflect.runtime.universe._
 
-trait SeqParameter extends jdbc.SeqParameter {
+trait SeqParameter extends jdbc.SeqParameter with jdbc.SeqParameterUpdaters {
   self: PostgreSqlCommon =>
 
   def typeName(tpe: Type): String = {

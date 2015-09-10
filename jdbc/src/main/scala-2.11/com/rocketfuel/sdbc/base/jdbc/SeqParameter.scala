@@ -8,9 +8,12 @@ case class QSeq[T](
   value: Seq[Option[ParameterValue]],
   typeName:  String
 ) {
+  def asJavaArray: Array[AnyRef] = {
+    QSeq.toJavaArray(this)
+  }
+
   def asJdbcArray(connection: Connection): java.sql.Array = {
-    val asJdbcArray = QSeq.toJavaArray(this)
-    connection.createArrayOf(typeName, asJdbcArray)
+    connection.createArrayOf(typeName, asJavaArray)
   }
 }
 
@@ -67,7 +70,12 @@ trait SeqParameter {
         a <- Option(row.getArray(ix(row)))
       } yield {
         val arrayIterator = a.getResultSet().iterator()
-        arrayIterator.map(_.get[T](IntIndex(1))).toVector
+        val arrayValues = for {
+          arrayRow <- arrayIterator
+        } yield {
+          arrayRow.get[T](IntIndex(1))
+        }
+        arrayValues.toVector
       }
   }
 
@@ -75,6 +83,25 @@ trait SeqParameter {
     (row: Row, ix: Index) =>
       GetterToSeqOptionGetter(getter)(row, ix).map(_.map(_.get))
   }
+
+  implicit val QSeqIsParameter: IsParameter[QSeq[_]] = new IsParameter[QSeq[_]] {
+    override def set(preparedStatement: PreparedStatement, parameterIndex: Int, parameter: QSeq[_]): Unit = {
+      preparedStatement.setArray(parameterIndex, parameter.asJdbcArray(preparedStatement.getConnection))
+    }
+  }
+
+  //Override what would be the inferred Seq[Byte] getter, because you can't use ResultSet#getArray
+  //to get the bytes.
+  implicit val SeqByteGetter = new Getter[Seq[Byte]] {
+    override def apply(row: Row, ix: Index): Option[Seq[Byte]] = {
+      ArrayByteGetter(row, ix).map(_.toSeq)
+    }
+  }
+
+}
+
+trait SeqParameterUpdaters {
+  self: SeqParameter with BytesGetter =>
 
   implicit def SetterToSeqOptionUpdater[T](implicit conversion: T => ParameterValue, ttag: TypeTag[T]): Updater[Seq[Option[T]]] = {
     new Updater[Seq[Option[T]]] {
@@ -93,20 +120,6 @@ trait SeqParameter {
         val optValue = x.map(Some.apply)
         optionUpdater.update(row, columnIndex, optValue)
       }
-    }
-  }
-
-  implicit val QSeqIsParameter: IsParameter[QSeq[_]] = new IsParameter[QSeq[_]] {
-    override def set(preparedStatement: PreparedStatement, parameterIndex: Int, parameter: QSeq[_]): Unit = {
-      preparedStatement.setArray(parameterIndex, parameter.asJdbcArray(preparedStatement.getConnection))
-    }
-  }
-
-  //Override what would be the inferred Seq[Byte] getter, because you can't use ResultSet#getArray
-  //to get the bytes.
-  implicit val SeqByteGetter = new Getter[Seq[Byte]] {
-    override def apply(row: Row, ix: Index): Option[Seq[Byte]] = {
-      ArrayByteGetter(row, ix).map(_.toSeq)
     }
   }
 

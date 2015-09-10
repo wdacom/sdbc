@@ -1,16 +1,34 @@
 package com.rocketfuel.sdbc.h2.jdbc.implementation
 
-import java.sql.{Time, Date}
+import java.sql.{PreparedStatement, Time, Date}
 import java.time.{OffsetDateTime, LocalDateTime, Instant}
 import java.util.UUID
 
 import com.rocketfuel.sdbc.base.jdbc
-import com.rocketfuel.sdbc.base.jdbc.QSeq
+import com.rocketfuel.sdbc.base.jdbc._
 
 import scala.reflect.runtime.universe._
 
 trait SeqParameter extends jdbc.SeqParameter {
-  self: H2Common =>
+  self: jdbc.BytesGetter =>
+
+
+  implicit def SeqGetter[T]: Getter[Seq[Option[T]]] = {
+    (row: Row, ix: Index) =>
+      for {
+        a <- Option(row.getObject(ix(row)))
+      } yield {
+        val aArray = a.asInstanceOf[Array[_]]
+        aArray.map(v => Option(v).map(_.asInstanceOf[T]))
+        
+      }
+  }
+
+  override implicit val QSeqIsParameter: IsParameter[QSeq[_]] = new IsParameter[QSeq[_]] {
+    override def set(preparedStatement: PreparedStatement, parameterIndex: Int, parameter: QSeq[_]): Unit = {
+      preparedStatement.setObject(parameterIndex, parameter.asJavaArray)
+    }
+  }
 
   override def typeName(tpe: Type): String = {
     tpe match {
@@ -37,7 +55,7 @@ trait SeqParameter extends jdbc.SeqParameter {
       case t if t =:= typeOf[java.lang.Boolean] => "BOOLEAN"
       case t if t =:= typeOf[String] => "VARCHAR"
       case t if t =:= typeOf[UUID] => "UUID"
-      case t if t <:< typeOf[QSeq[_]] =>
+      case t if t <:< typeOf[jdbc.QSeq[_]] =>
         innerTypeName(t)
       case t if t <:< typeOf[Seq[_]] =>
         innerTypeName(t)
