@@ -89,7 +89,7 @@ Packages exist on Maven Central for Scala 2.10 and 2.11. The Scala 2.10 builds f
 * Use named parameters with queries.
 * Query execution logging
 * Use Java 8's java.time library, or Joda time for Java 7 and below.
-* Scalaz streaming support by adding constructors to scalaz.stream.Process.
+* Scalaz streaming support by adding constructors to scalaz.stream.Process and scalaz.stream.io.
 
 ## [Scaladoc](http://www.jeffshaw.me/sdbc/1.0)
 

@@ -20,7 +20,6 @@ trait SeqParameter extends jdbc.SeqParameter {
       } yield {
         val aArray = a.asInstanceOf[Array[_]]
         aArray.map(v => Option(v).map(_.asInstanceOf[T]))
-        
       }
   }
 
