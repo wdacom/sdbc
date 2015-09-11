@@ -4,7 +4,7 @@ import java.time.format.{DateTimeFormatter, DateTimeFormatterBuilder}
 
 package object implementation {
 
-  val offsetDateTimeFormatter = {
+  private[implementation] val offsetDateTimeFormatter = {
     new DateTimeFormatterBuilder().
       parseCaseInsensitive().
       append(DateTimeFormatter.ISO_LOCAL_DATE).

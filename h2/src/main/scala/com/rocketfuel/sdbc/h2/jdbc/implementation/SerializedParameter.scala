@@ -4,7 +4,7 @@ import java.sql.{PreparedStatement, Types}
 import com.rocketfuel.sdbc.h2.jdbc.Serialized
 import com.rocketfuel.sdbc.base.jdbc._
 
-trait SerializedParameter {
+private[sdbc] trait SerializedParameter {
 
   implicit def SerializedParameter = new IsParameter[Serialized] {
     override def set(preparedStatement: PreparedStatement, parameterIndex: Int, parameter: Serialized): Unit = {

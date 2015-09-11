@@ -2,7 +2,7 @@ package com.rocketfuel.sdbc.h2.jdbc.implementation
 
 import com.rocketfuel.sdbc.base.jdbc._
 
-trait Setters
+private[sdbc] trait Setters
   extends DefaultSetters
   with QInstantImplicits
   with QLocalDateImplicits

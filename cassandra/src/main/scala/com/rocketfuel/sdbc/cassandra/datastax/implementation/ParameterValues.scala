@@ -9,7 +9,7 @@ import com.rocketfuel.sdbc.base
 import scodec.bits.ByteVector
 import scala.collection.convert.decorateAsJava._
 
-trait ParameterValues {
+private[sdbc] trait ParameterValues {
 
   type IsParameter[T] = base.IsParameter[T, BoundStatement, Int]
 

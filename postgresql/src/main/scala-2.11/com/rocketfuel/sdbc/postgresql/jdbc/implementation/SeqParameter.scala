@@ -9,7 +9,7 @@ import com.rocketfuel.sdbc.postgresql.jdbc.{Cidr, LTree}
 import org.json4s._
 import scala.reflect.runtime.universe._
 
-trait SeqParameter {
+private[sdbc] trait SeqParameter {
 
   def typeName[T](implicit tag: TypeTag[T]): String = {
     typeName(tag.tpe)

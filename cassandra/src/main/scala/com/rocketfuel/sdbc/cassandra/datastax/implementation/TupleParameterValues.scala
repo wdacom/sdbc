@@ -1,13 +1,13 @@
 package com.rocketfuel.sdbc.cassandra.datastax.implementation
 
-import com.datastax.driver.core.{BoundStatement, TupleType}
+import com.datastax.driver.core.TupleType
 import com.rocketfuel.sdbc.base
 import com.rocketfuel.sdbc.cassandra.datastax.implementation.TupleParameterValues.boxOption
 import shapeless._
 import shapeless.poly._
 import shapeless.syntax.std.tuple._
 
-trait TupleParameterValues {
+private[sdbc] trait TupleParameterValues {
 
   object toSome extends (Id ~> Option) {
     override def apply[T](f: Id[T]): Option[T] = {
@@ -857,7 +857,7 @@ trait TupleParameterValues {
 
 }
 
-object TupleParameterValues {
+private[sdbc] object TupleParameterValues {
   def boxOption(v: Option[Any]): AnyRef = {
     v.map(base.box).orNull
   }

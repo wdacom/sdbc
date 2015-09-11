@@ -8,7 +8,7 @@ import com.google.common.reflect.TypeToken
 import scodec.bits.ByteVector
 import scala.collection.convert.wrapAsScala._
 
-trait TupleGetters {
+private[sdbc] trait TupleGetters {
   implicit val UnitTupleGetter: TupleGetter[Unit] = TupleGetters[Unit](row => ix => ())
 
   implicit val BooleanTupleGetter: TupleGetter[Boolean] = TupleGetters[Boolean](row => ix => row.getBool(ix))
@@ -507,7 +507,7 @@ trait TupleGetters {
   }
 }
 
-object TupleGetters {
+private[sdbc] object TupleGetters {
   def apply[T](getter: TupleValue => Int => T): TupleGetter[T] = {
     new TupleGetter[T] {
       override def apply(

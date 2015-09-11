@@ -7,7 +7,7 @@ import scala.concurrent.duration.Duration
 
 import org.postgresql.util.{PGobject, PGInterval}
 
-trait IntervalImplicits {
+private[sdbc] trait IntervalImplicits {
 
   implicit def JavaDurationToPGInterval(value: JavaDuration): PGInterval = {
     val nano = value.getNano.toDouble / IntervalConstants.nanosecondsPerSecond.toDouble

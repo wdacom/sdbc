@@ -10,7 +10,7 @@ import com.rocketfuel.sdbc.sqlserver.jdbc.HierarchyId
 
 import scala.xml.{Node, XML}
 
-trait Getters
+private[sdbc] trait Getters
   extends DefaultGetters
   with InstantGetter
   with LocalDateGetter

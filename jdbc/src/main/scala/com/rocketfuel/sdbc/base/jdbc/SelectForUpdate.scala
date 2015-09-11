@@ -6,7 +6,7 @@ import com.rocketfuel.Logging
 import com.rocketfuel.sdbc.base
 import com.rocketfuel.sdbc.base.CompiledStatement
 
-case class SelectForUpdate private[jdbc] (
+case class SelectForUpdate private[sdbc] (
   statement: CompiledStatement,
   parameterValues: Map[String, Option[Any]]
 )(implicit parameterSetter: ParameterSetter

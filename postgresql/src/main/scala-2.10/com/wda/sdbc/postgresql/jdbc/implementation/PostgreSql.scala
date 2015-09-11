@@ -11,7 +11,7 @@ import scodec.bits.ByteVector
 
 import scala.xml.Node
 
-abstract class PostgreSql
+private[sdbc] abstract class PostgreSql
   extends PostgreSqlCommon {
 
   override implicit val ParameterGetter: Getter[ParameterValue] = {

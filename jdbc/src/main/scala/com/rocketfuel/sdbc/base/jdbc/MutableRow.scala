@@ -10,15 +10,15 @@ import java.util.Calendar
 /**
  * A class which wraps the read-only parts of a JDBC `ResultSet`.
  *
- * For an updatable version, see `SelectForUpdate`.
+ * For an updatable version, see {@link SelectForUpdate}.
  *
  * There are two good ways to get information out of a Row. If you want to use
- * generics, use [[Row#get()]]. If you want to use pattern matching, use [[Row#get[ParameterValue]].
- * You can also use the various get methods that JDBC provides.
+ * generics, use {@link Row#get}. If you want to use pattern matching, use `Row#get[ParameterValue]`.
+ * You can also use the various get methods that mirror JDBC ResultSet's get methods.
  *
  * @param underlying
  */
-class MutableRow private[jdbc] (
+class MutableRow private[sdbc] (
   protected[jdbc] val underlying: ResultSet
 ) extends Row
   with Closeable

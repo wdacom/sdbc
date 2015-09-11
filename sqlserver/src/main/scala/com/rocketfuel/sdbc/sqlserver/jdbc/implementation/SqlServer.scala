@@ -25,7 +25,7 @@ string, xml
 varbinary could be:
 varbinary, hierarchyid
  */
-abstract class SqlServer
+private[sdbc] abstract class SqlServer
   extends DBMS
   with Setters
   with Getters

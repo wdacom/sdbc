@@ -9,7 +9,7 @@ import com.rocketfuel.sdbc.base.jdbc.{ParameterSetter, DBMS}
 import com.rocketfuel.sdbc.h2.jdbc.Serialized
 import scodec.bits.ByteVector
 
-abstract class H2
+private[sdbc] abstract class H2
   extends DBMS
   with Getters
   with Setters

@@ -9,9 +9,9 @@ import scodec.bits.ByteVector
 
 import scala.reflect.ClassTag
 
-case class TupleDataType[T](dataType: DataType)
+private[sdbc] case class TupleDataType[T](dataType: DataType)
 
-trait TupleDataTypes {
+private[sdbc] trait TupleDataTypes {
 
   implicit val intDataType = TupleDataType[Int](DataType.cint())
 

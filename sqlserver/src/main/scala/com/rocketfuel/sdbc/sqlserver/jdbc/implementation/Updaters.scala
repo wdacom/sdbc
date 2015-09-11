@@ -9,7 +9,7 @@ import com.rocketfuel.sdbc.sqlserver.jdbc.HierarchyId
 
 import scala.xml.Node
 
-trait Updaters
+private[sdbc] trait Updaters
   extends AnyRefUpdater
   with LongUpdater
   with IntUpdater

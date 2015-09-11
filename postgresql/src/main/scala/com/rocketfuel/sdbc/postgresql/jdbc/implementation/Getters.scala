@@ -1,6 +1,5 @@
 package com.rocketfuel.sdbc.postgresql.jdbc.implementation
 
-
 import java.net.InetAddress
 import java.sql.{SQLException, SQLDataException}
 import java.time.format.DateTimeFormatter
@@ -14,7 +13,7 @@ import scala.xml.{Node, XML}
 import scala.concurrent.duration.{Duration => ScalaDuration}
 
 //PostgreSQL doesn't support Byte, so we don't use the default getters.
-trait Getters
+private[sdbc] trait Getters
   extends BooleanGetter
   with BytesGetter
   with DateGetter

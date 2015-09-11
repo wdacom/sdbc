@@ -1,6 +1,6 @@
 package com.rocketfuel.sdbc.cassandra.datastax.implementation
 
-trait IndexImplicits {
+private[sdbc] trait IndexImplicits {
 
   implicit def IntToIndex(columnIndex: Int): Index = IntIndex(columnIndex)
 

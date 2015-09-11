@@ -12,7 +12,7 @@ import scodec.bits.ByteVector
 
 import scala.xml.Node
 
-abstract class PostgreSql
+private[sdbc] abstract class PostgreSql
   extends PostgreSqlCommon
   with SeqParameter
   with SeqGetter {

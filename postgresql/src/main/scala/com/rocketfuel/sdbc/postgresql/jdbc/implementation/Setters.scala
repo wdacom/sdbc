@@ -8,7 +8,7 @@ import org.postgresql.util.PGobject
 import scala.collection.convert.decorateAsJava._
 
 //PostgreSQL doesn't support Byte, so we don't use the default setters.
-trait Setters
+private[sdbc] trait Setters
   extends QPGObjectImplicits
   with QBooleanImplicits
   with QBytesImplicits
@@ -71,13 +71,13 @@ trait Setters
 
 }
 
-object QPGObject extends ToParameter {
+private[sdbc] object QPGObject extends ToParameter {
   override val toParameter: PartialFunction[Any, Any] = {
     case i: PGobject => i
   }
 }
 
-trait QPGObjectImplicits {
+private[sdbc] trait QPGObjectImplicits {
   implicit val PGobjectIsParameter: IsParameter[PGobject] = new IsParameter[PGobject] {
     override def set(preparedStatement: PreparedStatement, parameterIndex: Int, parameter: PGobject): Unit = {
       preparedStatement.setObject(parameterIndex, parameter)
@@ -94,14 +94,14 @@ trait QPGObjectImplicits {
 
 }
 
-object QMap extends ToParameter {
+private[sdbc] object QMap extends ToParameter {
   override val toParameter: PartialFunction[Any, Any] = {
     case i: Map[_, _] => //Technically, this should be a Map[String, String]
       i.asJava
   }
 }
 
-trait QMapImplicits {
+private[sdbc] trait QMapImplicits {
   implicit val MapIsParameter: IsParameter[java.util.Map[String, String]] = new IsParameter[java.util.Map[String, String]] {
     override def set(
       preparedStatement: PreparedStatement,

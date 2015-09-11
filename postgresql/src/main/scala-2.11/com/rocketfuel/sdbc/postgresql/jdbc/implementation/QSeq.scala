@@ -3,7 +3,7 @@ package com.rocketfuel.sdbc.postgresql.jdbc.implementation
 import java.sql.Connection
 import com.rocketfuel.sdbc.base._
 
-case class QSeq[T](
+private[sdbc] case class QSeq[T](
   value: Seq[Option[ParameterValue]],
   typeName:  String
 ) {
@@ -16,7 +16,7 @@ case class QSeq[T](
   }
 }
 
-object QSeq extends ToParameter {
+private[sdbc] object QSeq extends ToParameter {
 
   override val toParameter: PartialFunction[Any, Any] = {
     case s: QSeq[_] => s

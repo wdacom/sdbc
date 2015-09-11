@@ -6,7 +6,7 @@ import com.datastax.driver.core._
 import com.rocketfuel.sdbc.base
 import scodec.bits.ByteVector
 
-object ParameterSetter extends base.ParameterSetter[BoundStatement, Int] {
+private[sdbc] object ParameterSetter extends base.ParameterSetter[BoundStatement, Int] {
   override def setNone(preparedStatement: BoundStatement, parameterIndex: Int): Unit = {
     preparedStatement.setToNull(parameterIndex)
   }

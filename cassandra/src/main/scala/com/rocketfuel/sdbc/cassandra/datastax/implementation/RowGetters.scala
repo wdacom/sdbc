@@ -12,7 +12,7 @@ import com.google.common.reflect.TypeToken
 
 import scala.reflect.ClassTag
 
-trait RowGetters {
+private[sdbc] trait RowGetters {
   self: ParameterValues =>
 
   implicit val BooleanRowGetter: RowGetter[Boolean] = RowGetters[Boolean](row => ix => row.getBool(ix))
@@ -566,7 +566,7 @@ trait RowGetters {
     }
 }
 
-object RowGetters {
+private[sdbc] object RowGetters {
   def apply[T](getter: CRow => Int => T): RowGetter[T] = {
     new RowGetter[T] {
       override def apply(row: CRow, toIx: Index): Option[T] = {

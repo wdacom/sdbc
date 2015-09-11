@@ -10,10 +10,10 @@ abstract class DBMS
   with ParameterValueImplicits
   with GetterImplicits
   with UpdaterImplicits
-  with base.BatchableMethods[Connection, Batch]
-  with base.UpdatableMethods[Connection, Update]
-  with base.SelectableMethods[Connection, Select]
-  with base.ExecutableMethods[Connection, Execute]
+  with base.BatchableMethods[java.sql.Connection, Batch]
+  with base.UpdatableMethods[java.sql.Connection, Update]
+  with base.SelectableMethods[java.sql.Connection, Select]
+  with base.ExecutableMethods[java.sql.Connection, Execute]
   with StringContextMethods {
 
   /**

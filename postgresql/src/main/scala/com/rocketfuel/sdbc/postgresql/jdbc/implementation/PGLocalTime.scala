@@ -6,7 +6,7 @@ import java.time.format.DateTimeFormatter
 import com.rocketfuel.sdbc.base.ToParameter
 import org.postgresql.util.PGobject
 
-class PGLocalTime() extends PGobject() {
+private[sdbc] class PGLocalTime() extends PGobject() {
 
   setType("time")
 
@@ -26,7 +26,7 @@ class PGLocalTime() extends PGobject() {
   }
 }
 
-object PGLocalTime extends ToParameter {
+private[sdbc] object PGLocalTime extends ToParameter {
   def apply(l: LocalTime): PGLocalTime = {
     val t = new PGLocalTime()
     t.localTime = Some(l)
@@ -38,7 +38,7 @@ object PGLocalTime extends ToParameter {
   }
 }
 
-trait PGLocalTimeImplicits {
+private[sdbc] trait PGLocalTimeImplicits {
   implicit def LocalTimeToPGobject(l: LocalTime): PGobject = {
     PGLocalTime(l)
   }

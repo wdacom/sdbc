@@ -7,7 +7,7 @@ import org.json4s.jackson.JsonMethods
 import org.json4s.JValue
 import org.postgresql.util.PGobject
 
-class PGJson() extends PGobject() {
+private[sdbc] class PGJson() extends PGobject() {
 
   setType("json")
 
@@ -29,7 +29,7 @@ class PGJson() extends PGobject() {
 
 }
 
-object PGJson extends ToParameter {
+private[sdbc] object PGJson extends ToParameter {
   def apply(j: JValue): PGJson = {
     val p = new PGJson()
     p.jValue = Some(j)
@@ -42,7 +42,7 @@ object PGJson extends ToParameter {
   }
 }
 
-trait PGJsonImplicits {
+private[sdbc] trait PGJsonImplicits {
 
   implicit def JValueToPGJson(j: JValue): PGJson = {
     PGJson(j)

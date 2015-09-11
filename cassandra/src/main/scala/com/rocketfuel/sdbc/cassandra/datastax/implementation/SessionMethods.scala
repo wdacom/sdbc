@@ -3,7 +3,7 @@ package com.rocketfuel.sdbc.cassandra.datastax.implementation
 import com.datastax.driver.core.{Row => CRow}
 import com.rocketfuel.sdbc.cassandra.datastax.Select
 
-trait SessionMethods {
+private[sdbc] trait SessionMethods {
   self: Cassandra =>
 
   implicit class SessionMethods(pool: Session) {

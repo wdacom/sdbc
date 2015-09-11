@@ -5,7 +5,7 @@ import java.time.OffsetTime
 import com.rocketfuel.sdbc.base.ToParameter
 import org.postgresql.util.PGobject
 
-class PGTimeTz() extends PGobject() {
+private[sdbc] class PGTimeTz() extends PGobject() {
 
   setType("timetz")
 
@@ -26,7 +26,7 @@ class PGTimeTz() extends PGobject() {
 
 }
 
-object PGTimeTz extends ToParameter {
+private[sdbc] object PGTimeTz extends ToParameter {
   def apply(value: String): PGTimeTz = {
     val tz = new PGTimeTz()
     tz.setValue(value)
@@ -44,7 +44,7 @@ object PGTimeTz extends ToParameter {
   }
 }
 
-trait PGTimeTzImplicits {
+private[sdbc] trait PGTimeTzImplicits {
   implicit def OffsetTimeToPGobject(o: OffsetTime): PGobject = {
     PGTimeTz(o)
   }

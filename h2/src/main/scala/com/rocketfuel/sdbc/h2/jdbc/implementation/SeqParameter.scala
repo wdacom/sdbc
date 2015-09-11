@@ -9,7 +9,7 @@ import com.rocketfuel.sdbc.base.jdbc._
  *
  * H2's jdbc driver does not support ResultSet#updateArray, so there are no updaters.
  */
-trait SeqParameter extends SeqGetter {
+private[sdbc] trait SeqParameter extends SeqGetter {
   self: BytesGetter =>
 
   implicit def SeqOptionToOptionParameterValue[T](

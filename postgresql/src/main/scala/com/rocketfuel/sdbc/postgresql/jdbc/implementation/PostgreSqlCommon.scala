@@ -14,7 +14,7 @@ import scodec.bits.ByteVector
 
 import scala.xml.Node
 
-abstract class PostgreSqlCommon
+private[sdbc] abstract class PostgreSqlCommon
   extends DBMS
   with Setters
   with IntervalImplicits

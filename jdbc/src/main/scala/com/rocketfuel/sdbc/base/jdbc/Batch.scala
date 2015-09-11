@@ -1,6 +1,6 @@
 package com.rocketfuel.sdbc.base.jdbc
 
-import java.sql.{PreparedStatement, Types}
+import java.sql.PreparedStatement
 
 import com.rocketfuel.Logging
 import com.rocketfuel.sdbc.base

@@ -3,7 +3,7 @@ package com.rocketfuel.sdbc.h2.jdbc.implementation
 import com.rocketfuel.sdbc.base.{ToParameter, ParameterValue, box}
 
 
-case class QSeq(
+private[sdbc] case class QSeq(
   value: Seq[Option[ParameterValue]]
 ) {
   def asJavaArray: Array[AnyRef] = {
@@ -11,7 +11,7 @@ case class QSeq(
   }
 }
 
-object QSeq extends ToParameter {
+private[sdbc] object QSeq extends ToParameter {
 
   override val toParameter: PartialFunction[Any, Any] = {
     case s: QSeq => s

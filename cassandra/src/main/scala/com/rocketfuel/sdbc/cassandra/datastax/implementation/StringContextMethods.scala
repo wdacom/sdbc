@@ -9,7 +9,7 @@ import com.rocketfuel.sdbc.cassandra.datastax.QueryOptions
 import com.rocketfuel.sdbc.cassandra.datastax._
 import scodec.bits.ByteVector
 
-trait StringContextMethods {
+private[sdbc] trait StringContextMethods {
 
   implicit class CassandraStringContextMethods(sc: StringContext) {
     private def byNumberName(args: Seq[Any]): Map[String, Option[Any]] = {

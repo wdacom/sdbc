@@ -11,7 +11,7 @@ import scala.concurrent.duration.{Duration => ScalaDuration}
 import scala.xml.Node
 
 //PostgreSQL doesn't support Byte, so we don't use the default updaters.
-trait Updaters
+private[sdbc] trait Updaters
   extends LongUpdater
   with IntUpdater
   with ShortUpdater

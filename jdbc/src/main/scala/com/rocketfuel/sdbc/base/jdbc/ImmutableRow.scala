@@ -6,7 +6,7 @@ import java.net.URL
 import java.sql.{Array => JdbcArray, _}
 import com.rocketfuel.sdbc.base
 
-case class ImmutableRow private[jdbc] (
+case class ImmutableRow private[sdbc] (
   override val columnTypes: IndexedSeq[String],
   override val columnNames: IndexedSeq[String],
   parameters: IndexedSeq[Option[Any]],

@@ -4,7 +4,7 @@ import java.io.{InputStream, Reader}
 import java.math.BigDecimal
 import java.sql.{Array => JdbcArray, _}
 
-class UpdatableRow private[jdbc] (
+class UpdatableRow private[sdbc] (
   override protected[sdbc] val underlying: ResultSet
 ) extends MutableRow(underlying) {
 

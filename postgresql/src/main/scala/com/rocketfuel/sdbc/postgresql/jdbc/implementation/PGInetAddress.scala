@@ -5,7 +5,7 @@ import java.sql.SQLException
 
 import org.postgresql.util.PGobject
 
-class PGInetAddress() extends PGobject() {
+private[sdbc] class PGInetAddress() extends PGobject() {
 
   var inetAddress: Option[InetAddress] = None
 
@@ -30,7 +30,7 @@ class PGInetAddress() extends PGobject() {
   }
 }
 
-object PGInetAddress {
+private[sdbc] object PGInetAddress {
   def apply(address: InetAddress): PGInetAddress = {
     val a = new PGInetAddress()
     a.inetAddress = Some(address)
@@ -38,7 +38,7 @@ object PGInetAddress {
   }
 }
 
-trait PGInetAddressImplicits {
+private[sdbc] trait PGInetAddressImplicits {
   implicit def InetAddressToPGobject(x: InetAddress): PGobject = {
     PGInetAddress(x)
   }
