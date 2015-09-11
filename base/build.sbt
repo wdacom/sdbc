@@ -36,5 +36,3 @@ libraryDependencies <++= scalaVersion { version =>
   }
 
 }
-
-publishArtifact in Test := true

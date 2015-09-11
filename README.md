@@ -200,10 +200,10 @@ implicit val connection: Connection = ???
 
 val id = 1
 
-select"SELECT * FROM table WHERE id = $id".update()
+select"SELECT * FROM table WHERE id = $id"
 ```
 
-If you want to set the "id" value in the above query to a different value, you use the parameter "0".
+If you want to set the `id` value in the above query to a different value, you use the parameter "0".
 
 ```scala
 select"SELECT * FROM table WHERE id = $id".on("0" -> 3)

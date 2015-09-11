@@ -107,7 +107,7 @@ case class ImmutableRow private[sdbc] (
   override def getByte(columnLabel: String): Byte = getByte(columnIndexes(columnLabel))
 
   override def getBoolean(columnIndex: Int): Boolean = {
-    setWasNull(columnIndex) map { case s: Boolean => s case _ => incorrectType("bool") } contains true
+    setWasNull(columnIndex) map { case s: Boolean => s case _ => incorrectType("bool") } exists identity
   }
 
   override def getBoolean(columnLabel: String): Boolean = getBoolean(columnIndexes(columnLabel))
