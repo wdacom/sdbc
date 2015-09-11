@@ -49,9 +49,13 @@ trait ResultSetImplicits {
      */
     def updatableIterator(): Iterator[UpdatableRow] = {
 
-      new Iterator[UpdatableRow] {
+      new Iterator[UpdatableRow] with Closeable {
 
         val row = new UpdatableRow(underlying)
+
+        override def close(): Unit = {
+          underlying.close()
+        }
 
         override def hasNext: Boolean = {
           val result = underlying.next()

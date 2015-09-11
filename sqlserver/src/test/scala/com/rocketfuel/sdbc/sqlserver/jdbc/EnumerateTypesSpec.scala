@@ -15,11 +15,12 @@ package com.rocketfuel.sdbc.sqlserver.jdbc
  * smalldatetime: smalldatetime
  * datetime: datetime
  * datetime2: nvarchar
- * datetimeoffset: narchar
+ * datetimeoffset: nvarchar
  * binary: binary
  * varbinary: image
  * image: image
  * char: char
+ * nchar: nchar
  * varchar: varchar
  * nvarchar: nvarchar
  * text: text

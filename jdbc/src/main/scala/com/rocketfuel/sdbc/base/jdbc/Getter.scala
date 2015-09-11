@@ -295,6 +295,39 @@ trait ReaderGetter {
 
 }
 
+trait SeqGetter {
+  self: BytesGetter =>
+
+  implicit def GetterToSeqOptionGetter[T](implicit getter: Getter[T]): Getter[Seq[Option[T]]] = {
+    (row: Row, ix: Index) =>
+      for {
+        a <- Option(row.getArray(ix(row)))
+      } yield {
+        val arrayIterator = a.getResultSet().iterator()
+        val arrayValues = for {
+          arrayRow <- arrayIterator
+        } yield {
+            arrayRow.get[T](IntIndex(1))
+          }
+        arrayValues.toVector
+      }
+  }
+
+  implicit def GetterToSeqGetter[T](implicit getter: Getter[T]): Getter[Seq[T]] = {
+    (row: Row, ix: Index) =>
+      GetterToSeqOptionGetter(getter)(row, ix).map(_.map(_.get))
+  }
+
+  //Override what would be the inferred Seq[Byte] getter, because you can't use ResultSet#getArray
+  //to get the bytes.
+  implicit val SeqByteGetter = new Getter[Seq[Byte]] {
+    override def apply(row: Row, ix: Index): Option[Seq[Byte]] = {
+      ArrayByteGetter(row, ix).map(_.toSeq)
+    }
+  }
+
+}
+
 trait ParameterGetter {
   implicit val ParameterGetter: Getter[ParameterValue]
 }

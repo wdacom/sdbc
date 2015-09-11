@@ -19,7 +19,7 @@ abstract class DBMS
   /**
    *
    */
-  implicit val parameterSetter: ParameterSetter
+  implicit val ParameterSetter: ParameterSetter
 
   type Index = jdbc.Index
 
