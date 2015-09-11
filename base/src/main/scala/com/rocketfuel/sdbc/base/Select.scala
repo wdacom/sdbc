@@ -1,7 +1,5 @@
 package com.rocketfuel.sdbc.base
 
-import com.rocketfuel.Logging
-
 /**
  * A `Select` is an operation on a resource that produces some values, T.
  * @tparam Connection is the resource that produces values.

@@ -1,10 +1,8 @@
 package com.rocketfuel.sdbc.base.jdbc
 
 import java.sql._
-
-import com.rocketfuel.Logging
 import com.rocketfuel.sdbc.base
-import com.rocketfuel.sdbc.base.CompiledStatement
+import com.rocketfuel.sdbc.base.{Logging, CompiledStatement}
 
 case class SelectForUpdate private[sdbc] (
   statement: CompiledStatement,

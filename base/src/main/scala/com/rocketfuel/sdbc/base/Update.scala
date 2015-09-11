@@ -1,7 +1,5 @@
 package com.rocketfuel.sdbc.base
 
-import com.rocketfuel.Logging
-
 /**
  * An update is a Batch of one statement. I.E. the iterator will have one element.
  * @tparam UnderlyingConnection

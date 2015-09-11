@@ -4,8 +4,7 @@ import java.io.{InputStream, Reader}
 import java.sql.PreparedStatement
 import java.time.OffsetDateTime
 import java.util.UUID
-
-import com.rocketfuel.CISet
+import com.rocketfuel.sdbc.base.CISet
 import com.rocketfuel.sdbc.base.jdbc._
 import com.rocketfuel.sdbc.sqlserver.jdbc.{HierarchyNodeImplicits, HierarchyId}
 import scodec.bits.ByteVector

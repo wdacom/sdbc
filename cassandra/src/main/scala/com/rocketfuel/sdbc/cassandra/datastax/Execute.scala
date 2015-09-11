@@ -1,9 +1,8 @@
 package com.rocketfuel.sdbc.cassandra.datastax
 
 import com.rocketfuel.sdbc.cassandra.datastax.implementation._
-import com.rocketfuel.Logging
 import com.rocketfuel.sdbc.base
-import com.rocketfuel.sdbc.base.CompiledStatement
+import com.rocketfuel.sdbc.base.{Logging, CompiledStatement}
 import com.datastax.driver.core._
 import com.rocketfuel.sdbc.cassandra.datastax
 

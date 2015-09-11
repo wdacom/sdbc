@@ -1,8 +1,7 @@
 package com.rocketfuel.sdbc.cassandra.datastax
 
-import com.rocketfuel.Logging
 import com.rocketfuel.sdbc.base
-import com.rocketfuel.sdbc.base.CompiledStatement
+import com.rocketfuel.sdbc.base.{Logging, CompiledStatement}
 import com.datastax.driver.core.{Row => CRow, _}
 import scala.concurrent._
 import scala.collection.convert.decorateAsScala._

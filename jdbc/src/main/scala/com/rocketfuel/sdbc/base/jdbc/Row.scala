@@ -5,7 +5,7 @@ import java.math.BigDecimal
 import java.net.URL
 import java.sql.{Array => JdbcArray, _}
 
-import com.rocketfuel.CIMap
+import com.rocketfuel.sdbc.base.CIMap
 
 abstract class Row {
 

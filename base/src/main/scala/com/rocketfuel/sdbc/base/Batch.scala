@@ -1,7 +1,5 @@
 package com.rocketfuel.sdbc.base
 
-import com.rocketfuel.Logging
-
 /**
  * A Batch is a Select where each value in the iterator is the number of
  * rows updated.

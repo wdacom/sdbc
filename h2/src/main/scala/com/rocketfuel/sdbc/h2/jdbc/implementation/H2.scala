@@ -4,7 +4,7 @@ import java.io.{InputStream, Reader}
 import java.nio.file.Path
 import java.sql.{PreparedStatement, DriverManager}
 import java.util.UUID
-import com.rocketfuel.CISet
+import com.rocketfuel.sdbc.base.CISet
 import com.rocketfuel.sdbc.base.jdbc.{ParameterSetter, DBMS}
 import com.rocketfuel.sdbc.h2.jdbc.Serialized
 import scodec.bits.ByteVector

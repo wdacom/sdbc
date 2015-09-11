@@ -3,7 +3,7 @@ package com.rocketfuel.sdbc.postgresql.jdbc.implementation
 import java.io.{InputStream, Reader}
 import java.sql.PreparedStatement
 import java.util.UUID
-import com.rocketfuel.CISet
+import com.rocketfuel.sdbc.base.CISet
 import com.rocketfuel.sdbc.base.jdbc._
 import com.rocketfuel.sdbc.postgresql.jdbc
 import com.rocketfuel.sdbc.postgresql.jdbc.Cidr

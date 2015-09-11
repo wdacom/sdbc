@@ -1,8 +1,7 @@
 package com.rocketfuel.sdbc.base.jdbc
 
-import com.rocketfuel.Logging
 import com.rocketfuel.sdbc.base
-import com.rocketfuel.sdbc.base.CompiledStatement
+import com.rocketfuel.sdbc.base.{Logging, CompiledStatement}
 
 case class Update private [jdbc] (
   statement: CompiledStatement,

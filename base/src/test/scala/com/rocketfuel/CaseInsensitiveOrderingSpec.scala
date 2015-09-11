@@ -1,5 +1,6 @@
 package com.rocketfuel
 
+import com.rocketfuel.sdbc.base.CaseInsensitiveOrdering
 import org.scalacheck.Gen
 import org.scalatest.FunSuite
 import org.scalatest.prop.GeneratorDrivenPropertyChecks

@@ -2,7 +2,6 @@ package com.rocketfuel.sdbc.base
 
 import java.sql.PreparedStatement
 import com.rocketfuel.sdbc.base
-import com.rocketfuel.CaseInsensitiveOrdering
 import com.zaxxer.hikari.HikariConfig
 
 package object jdbc
