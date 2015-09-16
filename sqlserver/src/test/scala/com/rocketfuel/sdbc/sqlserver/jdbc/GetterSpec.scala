@@ -1,5 +1,6 @@
 package com.rocketfuel.sdbc.sqlserver.jdbc
 
+import java.nio.ByteBuffer
 import java.sql.{Date, Time, Timestamp}
 import java.util.UUID
 
@@ -26,7 +27,7 @@ class GetterSpec
 
   testSelect[String]("SELECT 'hello'", "hello".some)
 
-  testSelect[Array[Byte]]("SELECT 0x0001ffa0", Array(0, 1, -1, -96).map(_.toByte).some)
+  testSelect[ByteBuffer]("SELECT 0x0001ffa0", ByteBuffer.wrap(Array(0, 1, -1, -96).map(_.toByte)).some)
 
   testSelect[Float]("SELECT CAST(3.14159 AS real)", 3.14159F.some)
 
@@ -70,7 +71,11 @@ class GetterSpec
 
   testSelect[Instant]("SELECT CAST('2014-12-29 01:02:03.5 -4:00' AS datetimeoffset) --as Joda Instant", Instant.parse("2014-12-29T01:02:03.5-04:00").some)
 
+  testSelect[HierarchyId]("SELECT CAST('/' AS hierarchyid).ToString()", HierarchyId.empty.some)
+
   testSelect[HierarchyId]("SELECT CAST('/1/2/3/' AS hierarchyid).ToString()", HierarchyId(1, 2, 3).some)
+
+  testSelect[HierarchyId]("SELECT CAST('/1/2.1/3/' AS hierarchyid).ToString()", HierarchyId(1, Seq(2, 1), 3).some)
 
   testSelect[UUID](s"SELECT CAST('$uuid' AS uniqueidentifier)", uuid.some)
 

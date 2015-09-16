@@ -10,7 +10,7 @@ trait BatchableMethods[Connection, Batch <: base.Batch[Connection]] {
 
   def batchIterator[Key](
     key: Key
-  )(implicit batchable: Batchable[Key, Connection, Batch],
+  )(implicit batchable: base.Batchable[Key, Connection, Batch],
     connection: Connection
   ): Iterator[Long] = {
     batchable.batch(key).iterator()

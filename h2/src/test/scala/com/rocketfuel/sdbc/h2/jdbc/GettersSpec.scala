@@ -1,13 +1,28 @@
 package com.rocketfuel.sdbc.h2.jdbc
 
+import java.nio.ByteBuffer
 import java.sql.{Timestamp, Time, Date}
 import org.joda.time._
 import java.util.UUID
 
 import scalaz.Scalaz._
 
-class ParameterValueSpec
+class GettersSpec
   extends H2Suite {
+
+  def testSelect[T](query: String, expectedValue: Option[T])(implicit converter: Row => Option[T]): Unit = {
+    test(query) { implicit connection =>
+      val result = Select[Option[T]](query).option().flatten
+      (expectedValue, result) match {
+        case (Some(expectedArray: Array[_]), Some(resultArray: Array[_])) =>
+          assert(expectedArray.sameElements(resultArray))
+        case (Some(x), Some(y)) =>
+          assertResult(x)(y)
+        case (None, None) => true
+        case _ => false
+      }
+    }
+  }
 
   val uuid = UUID.randomUUID()
 
@@ -23,7 +38,7 @@ class ParameterValueSpec
 
   testSelect[String]("SELECT 'hello'", "hello".some)
 
-  testSelect[Array[Byte]]("SELECT 0x0001ffa0", Array(0, 1, -1, -96).map(_.toByte).some)
+  testSelect[ByteBuffer]("SELECT 0x0001ffa0", ByteBuffer.wrap(Array[Byte](0, 1, -1, -96)).some)
 
   testSelect[Float]("SELECT CAST(3.14159 AS real)", 3.14159F.some)
 
@@ -56,5 +71,15 @@ class ParameterValueSpec
   }
 
   testSelect[UUID](s"SELECT CAST('$uuid' AS uuid)", uuid.some)
+
+  testSelect[Seq[Int]]("SELECT (1, 2, 3)", Seq(1, 2, 3).some)
+
+  testSelect[Seq[Option[Int]]]("SELECT (1, NULL, 3)", Seq(1.some, none[Int], 3.some).some)
+
+  testSelect[Seq[Seq[Int]]]("SELECT (())", Seq.empty.some)
+
+  testSelect[Seq[Seq[Int]]]("SELECT ((1, 2),)", Seq(Seq(1, 2)).some)
+
+  testSelect[Seq[Seq[Option[Int]]]]("SELECT ((1, NULL), (2, NULL))", Seq(Seq(Some(1), None), Seq(Some(2), None)).some)
 
 }

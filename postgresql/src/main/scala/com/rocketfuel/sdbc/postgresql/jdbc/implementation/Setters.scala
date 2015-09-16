@@ -1,41 +1,92 @@
 package com.rocketfuel.sdbc.postgresql.jdbc.implementation
 
-import java.net.InetAddress
 import java.sql.PreparedStatement
 
-import com.rocketfuel.sdbc.base.jdbc.{DefaultSetters, ParameterValue}
-import com.rocketfuel.sdbc.postgresql.jdbc.LTree
-import org.json4s._
-import org.json4s.jackson.JsonMethods
-import org.postgresql.util.PGInterval
-
+import com.rocketfuel.sdbc.base.{ParameterValue, ToParameter}
+import com.rocketfuel.sdbc.base.jdbc._
+import org.postgresql.util.PGobject
+import scala.collection.convert.decorateAsJava._
 import org.joda.time.{Duration => JodaDuration}
 import scala.concurrent.duration.{Duration => ScalaDuration}
-import scala.xml.Elem
 
-trait Setters
-  extends DefaultSetters {
-  self: PgDateTimeFormatter with IntervalImplicits =>
+//PostgreSQL doesn't support Byte, so we don't use the default setters.
+private[sdbc] trait Setters
+  extends QPGObjectImplicits
+  with QBooleanImplicits
+  with QBytesImplicits
+  with QDateImplicits
+  with QBigDecimalImplicits
+  with QDoubleImplicits
+  with QFloatImplicits
+  with QIntImplicits
+  with QLongImplicits
+  with QShortImplicits
+  with QStringImplicits
+  with QTimeImplicits
+  with QTimestampImplicits
+  with QReaderImplicits
+  with QInputStreamImplicits
+  with QUUIDImplicits
+  with QInstantImplicits
+  with QLocalDateImplicits
+  with PGLocalTimeImplicits
+  with QLocalDateTimeImplicits
+  with PGTimeTzImplicits
+  with PGTimestampTzImplicits
+  with PGInetAddressImplicits
+  with QXMLImplicits
+  with QSQLXMLImplicits
+  with QBlobImplicits
+  with PGJsonImplicits
+  with QMapImplicits {
 
-  case class QInetAddress(value: InetAddress) extends ParameterValue[InetAddress] {
+  val toPostgresqlParameter: PartialFunction[Any, Any] =
+    QBoolean.toParameter orElse
+      QBytes.toParameter orElse
+      //Timestamp must come before Date, or else all Timestamps become Dates.
+      QTimestamp.toParameter orElse
+      //Time must come before Date, or else all Times become Dates.
+      QTime.toParameter orElse
+      QDate.toParameter orElse
+      QBigDecimal.toParameter orElse
+      QDouble.toParameter orElse
+      QFloat.toParameter orElse
+      QInt.toParameter orElse
+      QLong.toParameter orElse
+      QShort.toParameter orElse
+      QString.toParameter orElse
+      QReader.toParameter orElse
+      QInputStream.toParameter orElse
+      QUUID.toParameter orElse
+      QInstant.toParameter orElse
+      QLocalDate.toParameter orElse
+      PGLocalTime.toParameter orElse
+      QLocalDateTime.toParameter orElse
+      QXML.toParameter orElse
+      QSQLXML.toParameter orElse
+      QBlob.toParameter orElse
+      QPGObject.toParameter orElse
+      QMap.toParameter orElse
+      PGTimeTz.toParameter orElse
+      PGTimestampTz.toParameter orElse
+      PGJson.toParameter
 
-    override def set(preparedStatement: PreparedStatement, parameterIndex: Int): Unit = {
-      preparedStatement.setString(parameterIndex, value.getHostAddress)
+}
+
+private[sdbc] object QPGObject extends ToParameter {
+  override val toParameter: PartialFunction[Any, Any] = {
+    case i: PGobject => i
+  }
+}
+
+private[sdbc] trait QPGObjectImplicits {
+  implicit val PGobjectIsParameter: IsParameter[PGobject] = new IsParameter[PGobject] {
+    override def set(preparedStatement: PreparedStatement, parameterIndex: Int, parameter: PGobject): Unit = {
+      preparedStatement.setObject(parameterIndex, parameter)
     }
-
   }
 
-  def InetAddressToParameterValue(x: InetAddress): ParameterValue[InetAddress] = {
-    QInetAddress(x)
-  }
-
-  case class QPGInterval(value: PGInterval) extends ParameterValue[PGInterval] {
-    override def set(preparedStatement: PreparedStatement, parameterIndex: Int): Unit = {
-      preparedStatement.setObject(parameterIndex, value)
-    }
-  }
-
-  implicit def PGIntervalToParameterValue(x: PGInterval): ParameterValue[PGInterval] = {
+  def PGIntervalToParameterValue(x: PGInterval): ParameterValue[PGInterval] = {
     QPGInterval(x)
   }
 
@@ -44,45 +95,34 @@ trait Setters
   }
 
   implicit def ScalaDurationToParameterValue(x: ScalaDuration): ParameterValue[PGInterval] = {
-    QPGInterval(x)
+    ParameterValue(value)
   }
 
-  case class QJSON(value: JValue)(implicit formats: Formats) extends ParameterValue[JValue] {
+  implicit def IsPGobjectToParameterValue[T](value: T)(implicit converter: T => PGobject): ParameterValue = {
+    converter(value)
+  }
 
-    override def set(preparedStatement: PreparedStatement, parameterIndex: Int): Unit = {
-      preparedStatement.setString(parameterIndex, JsonMethods.compact(JsonMethods.render(value)))
+}
+
+private[sdbc] object QMap extends ToParameter {
+  override val toParameter: PartialFunction[Any, Any] = {
+    case i: Map[_, _] => //Technically, this should be a Map[String, String]
+      i.asJava
+  }
+}
+
+private[sdbc] trait QMapImplicits {
+  implicit val MapIsParameter: IsParameter[java.util.Map[String, String]] = new IsParameter[java.util.Map[String, String]] {
+    override def set(
+      preparedStatement: PreparedStatement,
+      parameterIndex: Int,
+      parameter: java.util.Map[String, String]
+    ): Unit = {
+      preparedStatement.setObject(parameterIndex, parameter)
     }
-
   }
 
-  def JSONToParameterValue(x: JValue)(implicit formats: Formats): ParameterValue[JValue] = {
-    QJSON(x)
+  implicit def MapStringStringToParameterValue(value: Map[String, String]): ParameterValue = {
+    ParameterValue(value.asJava)
   }
-
-  case class QLTree(value: LTree) extends ParameterValue[LTree] {
-
-    override def set(preparedStatement: PreparedStatement, parameterIndex: Int): Unit = {
-      preparedStatement.setObject(parameterIndex, value)
-    }
-
-  }
-
-  def LTreeToParameterValue(x: LTree): ParameterValue[LTree] = {
-    QLTree(x)
-  }
-
-  case class QXML(value: Elem) extends ParameterValue[Elem] {
-
-    override def set(preparedStatement: PreparedStatement, parameterIndex: Int): Unit = {
-      val sqlxml = preparedStatement.getConnection.createSQLXML()
-      sqlxml.setString(value.toString)
-      preparedStatement.setSQLXML(parameterIndex, sqlxml)
-    }
-
-  }
-
-  def XMLToParameterValue(x: Elem): ParameterValue[Elem] = {
-    QXML(x)
-  }
-
 }

@@ -89,7 +89,18 @@ Packages exist on Maven Central for Scala 2.10 and 2.11. The Scala 2.10 builds f
 * Use named parameters with queries.
 * Query execution logging
 * Use Java 8's java.time library, or Joda time for Java 7 and below.
-* Scalaz streaming support by adding constructors to scalaz.stream.Process.
+* Scalaz streaming support by adding constructors to scalaz.stream.Process and scalaz.stream.io.
+
+## Feature restrictions
+
+### H2
+
+* The H2 JDBC driver does not support getResultSet on inner arrays, so only 1 dimensional arrays are supported.
+* The H2 JDBC driver does not support ResultSet#updateArray, so updating arrays is not supported.
+
+### PostgreSQL
+
+* Array support requires Scala 2.11 or newer.
 
 ## [Scaladoc](http://www.jeffshaw.me/sdbc/1.0)
 
@@ -146,9 +157,10 @@ case class MyRow(
 )
 
 implicit def RowToMyRow(row: Row): MyRow = {
-    val id = row[Int]("id")
-    val createdTime = row[Instant]("created_time")
-    val message = row.option[String]("message")
+    //Row#get[T] gives Option[T], so use Option#get on the result if the column is NOT NULL.
+    val id = row.get[Int]("id").get
+    val createdTime = row.get[Instant]("created_time").get
+    val message = row.get[String]("message")
 
     MyRow(
         id,
@@ -158,13 +170,14 @@ implicit def RowToMyRow(row: Row): MyRow = {
 }
 
 val query =
-    Select[MyRow]("SELECT * FROM tbl WHERE message = $message").
+    Select[MyRow]("SELECT * FROM tbl WHERE message = @message").
     on("message" -> "hello there!")
 
 val myRow = {
     /* If you are using a Select, SelectForUpdate, Update, or Batch value,
      * you don't need the connection until you call .iterator(),
-     * .seq(), .option, .single(), or one of the execute methods.
+     * .option() (jdbc only), iteratorAsync() (cassandra only), update(),
+     * or batch().
      */
 	implicit val connection: Connection = DriverManager.getConnection("...")
 	try {
@@ -174,6 +187,32 @@ val myRow = {
         connection.close()
     }
 }
+```
+
+### Set parameter values using string interpolation
+
+Since StringContext doesn't allow the string value of the interpolated value to be
+gotten (i.e. "$id" in the example below), such parameters are given consecutive integer names,
+starting at 0.
+
+```scala
+implicit val connection: Connection = ???
+
+val id = 1
+
+select"SELECT * FROM table WHERE id = $id"
+```
+
+If you want to set the `id` value in the above query to a different value, you use the parameter "0".
+
+```scala
+select"SELECT * FROM table WHERE id = $id".on("0" -> 3)
+```
+
+You can use interpolated parameters and named parameters in the same query.
+
+```scala
+select"SELECT * FROM table WHERE id = $id AND something = @something".on("something" -> "hello")
 ```
 
 ### Reuse a query with different parameter values
@@ -187,7 +226,7 @@ import java.time.temporal.ChronoUnit
 import com.rocketfuel.sdbc.postgresql.jdbc._
 
 val query =
-    Select[Int]("SELECT id FROM tbl WHERE message = $message AND created_time >= $time").
+    Select[Int]("SELECT id FROM tbl WHERE message = @message AND created_time >= @time").
     on("message" -> "hello there!")
 
 val minTimes = Seq(
@@ -202,7 +241,7 @@ val results = {
 	val results =
         try {
             minTimes.map(minTime =>
-                minTime -> query.on("time" -> minTime).seq()
+                minTime -> query.on("time" -> minTime).iterator().toSeq
             )
         } finally {
             connection.close()
@@ -218,7 +257,7 @@ import com.rocketfuel.sdbc.postgresql.jdbc._
 
 implicit val connection: Connection = DriverManager.getConnection("...")
 
-val queryText = "UPDATE tbl SET unique_id = $uuid WHERE id = $id"
+val queryText = "UPDATE tbl SET unique_id = @uuid WHERE id = @id"
 
 val parameters =
     Seq(
@@ -243,7 +282,7 @@ import java.sql.DriverManager
 import com.rocketfuel.sdbc.postgresql.jdbc._
 
 val batchUpdate =
-	Batch("UPDATE tbl SET x = $x WHERE id = $id").
+	Batch("UPDATE tbl SET x = @x WHERE id = @id").
 	addBatch("x" -> 3, "id" -> 10).
     addBatch("x" -> 4, "id" -> 11)
 
@@ -264,11 +303,11 @@ import com.rocketfuel.sdbc.postgresql.jdbc._
 
 implicit val connection: Connection = DriverManager.getConnection("...")
 
-val actionLogger = Update("INSERT INTO action_log (account_id, action) VALUES ($account_id, $action)")
+val actionLogger = Update("INSERT INTO action_log (account_id, action) VALUES (@account_id, @action)")
 
 for (row <- SelectForUpdate("SELECT * FROM accounts").iterator()) {
-	val accountId = row[Int]("account_id")
-	if (accountId == 314) {
+	val accountId = row.get[Int]("account_id")
+	if (accountId == Some(314)) {
 		row("gold_nuggets") = row[Int]("gold_nuggets") + 159
 		actionLogger.on("account_id" -> 314, "action" -> "added 159 gold nuggets").execute()
 	}
@@ -320,7 +359,7 @@ import com.rocketfuel.sdbc.scalaz.jdbc._
 val pool: Pool = ???
 
 implicit val SelectableIntKey = new Selectable[Int, String] {
-  val selectString = Select[String]("SELECT s FROM tbl WHERE id = $id")
+  val selectString = Select[String]("SELECT s FROM tbl WHERE id = @id")
 
   override def select(id: Int): Select[String] = {
     selectString.on("id" -> id)
@@ -351,10 +390,14 @@ keyStream.through(Process.jdbc.keys.select[K, T](pool)).to(Process.jdbc.update[T
 
 ### 1.0
 
-* Cassandra support for Scala 2.11 only
+* The sigil for a parameter is @ (was $).
+* Added support for string interpolation for parameters.
+* Cassandra support for Scala 2.11
 * Scalaz streaming helpers in com.rocketfuel.sdbc.scalaz.
 * Connections and other types are no longer path dependent.
-* Package paths are implementation dependent.
+* Package paths are implementation dependent. (E.G. "import ...postgresql.jdbc" to use the JDBC driver to access PostgreSQL.)
+* Use ByteBuffer or ByteVector instead of Array[Byte].
+* Remove Byte getters, setters, and updaters from PostgreSQL (the JDBC driver uses Short under the hood).
 
 ### 0.10
 

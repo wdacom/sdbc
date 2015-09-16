@@ -76,7 +76,7 @@ class Benchmarks
     }
   }
 
-  test("test JDBC batch insert") {implicit connection =>
+  ignore("test JDBC batch insert") {implicit connection =>
     val p = connection.prepareStatement(TestTable.insertJdbc)
 
     for (v <- values) v.addBatch(p)
@@ -88,7 +88,7 @@ class Benchmarks
     assertResult(values.size)(insertedRowCount.sum[Int])
   }
 
-  test("time JDBC batch insert") {implicit connection =>
+  ignore("time JDBC batch insert") {implicit connection =>
 
     val insertDuration = averageTime(repetitions) {
 
@@ -108,7 +108,7 @@ class Benchmarks
     println(s"JDBC batch insert took $insertDuration ms.")
   }
 
-  test("test JDBC select") {implicit connection =>
+  ignore("test JDBC select") {implicit connection =>
     val batch = values.foldLeft(TestTable.batchInsert){case (b, v) => v.addBatch(b)}
 
     batch.iterator()
@@ -134,7 +134,7 @@ class Benchmarks
 
   }
 
-  test("time JDBC select") {implicit connection =>
+  ignore("time JDBC select") {implicit connection =>
     values.foldLeft(TestTable.batchInsert){case (b, v) => v.addBatch(b)}.iterator()
 
     connection.commit()
@@ -157,7 +157,7 @@ class Benchmarks
 
   }
 
-  test("time com.rocketfuel.sql batch insert") {implicit connection =>
+  ignore("time com.rocketfuel.sql batch insert") {implicit connection =>
 
     val insertDuration = averageTime(repetitions) {
       values.foldLeft(TestTable.batchInsert){case (b, v) => v.addBatch(b)}.iterator()
@@ -171,7 +171,7 @@ class Benchmarks
 
   }
 
-  test("test com.rocketfuel.batch insert") {implicit connection =>
+  ignore("test com.rocketfuel.batch insert") {implicit connection =>
 
     val batch = values.foldLeft(TestTable.batchInsert){case (b, v) => v.addBatch(b)}
 
@@ -183,7 +183,7 @@ class Benchmarks
 
   }
 
-  test("time com.rocketfuel.sql select") {implicit connection =>
+  ignore("time com.rocketfuel.sql select") {implicit connection =>
 
     values.foldLeft(TestTable.batchInsert){case (b, v) => v.addBatch(b)}.iterator()
 
@@ -197,7 +197,7 @@ class Benchmarks
 
   }
 
-  test("test com.rocketfuel.sql select") {implicit connection =>
+  ignore("test com.rocketfuel.sql select") {implicit connection =>
 
     values.foldLeft(TestTable.batchInsert){case (b, v) => v.addBatch(b)}.iterator()
 
@@ -238,10 +238,10 @@ class Benchmarks
   object TestTable {
 
     implicit def apply(row: Row): TestTable = {
-      val id = row[Long]("id").get
-      val str1 = row[String]("str1").get
-      val uuid = row[UUID]("uuid").get
-      val str2 = row[String]("str2").get
+      val id = row.get[Long]("id").get
+      val str1 = row.get[String]("str1").get
+      val uuid = row.get[UUID]("uuid").get
+      val str2 = row.get[String]("str2").get
 
       TestTable(id, str1, uuid, str2)
     }
@@ -283,7 +283,7 @@ class Benchmarks
         """INSERT INTO TEST
           |(str1, uuid, str2)
           |VALUES
-          |($str1, $uuid, $str2)
+          |(@str1, @uuid, @str2)
         """.stripMargin
       Batch(queryText)
     }

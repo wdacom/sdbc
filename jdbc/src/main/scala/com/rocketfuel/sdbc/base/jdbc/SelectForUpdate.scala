@@ -1,28 +1,36 @@
 package com.rocketfuel.sdbc.base.jdbc
 
 import java.sql._
-
-import com.rocketfuel.Logging
 import com.rocketfuel.sdbc.base
-import com.rocketfuel.sdbc.base.CompiledStatement
+import com.rocketfuel.sdbc.base.{Logging, CompiledStatement}
 
-case class SelectForUpdate private (
+case class SelectForUpdate private[sdbc] (
   statement: CompiledStatement,
-  parameterValues: Map[String, Option[ParameterValue[_]]]
-) extends base.Select[Connection, MutableRow]
+  parameterValues: Map[String, Option[Any]]
+)(implicit parameterSetter: ParameterSetter
+) extends base.Select[Connection, UpdatableRow]
   with ParameterizedQuery[SelectForUpdate]
-  with ResultSetImplicits
   with Logging {
 
-  override def iterator()(implicit connection: Connection): Iterator[MutableRow] = {
-    logger.debug(s"""Retrieving an iterator of updatable rows using "$originalQueryText" with parameters $parameterValues.""")
+  private def executeQuery()(implicit connection: Connection): ResultSet = {
+    logger.debug(s"""Selecting for update "$originalQueryText" with parameters $parameterValues.""")
     val preparedStatement = connection.prepareStatement(queryText, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE)
-    preparedStatement.executeQuery().mutableIterator()
+    bind(preparedStatement, parameterValues, parameterPositions)
+
+    preparedStatement.executeQuery()
   }
 
-  override def subclassConstructor(
+  override def iterator()(implicit connection: Connection): Iterator[UpdatableRow] = {
+    executeQuery().updatableIterator()
+  }
+
+  override def option()(implicit connection: Connection): Option[UpdatableRow] = {
+    executeQuery().updatableIterator().toStream.headOption
+  }
+
+  override protected def subclassConstructor(
     statement: CompiledStatement,
-    parameterValues: Map[String, Option[base.ParameterValue[_, PreparedStatement, Int]]]
+    parameterValues: Map[String, Option[Any]]
   ): SelectForUpdate = {
     SelectForUpdate(
       statement,
@@ -35,10 +43,11 @@ object SelectForUpdate {
   def apply(
     queryText: String,
     hasParameters: Boolean = true
+  )(implicit parameterSetter: ParameterSetter
   ): SelectForUpdate = {
     SelectForUpdate(
       statement = CompiledStatement(queryText, hasParameters),
-      parameterValues = Map.empty[String, Option[ParameterValue[_]]]
+      parameterValues = Map.empty[String, Option[Any]]
     )
   }
 }

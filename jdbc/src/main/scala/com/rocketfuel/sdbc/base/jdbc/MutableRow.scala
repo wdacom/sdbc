@@ -1,144 +1,238 @@
 package com.rocketfuel.sdbc.base.jdbc
 
-import java.io.{InputStream, Reader}
+import java.io.{Closeable, Reader, InputStream}
 import java.math.BigDecimal
+import java.net.URL
 import java.sql.{Array => JdbcArray, _}
+import java.util
+import java.util.Calendar
 
-class MutableRow private[jdbc] (underlying: ResultSet)
-  extends Row(underlying) {
+/**
+ * A class which wraps the read-only parts of a JDBC `ResultSet`.
+ *
+ * For an updatable version, see {@link SelectForUpdate}.
+ *
+ * There are two good ways to get information out of a Row. If you want to use
+ * generics, use {@link Row#get}. If you want to use pattern matching, use `Row#get[ParameterValue]`.
+ * You can also use the various get methods that mirror JDBC ResultSet's get methods.
+ *
+ * @param underlying
+ */
+class MutableRow private[sdbc] (
+  protected[jdbc] val underlying: ResultSet
+) extends Row
+  with Closeable
+  with Wrapper {
 
-  def update[T](columnIndex: Int, x: T)(implicit updater: Updater[T]): Unit = {
-    updater.update(this, columnIndex, x)
+  override def unwrap[T](iface: Class[T]): T = {
+    if (iface.isInstance(this)) {
+      this.asInstanceOf[T]
+    } else if (iface.isInstance(underlying)) {
+      underlying.asInstanceOf[T]
+    } else {
+      underlying.unwrap[T](iface)
+    }
   }
 
-  def update[T](columnLabel: String, x: T)(implicit updater: Updater[T]): Unit = {
-    updater.update(this, columnLabel, x)
+  override def isWrapperFor(iface: Class[_]) = {
+    iface.isInstance(this) ||
+      iface.isInstance(underlying) ||
+      underlying.isWrapperFor(iface: Class[_])
   }
 
-  def updateArray(columnIndex: Int, x: JdbcArray): Unit = underlying.updateArray(columnIndex: Int, x)
+  lazy val columnTypes: IndexedSeq[String] = {
+    val metadata = underlying.getMetaData
 
-  def updateArray(columnLabel: String, x: JdbcArray): Unit = underlying.updateArray(columnLabel: String, x)
+    IndexedSeq.tabulate(metadata.getColumnCount)(ix => metadata.getColumnTypeName(ix + 1))
+  }
 
-  def updateAsciiStream(columnIndex: Int, x: InputStream): Unit = underlying.updateAsciiStream(columnIndex, x)
+  lazy val columnNames: IndexedSeq[String] = {
+    val metadata = underlying.getMetaData
 
-  def updateAsciiStream(columnLabel: String, x: InputStream): Unit = underlying.updateAsciiStream(columnLabel, x)
+    0.until(metadata.getColumnCount).map { i =>
+      metadata.getColumnName(i + 1)
+    }
+  }
 
-  def updateAsciiStream(columnIndex: Int, x: InputStream, length: Int): Unit = underlying.updateAsciiStream(columnIndex, x, length)
+  def asIntMap(implicit getter: Getter[ParameterValue]): IndexedSeq[Option[Any]] = {
+    IndexedSeq.tabulate(underlying.getMetaData.getColumnCount) { ix =>
+      getter(this, IntIndex(ix)).map(_.value)
+    }
+  }
 
-  def updateAsciiStream(columnLabel: String, x: InputStream, length: Int): Unit = underlying.updateAsciiStream(columnLabel, x, length)
+  def asImmutable(implicit getter: Getter[ParameterValue]): ImmutableRow = {
+    ImmutableRow(this)
+  }
 
-  def updateAsciiStream(columnIndex: Int, x: InputStream, length: Long): Unit = underlying.updateAsciiStream(columnIndex, x, length)
+  def getType: Int = underlying.getType
 
-  def updateAsciiStream(columnLabel: String, x: InputStream, length: Long): Unit = underlying.updateAsciiStream(columnLabel, x, length)
+  def isBeforeFirst: Boolean = underlying.isBeforeFirst
 
-  def updateBigDecimal(columnIndex: Int, x: BigDecimal): Unit = underlying.updateBigDecimal(columnIndex, x)
+  override def getTimestamp(columnIndex: Int): Timestamp = underlying.getTimestamp(columnIndex + 1)
 
-  def updateBigDecimal(columnLabel: String, x: BigDecimal): Unit = underlying.updateBigDecimal(columnLabel, x)
+  override def getTimestamp(columnLabel: String): Timestamp = underlying.getTimestamp(columnLabel: String)
 
-  def updateBigDecimal(columnIndex: Int, x: scala.BigDecimal): Unit = updateBigDecimal(columnIndex, x.underlying())
+  def getTimestamp(columnIndex: Int, cal: Calendar): Timestamp = underlying.getTimestamp(columnIndex + 1, cal: Calendar)
 
-  def updateBigDecimal(columnLabel: String, x: scala.BigDecimal): Unit = updateBigDecimal(columnLabel, x.underlying())
+  def getTimestamp(columnLabel: String, cal: Calendar): Timestamp = underlying.getTimestamp(columnLabel: String, cal: Calendar)
 
-  def updateBinaryStream(columnIndex: Int, x: InputStream): Unit = underlying.updateBinaryStream(columnIndex, x)
+  def clearWarnings(): Unit = underlying.clearWarnings()
 
-  def updateBinaryStream(columnLabel: String, x: InputStream): Unit = underlying.updateBinaryStream(columnLabel, x)
+  def isAfterLast: Boolean = underlying.isAfterLast
 
-  def updateBinaryStream(columnIndex: Int, x: InputStream, length: Int): Unit = underlying.updateBinaryStream(columnIndex, x, length)
+  override def getBinaryStream(columnIndex: Int): InputStream = underlying.getBinaryStream(columnIndex + 1)
 
-  def updateBinaryStream(columnLabel: String, x: InputStream, length: Int): Unit = underlying.updateBinaryStream(columnLabel, x, length)
+  override def getBinaryStream(columnLabel: String): InputStream = underlying.getBinaryStream(columnLabel: String)
 
-  def updateBinaryStream(columnIndex: Int, x: InputStream, length: Long): Unit = underlying.updateBinaryStream(columnIndex, x, length)
+  def isLast: Boolean = underlying.isLast
 
-  def updateBinaryStream(columnLabel: String, x: InputStream, length: Long): Unit = underlying.updateBinaryStream(columnLabel, x, length)
+  def getNClob(columnIndex: Int): NClob = underlying.getNClob(columnIndex + 1)
 
-  def updateBlob(columnIndex: Int, x: InputStream, length: Long): Unit = underlying.updateBlob(columnIndex, x, length)
+  def getNClob(columnLabel: String): NClob = underlying.getNClob(columnLabel: String)
 
-  def updateBlob(columnLabel: String, x: InputStream, length: Long): Unit = underlying.updateBlob(columnLabel, x, length)
+  override def getCharacterStream(columnIndex: Int): Reader = underlying.getCharacterStream(columnIndex + 1)
 
-  def updateBlob(columnIndex: Int, x: InputStream): Unit = underlying.updateBlob(columnIndex, x)
+  override def getCharacterStream(columnLabel: String): Reader = underlying.getCharacterStream(columnLabel: String)
 
-  def updateBlob(columnLabel: String, x: InputStream): Unit = underlying.updateBlob(columnLabel, x)
+  override def getDouble(columnIndex: Int): Double = underlying.getDouble(columnIndex + 1)
 
-  def updateBlob(columnIndex: Int, x: java.sql.Blob): Unit = underlying.updateBlob(columnIndex, x)
+  override def getDouble(columnLabel: String): Double = underlying.getDouble(columnLabel: String)
 
-  def updateBlob(columnLabel: String, x: java.sql.Blob): Unit = underlying.updateBlob(columnLabel, x)
+  override def getArray(columnIndex: Int): JdbcArray = underlying.getArray(columnIndex + 1)
 
-  def updateBoolean(columnIndex: Int, x: Boolean): Unit = underlying.updateBoolean(columnIndex, x)
+  override def getArray(columnLabel: String): JdbcArray = underlying.getArray(columnLabel: String)
 
-  def updateBoolean(columnLabel: String, x: Boolean): Unit = underlying.updateBoolean(columnLabel, x)
+  def isFirst: Boolean = underlying.isFirst
 
-  def updateByte(columnIndex: Int, x: Byte): Unit = underlying.updateByte(columnIndex, x)
+  override def getURL(columnIndex: Int): URL = underlying.getURL(columnIndex + 1)
 
-  def updateByte(columnLabel: String, x: Byte): Unit = underlying.updateByte(columnLabel, x)
+  override def getURL(columnLabel: String): URL = underlying.getURL(columnLabel: String)
 
-  def updateBytes(columnIndex: Int, x: Array[Byte]): Unit = underlying.updateBytes(columnIndex, x)
+  override def getMetaData: ResultSetMetaData = underlying.getMetaData
 
-  def updateBytes(columnLabel: String, x: Array[Byte]): Unit = underlying.updateBytes(columnLabel, x)
+  def getRowId(columnIndex: Int): RowId = underlying.getRowId(columnIndex + 1)
 
-  def updateDate(columnIndex: Int, x: java.sql.Date): Unit = underlying.updateDate(columnIndex, x)
-  def updateDate(columnLabel: String, x: java.sql.Date): Unit = underlying.updateDate(columnLabel, x)
-  def updateDouble(columnIndex: Int, x: Double): Unit = underlying.updateDouble(columnIndex, x)
-  def updateDouble(columnLabel: String, x: Double): Unit = underlying.updateDouble(columnLabel, x)
-  def updateFloat(columnIndex: Int, x: Float): Unit = underlying.updateFloat(columnIndex, x)
-  def updateFloat(columnLabel: String, x: Float): Unit = underlying.updateFloat(columnLabel, x)
-  def updateInt(columnIndex: Int, x: Int): Unit = underlying.updateInt(columnIndex, x)
-  def updateInt(columnLabel: String, x: Int): Unit = underlying.updateInt(columnLabel, x)
-  def updateLong(columnIndex: Int, x: Long): Unit = underlying.updateLong(columnIndex, x)
-  def updateLong(columnLabel: String, x: Long): Unit = underlying.updateLong(columnLabel, x)
+  def getRowId(columnLabel: String): RowId = underlying.getRowId(columnLabel: String)
 
-  def updateNString(columnIndex: Int, nString: String): Unit = underlying.updateNString(columnIndex, nString)
-  def updateNString(columnLabel: String, nString: String): Unit = underlying.updateNString(columnLabel, nString)
+  override def getBigDecimal(columnIndex: Int): BigDecimal = underlying.getBigDecimal(columnIndex + 1)
 
-  def updateRef(columnIndex: Int, x: java.sql.Ref): Unit = underlying.updateRef(columnIndex, x)
-  def updateRef(columnLabel: String, x: java.sql.Ref): Unit = underlying.updateRef(columnLabel, x)
+  override def getBigDecimal(columnLabel: String): BigDecimal = underlying.getBigDecimal(columnLabel: String)
 
-  def updateRow(): Unit = underlying.updateRow()
-  def insertRow(): Unit = underlying.insertRow()
+  override def getFloat(columnIndex: Int): Float = underlying.getFloat(columnIndex + 1)
 
-  def updateRowId(columnIndex: Int, x: RowId): Unit = underlying.updateRowId(columnIndex, x)
-  def updateRowId(columnLabel: String, x: RowId): Unit = underlying.updateRowId(columnLabel, x)
-  def updateShort(columnIndex: Int, x: Short): Unit = underlying.updateShort(columnIndex, x)
-  def updateShort(columnLabel: String, x: Short): Unit = underlying.updateShort(columnLabel, x)
-  def updateSQLXML(columnIndex: Int, xmlObject: SQLXML): Unit = underlying.updateSQLXML(columnIndex, xmlObject)
-  def updateSQLXML(columnLabel: String, xmlObject: SQLXML): Unit = underlying.updateSQLXML(columnLabel, xmlObject)
-  def updateString(columnIndex: Int, x: String): Unit = underlying.updateString(columnIndex, x)
-  def updateString(columnLabel: String, x: String): Unit = underlying.updateString(columnLabel, x)
-  def updateTime(columnIndex: Int, x: java.sql.Time): Unit = underlying.updateTime(columnIndex, x)
-  def updateTime(columnLabel: String, x: java.sql.Time): Unit = underlying.updateTime(columnLabel, x)
-  def updateTimestamp(columnIndex: Int, x: java.sql.Timestamp): Unit = underlying.updateTimestamp(columnIndex, x)
-  def updateTimestamp(columnLabel: String, x: java.sql.Timestamp): Unit = underlying.updateTimestamp(columnLabel, x)
+  override def getFloat(columnLabel: String): Float = underlying.getFloat(columnLabel: String)
 
-  def updateCharacterStream(columnIndex: Int, x: Reader, length: Int): Unit = underlying.updateCharacterStream(columnIndex, x, length)
-  def updateCharacterStream(columnLabel: String, x: Reader, length: Int): Unit = underlying.updateCharacterStream(columnLabel, x, length)
-  def updateCharacterStream(columnIndex: Int, x: Reader, length: Long): Unit = underlying.updateCharacterStream(columnIndex, x, length)
-  def updateCharacterStream(columnLabel: String, x: Reader, length: Long): Unit = underlying.updateCharacterStream(columnLabel, x, length)
-  def updateCharacterStream(columnIndex: Int, x: Reader): Unit = underlying.updateCharacterStream(columnIndex, x)
-  def updateCharacterStream(columnLabel: String, x: Reader): Unit = underlying.updateCharacterStream(columnLabel, x)
+  override def getClob(columnIndex: Int): Clob = underlying.getClob(columnIndex + 1)
 
-  def updateNCharacterStream(columnIndex: Int, x: Reader, length: Int): Unit = underlying.updateNCharacterStream(columnIndex, x, length)
-  def updateNCharacterStream(columnLabel: String, x: Reader, length: Int): Unit = underlying.updateNCharacterStream(columnLabel, x, length)
-  def updateNCharacterStream(columnIndex: Int, x: Reader, length: Long): Unit = underlying.updateNCharacterStream(columnIndex, x, length)
-  def updateNCharacterStream(columnLabel: String, x: Reader, length: Long): Unit = underlying.updateNCharacterStream(columnLabel, x, length)
-  def updateNCharacterStream(columnIndex: Int, x: Reader): Unit = underlying.updateNCharacterStream(columnIndex, x)
-  def updateNCharacterStream(columnLabel: String, x: Reader): Unit = underlying.updateNCharacterStream(columnLabel, x)
+  override def getClob(columnLabel: String): Clob = underlying.getClob(columnLabel: String)
 
-  def updateClob(columnIndex: Int, x: Clob, length: Int): Unit = underlying.updateClob(columnIndex, x)
-  def updateClob(columnLabel: String, x: Clob, length: Int): Unit = underlying.updateClob(columnLabel, x)
-  def updateClob(columnIndex: Int, x: Reader, length: Long): Unit = underlying.updateClob(columnIndex, x, length)
-  def updateClob(columnLabel: String, x: Reader, length: Long): Unit = underlying.updateClob(columnLabel, x, length)
-  def updateClob(columnIndex: Int, x: Reader): Unit = underlying.updateClob(columnIndex, x)
-  def updateClob(columnLabel: String, x: Reader): Unit = underlying.updateClob(columnLabel, x)
+  override def getRow: Int = underlying.getRow
 
-  def updateNClob(columnIndex: Int, x: NClob, length: Int): Unit = underlying.updateNClob(columnIndex, x)
-  def updateNClob(columnLabel: String, x: NClob, length: Int): Unit = underlying.updateNClob(columnLabel, x)
-  def updateNClob(columnIndex: Int, x: Reader, length: Long): Unit = underlying.updateNClob(columnIndex, x, length)
-  def updateNClob(columnLabel: String, x: Reader, length: Long): Unit = underlying.updateNClob(columnLabel, x, length)
-  def updateNClob(columnIndex: Int, x: Reader): Unit = underlying.updateNClob(columnIndex, x)
-  def updateNClob(columnLabel: String, x: Reader): Unit = underlying.updateNClob(columnLabel, x)
+  override def getLong(columnIndex: Int): Long = underlying.getLong(columnIndex + 1)
 
-  def updateObject(columnIndex: Int, x: AnyRef): Unit = underlying.updateObject(columnIndex, x)
-  def updateObject(columnIndex: Int, x: AnyRef, scaleOrLength: Int): Unit = underlying.updateObject(columnIndex, x, scaleOrLength)
-  def updateObject(columnLabel: String, x: AnyRef): Unit = underlying.updateObject(columnLabel, x)
-  def updateObject(columnIndex: String, x: AnyRef, scaleOrLength: Int): Unit = underlying.updateObject(columnIndex, x, scaleOrLength)
+  override def getLong(columnLabel: String): Long = underlying.getLong(columnLabel: String)
+
+  def getHoldability: Int = underlying.getHoldability
+
+  def refreshRow(): Unit = underlying.refreshRow()
+
+  def getNString(columnIndex: Int): String = underlying.getNString(columnIndex + 1)
+
+  def getNString(columnLabel: String): String = underlying.getNString(columnLabel: String)
+
+  def getConcurrency: Int = underlying.getConcurrency
+
+  def getFetchSize: Int = underlying.getFetchSize
+
+  def setFetchSize(rows: Int): Unit = underlying.setFetchSize(rows: Int)
+
+  override def getTime(columnIndex: Int): Time = underlying.getTime(columnIndex + 1)
+
+  override def getTime(columnLabel: String): Time = underlying.getTime(columnLabel: String)
+
+  def getTime(columnIndex: Int, cal: Calendar): Time = underlying.getTime(columnIndex+ 1, cal: Calendar)
+
+  def getTime(columnLabel: String, cal: Calendar): Time = underlying.getTime(columnLabel: String, cal: Calendar)
+
+  override def getByte(columnIndex: Int): Byte = underlying.getByte(columnIndex + 1)
+
+  override def getByte(columnLabel: String): Byte = underlying.getByte(columnLabel: String)
+
+  override def getBoolean(columnIndex: Int): Boolean = underlying.getBoolean(columnIndex + 1)
+
+  override def getBoolean(columnLabel: String): Boolean = underlying.getBoolean(columnLabel: String)
+
+  def getFetchDirection: Int = underlying.getFetchDirection
+
+  def getAsciiStream(columnIndex: Int): InputStream = underlying.getAsciiStream(columnIndex + 1)
+
+  def getAsciiStream(columnLabel: String): InputStream = underlying.getAsciiStream(columnLabel: String)
+
+  override def getObject(columnIndex: Int): AnyRef = underlying.getObject(columnIndex + 1)
+
+  override def getObject(columnLabel: String): AnyRef = underlying.getObject(columnLabel: String)
+
+  def getObject(columnIndex: Int, map: util.Map[String, Class[_]]): AnyRef = underlying.getObject(columnIndex + 1, map: util.Map[String, Class[_]])
+
+  def getObject(columnLabel: String, map: util.Map[String, Class[_]]): AnyRef = underlying.getObject(columnLabel: String, map: util.Map[String, Class[_]])
+
+  def getObject[T](columnIndex: Int, `type`: Class[T]): T = underlying.getObject[T](columnIndex + 1, `type`: Class[T])
+
+  def getObject[T](columnLabel: String, `type`: Class[T]): T = underlying.getObject[T](columnLabel: String, `type`: Class[T])
+
+  override def getShort(columnIndex: Int): Short = underlying.getShort(columnIndex + 1)
+
+  override def getShort(columnLabel: String): Short = underlying.getShort(columnLabel: String)
+
+  def getNCharacterStream(columnIndex: Int): Reader = underlying.getNCharacterStream(columnIndex + 1)
+
+  def getNCharacterStream(columnLabel: String): Reader = underlying.getNCharacterStream(columnLabel: String)
+
+  def close(): Unit = underlying.close()
+
+  def wasNull: Boolean = underlying.wasNull
+
+  def getRef(columnIndex: Int): Ref = underlying.getRef(columnIndex + 1)
+
+  def getRef(columnLabel: String): Ref = underlying.getRef(columnLabel: String)
+
+  def isClosed: Boolean = underlying.isClosed
+
+  def findColumn(columnLabel: String): Int = {
+    underlying.findColumn(columnLabel: String) - 1
+  }
+
+  def getWarnings: SQLWarning = underlying.getWarnings
+
+  override def getDate(columnIndex: Int): Date = underlying.getDate(columnIndex + 1)
+
+  override def getDate(columnLabel: String): Date = underlying.getDate(columnLabel: String)
+
+  def getDate(columnIndex: Int, cal: Calendar): Date = underlying.getDate(columnIndex + 1, cal: Calendar)
+
+  def getDate(columnLabel: String, cal: Calendar): Date = underlying.getDate(columnLabel: String, cal: Calendar)
+
+  def getCursorName: String = underlying.getCursorName
+
+  def getStatement: Statement = underlying.getStatement
+
+  override def getSQLXML(columnIndex: Int): SQLXML = underlying.getSQLXML(columnIndex + 1)
+
+  override def getSQLXML(columnLabel: String): SQLXML = underlying.getSQLXML(columnLabel: String)
+
+  override def getInt(columnIndex: Int): Int = underlying.getInt(columnIndex + 1)
+
+  override def getInt(columnLabel: String): Int = underlying.getInt(columnLabel: String)
+
+  override def getBlob(columnIndex: Int): Blob = underlying.getBlob(columnIndex + 1)
+
+  override def getBlob(columnLabel: String): Blob = underlying.getBlob(columnLabel: String)
+
+  override def getBytes(columnIndex: Int): Array[Byte] = underlying.getBytes(columnIndex + 1)
+
+  override def getBytes(columnLabel: String): Array[Byte] = underlying.getBytes(columnLabel: String)
+  override def getString(columnIndex: Int): String = underlying.getString(columnIndex + 1)
+
+  override def getString(columnLabel: String): String = underlying.getString(columnLabel: String)
 
 }

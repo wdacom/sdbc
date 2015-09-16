@@ -7,7 +7,9 @@ trait Executable[Key, Connection, Execute <: base.Execute[Connection]] {
 }
 
 trait ExecutableMethods[Connection, Execute <: base.Execute[Connection]] {
-  def execute[Key](key: Key)(implicit ev: Executable[Key, Connection, Execute], connection: Connection): Unit = {
+
+  def execute[Key](key: Key)(implicit ev: base.Executable[Key, Connection, Execute], connection: Connection): Unit = {
     ev.execute(key)
   }
+
 }

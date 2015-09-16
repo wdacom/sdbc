@@ -1,27 +1,49 @@
 package com.rocketfuel.sdbc.postgresql.jdbc.implementation
 
 import java.net.InetAddress
-import java.sql.{SQLDataException, SQLException}
-import org.joda.time.{Duration => JodaDuration}
+import java.sql.{SQLException, SQLDataException}
+import java.time.format.DateTimeFormatter
+import java.time.Duration
 import scala.concurrent.duration.{Duration => ScalaDuration}
 import java.util.UUID
-
 import com.rocketfuel.sdbc.base.jdbc._
-import com.rocketfuel.sdbc.postgresql.jdbc._
-import org.json4s._
-import org.json4s.jackson.JsonMethods
-import org.postgresql.util.PGInterval
-
-import scala.xml.{Elem, XML}
-
-trait Getters extends DefaultGetters with DateTimeGetter {
-  self: PgDateTimeFormatter =>
+import com.rocketfuel.sdbc.postgresql.jdbc.{Cidr, LTree}
+import org.json4s.JValue
+import org.postgresql.util.{PGInterval, PGobject}
+import scala.xml.{Node, XML}
+import scala.concurrent.duration.{Duration => ScalaDuration}
+private[sdbc] trait Getters
+  extends BooleanGetter
+  with BytesGetter
+  with DateGetter
+  with DoubleGetter
+  with FloatGetter
+  with InputStreamGetter
+  with IntGetter
+  with JavaBigDecimalGetter
+  with LongGetter
+  with ReaderGetter
+  with ScalaBigDecimalGetter
+  with ShortGetter
+  with StringGetter
+  with TimeGetter
+  with TimestampGetter
+  with UUIDGetter
+  with ParameterGetter
+  with InstantGetter
+  with LocalDateGetter
+  with LocalDateTimeGetter  {
+  self: PGTimestampTzImplicits
+    with PGTimeTzImplicits
+    with IntervalImplicits
+    with PGInetAddressImplicits
+    with PGJsonImplicits =>
 
   implicit val LTreeGetter = new Getter[LTree] {
     override def apply(row: Row, ix: Index): Option[LTree] = {
       Option(row.getObject(ix(row))).map {
         case l: LTree => l
-        case _ => throw new SQLDataException("column does not contain an LTree value")
+        case _ => throw new SQLException("column does not contain an ltree")
       }
     }
   }
@@ -29,8 +51,8 @@ trait Getters extends DefaultGetters with DateTimeGetter {
   implicit val PGIntervalGetter = new Getter[PGInterval] {
     override def apply(row: Row, ix: Index): Option[PGInterval] = {
       Option(row.getObject(ix(row))).map {
-        case pgInterval: PGInterval => pgInterval
-        case _ => throw new SQLDataException("column does not contain a PGInterval")
+        case p: PGInterval => p
+        case _ => throw new SQLException("column does not contain an interval")
       }
     }
   }
@@ -63,14 +85,14 @@ trait Getters extends DefaultGetters with DateTimeGetter {
     override def apply(row: Row, ix: Index): Option[UUID] = {
       Option(row.getObject(ix(row))).map {
         case uuid: UUID => uuid
-        case _ => throw new SQLDataException("column does not contain a UUID")
+        case _ => throw new SQLDataException("column does not contain a uuid")
       }
     }
   }
 
-  implicit val XMLGetter: Getter[Elem] = new Parser[Elem] {
+  implicit val XMLGetter: Getter[Node] = new Parser[Node] {
     //PostgreSQL's ResultSet#getSQLXML just uses getString.
-    override def parse(asString: String): Elem = {
+    override def parse(asString: String): Node = {
       XML.loadString(asString)
     }
   }

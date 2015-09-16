@@ -1,17 +1,39 @@
 package com.rocketfuel.sdbc.base
 
-import java.sql.{Types, PreparedStatement}
+import java.sql.PreparedStatement
 import com.rocketfuel.sdbc.base
-import com.rocketfuel.CaseInsensitiveOrdering
 import com.zaxxer.hikari.HikariConfig
 
 package object jdbc
   extends HikariImplicits
   with ResultSetImplicits
-  with base.BatchableMethods[java.sql.Connection, Batch]
-  with base.UpdatableMethods[java.sql.Connection, Update]
-  with base.SelectableMethods[java.sql.Connection, Select]
-  with base.ExecutableMethods[java.sql.Connection, Execute] {
+  with base.BatchableMethods[java.sql.Connection, jdbc.Batch]
+  with base.UpdatableMethods[java.sql.Connection, jdbc.Update]
+  with base.SelectableMethods[java.sql.Connection, jdbc.Select]
+  with base.ExecutableMethods[java.sql.Connection, jdbc.Execute] {
+
+  type ParameterizedQuery[Self <: ParameterizedQuery[Self]] = base.ParameterizedQuery[Self, PreparedStatement, Int]
+
+  type ParameterValue = base.ParameterValue
+  val ParameterValue = base.ParameterValue
+
+  type ParameterList = Seq[(String, Option[ParameterValue])]
+
+  type IsParameter[T] = base.IsParameter[T, PreparedStatement, Int]
+
+  type Index = PartialFunction[Row, Int]
+
+  type Getter[+T] = base.Getter[Row, Index, T]
+
+  type Connection = java.sql.Connection
+
+  type Batchable[Key] = base.Batchable[Key, Connection, jdbc.Batch]
+
+  type Executable[Key] = base.Executable[Key, Connection, jdbc.Execute]
+
+  type Selectable[Key, Value] = base.Selectable[Key, Value, Connection, jdbc.Select[Value]]
+
+  type Updatable[Key] = base.Updatable[Key, Connection, jdbc.Update]
 
   private val dataSources: collection.mutable.Map[String, DBMS] = collection.mutable.Map.empty
 
@@ -71,31 +93,12 @@ package object jdbc
     of(r.getStatement)
   }
 
-  type ParameterizedQuery[Self <: ParameterizedQuery[Self]] = base.ParameterizedQuery[Self, PreparedStatement, Int]
-
-  type ParameterValue[+T] = base.ParameterValue[T, PreparedStatement, Int]
-
-  type ParameterList = Seq[(String, Option[ParameterValue[_]])]
-
-  type Index = PartialFunction[Row, Int]
-
-  type Getter[+T] = base.Getter[Row, Index, T]
-
-  type Connection = java.sql.Connection
-
-  type Batchable[Key] = base.Batchable[Key, Connection, Batch]
-
-  type Executable[Key] = base.Executable[Key, Connection, Execute]
-
-  type Selectable[Key, Value] = base.Selectable[Key, Value, Connection, Select[Value]]
-
-  type Updatable[Key] = base.Updatable[Key, Connection, Update]
-
   private [jdbc] def prepare(
     queryText: String,
-    parameterValues: Map[String, Option[ParameterValue[_]]],
+    parameterValues: Map[String, Option[Any]],
     parameterPositions: Map[String, Set[Int]]
-  )(implicit connection: Connection
+  )(implicit connection: Connection,
+    parameterSetter: jdbc.ParameterSetter
   ): PreparedStatement = {
     val preparedStatement = connection.prepareStatement(queryText)
 
@@ -106,22 +109,21 @@ package object jdbc
 
   private [jdbc] def bind(
     preparedStatement: PreparedStatement,
-    parameterValues: Map[String, Option[ParameterValue[_]]],
+    parameterValues: Map[String, Option[Any]],
     parameterPositions: Map[String, Set[Int]]
+  )(implicit parameterSetter: jdbc.ParameterSetter
   ): Unit = {
     for ((key, maybeValue) <- parameterValues) {
-      val parameterIndices = parameterPositions(key)
-
-      maybeValue match {
-        case None =>
-          for (parameterIndex <- parameterIndices) {
-            preparedStatement.setNull(parameterIndex, Types.NULL)
-          }
-        case Some(value) =>
-          for (parameterIndex <- parameterIndices) {
-            value.set(preparedStatement, parameterIndex)
-          }
+      val setter: Int => Unit = {
+        maybeValue match {
+          case None =>
+            (parameterIndex: Int) => parameterSetter.setNone(preparedStatement, parameterIndex + 1)
+          case Some(value) =>
+            (parameterIndex: Int) => parameterSetter.setAny(preparedStatement, parameterIndex + 1, value)
+        }
       }
+      val parameterIndices = parameterPositions(key)
+      parameterIndices.foreach(setter)
     }
   }
 

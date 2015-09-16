@@ -6,6 +6,7 @@ import java.util.function.UnaryOperator
 import com.datastax.driver.core.{BoundStatement, PreparedStatement, ResultSet, Row => CRow}
 import com.google.common.util.concurrent.{FutureCallback, Futures, ListenableFuture}
 import com.rocketfuel.sdbc.cassandra.datastax._
+import com.rocketfuel.sdbc.cassandra.datastax.implementation.ParameterSetter
 import me.jeffshaw.scalaz.stream.IteratorConstructors._
 
 import scalaz.concurrent.Task
@@ -58,11 +59,11 @@ object datastax {
       maybeValue match {
         case None =>
           for (parameterIndex <- parameterIndices) {
-            forBinding.setToNull(parameterIndex - 1)
+            ParameterSetter.setNone(forBinding, parameterIndex)
           }
         case Some(value) =>
           for (parameterIndex <- parameterIndices) {
-            value.set(forBinding, parameterIndex - 1)
+            ParameterSetter.setAny(forBinding, parameterIndex, value)
           }
       }
     }

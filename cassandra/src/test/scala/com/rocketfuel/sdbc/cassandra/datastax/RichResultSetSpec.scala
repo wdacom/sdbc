@@ -15,13 +15,32 @@ class RichResultSetSpec
     Execute("CREATE TABLE spc.tbl (x int PRIMARY KEY)").execute()
 
     forAll { (randoms: Seq[Int]) =>
-      val insert = Execute("INSERT INTO spc.tbl (x) VALUES ($x)")
+      val insert = Execute("INSERT INTO spc.tbl (x) VALUES (@x)")
 
       for (random <- randoms) {
         insert.on("x" -> random).execute()
       }
 
       val results = Select[Int]("SELECT x FROM spc.tbl").iterator()
+
+      assertResult(randoms.toSet)(results.toSet)
+
+      RichResultSetSpec.truncate.execute()
+    }
+  }
+
+  test("iterator() works on several nullable results") {implicit connection =>
+    Execute("CREATE KEYSPACE spc WITH REPLICATION = {'class': 'SimpleStrategy', 'replication_factor': 1}").execute()
+    Execute("CREATE TABLE spc.tbl (x int PRIMARY KEY, y int)").execute()
+
+    forAll { (randoms: Seq[Option[Int]]) =>
+      val insert = Execute("INSERT INTO spc.tbl (x, y) VALUES (@x, @y)")
+
+      for ((random, ix) <- randoms.zipWithIndex) {
+        insert.on("x" -> ix, "y" -> random).execute()
+      }
+
+      val results = Select[Option[Int]]("SELECT y FROM spc.tbl").iterator()
 
       assertResult(randoms.toSet)(results.toSet)
 
@@ -37,7 +56,7 @@ class RichResultSetSpec
       //Note: Peng verified that values in tuples are nullable, so we need
       //to support that.
 
-      val insert = Execute("INSERT INTO spc.tbl (x) VALUES ($x)")
+      val insert = Execute("INSERT INTO spc.tbl (x) VALUES (@x)")
 
       for (tuple <- tuples) {
         insert.on("x" -> tuple).execute()
@@ -58,7 +77,7 @@ class RichResultSetSpec
     Execute("CREATE TABLE spc.tbl (x tuple<int, int> PRIMARY KEY)").execute()
 
     forAll { (tuples: Seq[(Option[Int], Option[Int])]) =>
-      val insert = Execute("INSERT INTO spc.tbl (x) VALUES ($x)")
+      val insert = Execute("INSERT INTO spc.tbl (x) VALUES (@x)")
 
       for (tuple <- tuples) {
         insert.on("x" -> tuple).execute()
@@ -77,7 +96,7 @@ class RichResultSetSpec
     Execute("CREATE TABLE spc.tbl (id int PRIMARY KEY, x set<text>)").execute()
 
     forAll(Gen.nonEmptyListOf(Gen.nonEmptyContainerOf[Set, String](Gen.alphaStr))) { sets =>
-      val insert = Execute("INSERT INTO spc.tbl (id, x) VALUES ($id, $x)")
+      val insert = Execute("INSERT INTO spc.tbl (id, x) VALUES (@id, @x)")
 
       for ((set, id) <- sets.zipWithIndex) {
         insert.on( "id" -> id, "x" -> set).execute()
@@ -103,7 +122,7 @@ class RichResultSetSpec
     Execute("CREATE TABLE spc.tbl (id int PRIMARY KEY, x map<text, text>)").execute()
 
     forAll(Gen.nonEmptyListOf[Map[String, String]](Gen.nonEmptyMap[String, String](genStringTuple))) { maps =>
-      val insert = Execute("INSERT INTO spc.tbl (id, x) VALUES ($id, $x)")
+      val insert = Execute("INSERT INTO spc.tbl (id, x) VALUES (@id, @x)")
 
       for ((map, id) <- maps.zipWithIndex) {
         insert.on("id" -> id, "x" -> map).execute()

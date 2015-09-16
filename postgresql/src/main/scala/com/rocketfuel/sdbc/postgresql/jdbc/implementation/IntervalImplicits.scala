@@ -1,16 +1,17 @@
 package com.rocketfuel.sdbc.postgresql.jdbc.implementation
 
-import java.util.concurrent.TimeUnit
-
+import java.sql.SQLException
 import org.joda.time.{Duration => JodaDuration}
-import org.postgresql.util.PGInterval
-import scala.concurrent.duration.{Duration => ScalaDuration}
+import java.util.concurrent.TimeUnit
+import scala.concurrent.duration.Duration
 
-trait IntervalImplicits {
+import org.postgresql.util.{PGobject, PGInterval}
 
-  private def MillisecondsToPGInterval(millis: Long): PGInterval = {
-    val millisRemainder = millis % IntervalConstants.millisecondsPerSecond
-    val totalSeconds = millis / IntervalConstants.millisecondsPerSecond
+private[sdbc] trait IntervalImplicits {
+
+  implicit def JodaDurationToPGInterval(value: JodaDuration): PGInterval = {
+    val nano = value.getNano.toDouble / IntervalConstants.nanosecondsPerSecond.toDouble
+    val totalSeconds = value.getSeconds
     val years = totalSeconds / IntervalConstants.secondsPerYear
     val yearRemainder = totalSeconds % IntervalConstants.secondsPerYear
     val months = yearRemainder / IntervalConstants.secondsPerMonth
@@ -20,7 +21,7 @@ trait IntervalImplicits {
     val hours = dayRemainder / IntervalConstants.secondsPerHour
     val hoursRemainder = dayRemainder % IntervalConstants.secondsPerHour
     val minutes = hoursRemainder / IntervalConstants.secondsPerMinute
-    val seconds = (hoursRemainder % IntervalConstants.secondsPerMinute).toDouble + (millisRemainder.toDouble / 1000)
+    val seconds = (hoursRemainder % IntervalConstants.secondsPerMinute).toDouble + nano
     new PGInterval(
       years.toInt,
       months.toInt,
@@ -31,8 +32,8 @@ trait IntervalImplicits {
     )
   }
 
-  private def PGIntervalToMilliseconds(value: PGInterval): Long = {
-    val millis = (value.getSeconds - value.getSeconds.floor) * IntervalConstants.millisecondsPerSecond
+  implicit def PGIntervalToJavaDuration(value: PGInterval): JodaDuration = {
+    val nanos = (value.getSeconds - value.getSeconds.floor) * IntervalConstants.nanosecondsPerSecond
     var seconds = 0L
     seconds += value.getSeconds.toLong
     seconds += value.getMinutes * IntervalConstants.secondsPerMinute
@@ -40,23 +41,33 @@ trait IntervalImplicits {
     seconds += value.getDays * IntervalConstants.secondsPerDay
     seconds += value.getMonths * IntervalConstants.secondsPerMonth
     seconds += value.getYears * IntervalConstants.secondsPerYear
-    seconds * 1000 + millis.toLong
+    JavaDuration.ofSeconds(seconds, nanos.toLong)
   }
 
-  implicit def JodaDurationToPGInterval(value: JodaDuration): PGInterval = {
-    MillisecondsToPGInterval(value.getMillis)
+  implicit def DurationToPGInterval(duration: Duration): PGInterval = {
+    val javaDuration = JavaDuration.ofNanos(duration.toNanos)
+    javaDuration
   }
 
-  implicit def PGIntervalToJodaDuration(value: PGInterval): JodaDuration = {
-    new JodaDuration(PGIntervalToMilliseconds(value))
+  implicit def PGIntervalToDuration(value: PGInterval): Duration = {
+    val javaDuration: JavaDuration = value
+    Duration(javaDuration.getSeconds, TimeUnit.SECONDS) + Duration(javaDuration.getNano, TimeUnit.NANOSECONDS)
   }
 
-  implicit def ScalaDurationToPGInterval(value: ScalaDuration): PGInterval = {
-    MillisecondsToPGInterval(value.toMillis)
+  implicit def PGobjectToScalaDuration(value: PGobject): Duration = {
+    value match {
+      case p: PGInterval => p
+      case _ =>
+        throw new SQLException("column does not contain a interval")
+    }
   }
 
-  implicit def PGIntervalToScalaDuration(value: PGInterval): ScalaDuration = {
-    ScalaDuration(PGIntervalToMilliseconds(value), TimeUnit.MILLISECONDS)
+  implicit def PGobjectToJavaDuration(value: PGobject): JodaDuration = {
+    value match {
+      case p: PGInterval => p
+      case _ =>
+        throw new SQLException("column does not contain a interval")
+    }
   }
 
 }

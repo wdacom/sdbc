@@ -1,10 +1,15 @@
 package com.rocketfuel.sdbc.postgresql.jdbc.implementation
 
+import java.io.{InputStream, Reader}
+import java.sql.PreparedStatement
+import java.util.UUID
+import com.rocketfuel.sdbc.base.CISet
 import com.rocketfuel.sdbc.base.jdbc._
 import com.rocketfuel.sdbc.postgresql.jdbc
+import com.rocketfuel.sdbc.postgresql.jdbc.Cidr
 import org.postgresql.PGConnection
 
-abstract class PostgreSqlCommon
+private[sdbc] abstract class PostgreSqlCommon
   extends DBMS
   with Setters
   with PgDateTimeFormatter
@@ -15,7 +20,7 @@ abstract class PostgreSqlCommon
 
   override def dataSourceClassName = "org.postgresql.ds.PGSimpleDataSource"
   override def driverClassName = "org.postgresql.Driver"
-  override def jdbcSchemes = Set("postgresql")
+  override def jdbcSchemes = CISet("postgresql")
   override def productName: String = "PostgreSQL"
   override val supportsIsValid: Boolean = true
 
@@ -27,7 +32,23 @@ abstract class PostgreSqlCommon
    * @param connection
    */
   override def initializeConnection(connection: java.sql.Connection): Unit = {
-    connection.unwrap[PGConnection](classOf[PGConnection]).addDataType("ltree", classOf[jdbc.LTree])
+    val pgConnection = connection.unwrap[PGConnection](classOf[PGConnection])
+    pgConnection.addDataType("ltree", classOf[jdbc.LTree])
+    pgConnection.addDataType("inet", classOf[PGInetAddress])
+    pgConnection.addDataType("cidr", classOf[Cidr])
+    pgConnection.addDataType("json", classOf[PGJson])
+    pgConnection.addDataType("jsonb", classOf[PGJson])
+    pgConnection.addDataType("time", classOf[PGLocalTime])
   }
 
+  override def toParameter(a: Any): Option[Any] = {
+    a match {
+      case null | None =>
+        None
+      case Some(a) =>
+        Some(toParameter(a)).flatten
+      case _ =>
+        Some(toPostgresqlParameter(a))
+    }
+  }
 }

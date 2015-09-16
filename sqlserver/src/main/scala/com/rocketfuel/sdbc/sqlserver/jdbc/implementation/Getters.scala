@@ -8,10 +8,21 @@ import org.joda.time.Instant
 
 import scala.xml.{Node, XML}
 
-trait Getters
   extends DefaultGetters
-  with DateTimeFormatterGetter {
-  self: HasDateTimeFormatter =>
+  with InstantGetter
+  with LocalDateGetter
+
+  implicit val LocalTimeGetter: Getter[LocalTime] = new Getter[LocalTime] {
+    override def apply(row: Row, ix: Index): Option[LocalTime] = {
+      Option(row.getString(ix(row))).map(LocalTime.parse)
+    }
+  }
+
+  implicit val OffsetDateTimeGetter: Getter[OffsetDateTime] = new Getter[OffsetDateTime] {
+    override def apply(row: Row, ix: Index): Option[OffsetDateTime] = {
+  self: HasOffsetDateTimeFormatter with HasOffsetTimeFormatter =>
+    }
+  }
 
   override implicit val UUIDGetter: Getter[UUID] = new Parser[UUID] {
     override def parse(asString: String): UUID = {
@@ -21,22 +32,27 @@ trait Getters
 
   implicit val HierarchyIdGetter = new Parser[HierarchyId] {
     override def parse(asString: String): HierarchyId = {
-      HierarchyId(asString)
+      HierarchyId.fromString(asString)
     }
   }
 
   implicit val XMLGetter: Getter[Node] = new Getter[Node] {
 
     override def apply(row: Row, ix: Index): Option[Node] = {
-      for {
-        clob <- Option(row.getClob(ix(row)))
-      } yield {
-        val stream = clob.getCharacterStream()
-        try {
-          XML.load(stream)
-        } finally {
-          util.Try(stream.close())
-        }
+      row match {
+        case row: MutableRow =>
+          for {
+            clob <- Option(row.getClob(ix(row)))
+          } yield {
+            val stream = clob.getCharacterStream()
+            try {
+              XML.load(stream)
+            } finally {
+              util.Try(stream.close())
+            }
+          }
+        case _ =>
+          Option(row.getString(ix(row))).map(XML.loadString)
       }
     }
   }

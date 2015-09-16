@@ -1,10 +1,10 @@
-package com.rocketfuel.sdbc.postgresql.jdbc
+package com.rocketfuel.sdbc.postgresql.jdbc.implementation
 
 import org.joda.time.{DateTime, DateTimeZone}
 
 import org.scalatest.FunSuite
 
-class PostgreSqlSpec extends FunSuite {
+class OffsetDateTimeFormatterSpec extends FunSuite {
 
   test("Can parse UTC timestamps from PostgreSql.") {
     val asString = "2014-10-21 20:40:56.586045+00"

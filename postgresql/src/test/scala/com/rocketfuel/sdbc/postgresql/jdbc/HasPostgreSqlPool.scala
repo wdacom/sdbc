@@ -39,6 +39,13 @@ trait HasPostgreSqlPool {
     }
   }
 
+  protected def createHstore(): Unit = {
+    withPg {implicit connection =>
+      execute"CREATE EXTENSION hstore".execute()
+      connection.commit()
+    }
+  }
+
   protected def pgDropTestCatalogs(): Unit = {
     pgPool.foreach(_.close())
     pgPool = None
@@ -47,7 +54,7 @@ trait HasPostgreSqlPool {
       connection.setAutoCommit(true)
 
       val databases =
-        Select[String]("SELECT datname FROM pg_database WHERE datname LIKE $catalogPrefix").
+        Select[String]("SELECT datname FROM pg_database WHERE datname LIKE @catalogPrefix").
         on("catalogPrefix" -> (pgTestCatalogPrefix + "%")).
         iterator().toSeq
 
@@ -56,7 +63,7 @@ trait HasPostgreSqlPool {
           Execute(
             """SELECT pg_terminate_backend(pid)
               |FROM pg_stat_activity
-              |WHERE pg_stat_activity.datname = $databaseName
+              |WHERE pg_stat_activity.datname = @databaseName
               |AND pid <> pg_backend_pid();
             """.stripMargin
           ).on("databaseName" -> database).execute()

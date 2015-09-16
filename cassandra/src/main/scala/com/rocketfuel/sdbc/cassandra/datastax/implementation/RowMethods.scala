@@ -2,12 +2,24 @@ package com.rocketfuel.sdbc.cassandra.datastax.implementation
 
 import com.datastax.driver.core.{Row => CRow}
 
-trait RowMethods {
+private[sdbc] trait RowMethods {
+  self: ParameterValues with IndexImplicits =>
 
   implicit class Row(underlying: CRow) {
 
-    def apply[T](ix: Index)(implicit getter: RowGetter[T]): Option[T] = {
+    def get[T](ix: Index)(implicit getter: RowGetter[T]): Option[T] = {
       getter(underlying, ix)
+    }
+
+    def getParameters(implicit getter: RowGetter[ParameterValue]): IndexedSeq[Option[ParameterValue]] = {
+      IndexedSeq.tabulate(underlying.getColumnDefinitions.size())(ix => get[ParameterValue](ix))
+    }
+
+    def getParametersByName(implicit getter: RowGetter[ParameterValue]): Map[String, Option[ParameterValue]] = {
+      getParameters.zipWithIndex.foldLeft(Map.empty[String, Option[ParameterValue]]) {
+        case (accum, (value, ix)) =>
+          accum + (underlying.getColumnDefinitions.getName(ix) -> value)
+      }
     }
 
   }

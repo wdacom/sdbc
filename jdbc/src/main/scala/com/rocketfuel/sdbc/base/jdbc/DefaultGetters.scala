@@ -18,6 +18,5 @@ trait DefaultGetters
   with StringGetter
   with TimeGetter
   with TimestampGetter
-  with UUIDGetter {
-
-}
+  with UUIDGetter
+  with ParameterGetter

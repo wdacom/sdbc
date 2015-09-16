@@ -13,4 +13,18 @@ package object base {
    */
   type Getter[-Row, -Index, +T] = (Row, Index) => Option[T]
 
+  def box(v: Any): AnyRef = {
+    v match {
+      case a: AnyRef => a
+      case b: Boolean => Boolean.box(b)
+      case b: Byte => Byte.box(b)
+      case c: Char => Char.box(c)
+      case s: Short => Short.box(s)
+      case i: Int => Int.box(i)
+      case l: Long => Long.box(l)
+      case f: Float => Float.box(f)
+      case d: Double => Double.box(d)
+    }
+  }
+
 }

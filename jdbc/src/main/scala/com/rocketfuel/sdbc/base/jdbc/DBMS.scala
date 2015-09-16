@@ -1,105 +1,115 @@
 package com.rocketfuel.sdbc.base.jdbc
 
 import com.rocketfuel.sdbc.base
-import com.rocketfuel.sdbc.base.jdbc
+import com.rocketfuel.sdbc.base.{ParameterValueImplicits, jdbc}
 import com.zaxxer.hikari.HikariDataSource
 
 abstract class DBMS
   extends IndexImplicits
   with HikariImplicits
-  with OptionParameter
+  with ParameterValueImplicits
   with GetterImplicits
   with UpdaterImplicits
   with base.BatchableMethods[java.sql.Connection, Batch]
   with base.UpdatableMethods[java.sql.Connection, Update]
   with base.SelectableMethods[java.sql.Connection, Select]
-  with base.ExecutableMethods[java.sql.Connection, Execute]{
+  with base.ExecutableMethods[java.sql.Connection, Execute]
+  with StringContextMethods {
 
-  type Row = jdbc.Row
+  /**
+   *
+   */
+  implicit val ParameterSetter: ParameterSetter
 
-  type MutableRow = jdbc.MutableRow
+  type Index = jdbc.Index
 
-  type ParameterValue[+T] = jdbc.ParameterValue[T]
+  type Getter[+T] = jdbc.Getter[T]
+
+  type ParameterValue = jdbc.ParameterValue
+  val ParameterValue = jdbc.ParameterValue
 
   type ParameterList = jdbc.ParameterList
 
-  type Batchable[Key] = jdbc.Batchable[Key]
-
-  override def batchIterator[Key](
-    key: Key
-  )(implicit batchable: Batchable[Key],
-    connection: Connection
-  ): Iterator[Long] = {
-    jdbc.batchIterator[Key](key)
-  }
+  type Batchable[Key] = base.Batchable[Key, Connection, Batch]
 
   type Executable[Key] = jdbc.Executable[Key]
 
-  override def execute[Key](
-    key: Key
-  )(implicit ev: Executable[Key],
-    connection: Connection
-  ): Unit = {
-    jdbc.execute[Key](key)
-  }
-
   type Selectable[Key, Value] = jdbc.Selectable[Key, Value]
-
-  override def iterator[Key, Value](
-    key: Key
-  )(implicit selectable: Selectable[Key, Value],
-    connection: Connection
-  ): Iterator[Value] = {
-    jdbc.iterator[Key, Value](key)
-  }
-
-  override def option[Key, Value](
-    key: Key
-  )(implicit selectable: Selectable[Key, Value],
-    connection: Connection
-  ): Option[Value] = {
-    jdbc.option[Key, Value](key)
-  }
 
   type Updatable[Key] = jdbc.Updatable[Key]
 
-  override def updateIterator[Key](
-    key: Key
-  )(implicit updatable: Updatable[Key],
-    connection: Connection
-  ): Iterator[Long] = {
-    jdbc.updateIterator[Key](key)
-  }
-
-  override def update[Key](
-    key: Key
-  )(implicit updatable: Updatable[Key],
-    connection: Connection
-  ): Long = {
-    jdbc.update[Key](key)
-  }
-
   type Select[T] = jdbc.Select[T]
 
-  val Select = jdbc.Select
+  object Select {
+    def apply[T](
+      queryText: String,
+      hasParameters: Boolean = true
+    )(implicit converter: Row => T): Select[T] = {
+      jdbc.Select[T](queryText, hasParameters)
+    }
+  }
+
+  type SelectForUpdate = jdbc.SelectForUpdate
+
+  object SelectForUpdate {
+    def apply(
+      queryText: String,
+      hasParameters: Boolean = true
+    ): SelectForUpdate = {
+      jdbc.SelectForUpdate(queryText, hasParameters)
+    }
+  }
 
   type Update = jdbc.Update
 
-  val Update = jdbc.Update
+  object Update {
+    def apply(
+      queryText: String,
+      hasParameters: Boolean = true
+    ): Update = {
+      jdbc.Update(queryText, hasParameters)
+    }
+
+  }
 
   type Batch = jdbc.Batch
 
-  val Batch = jdbc.Batch
+  object Batch {
+    def apply(
+      queryText: String,
+      hasParameters: Boolean = true
+    ): Batch = {
+      jdbc.Batch(queryText, hasParameters)
+    }
+  }
 
   type Execute = jdbc.Execute
 
-  val Execute = jdbc.Execute
+  object Execute {
+    def apply(
+      queryText: String,
+      hasParameters: Boolean = true
+    ): Execute = {
+      jdbc.Execute(
+          queryText,
+          hasParameters
+        )
+    }
+  }
 
   type Pool = jdbc.Pool
 
   val Pool = jdbc.Pool
 
   type Connection = jdbc.Connection
+
+  type Row = jdbc.Row
+
+  type MutableRow = jdbc.MutableRow
+
+  type UpdatableRow = jdbc.UpdatableRow
+
+  type ImmutableRow = jdbc.ImmutableRow
 
   implicit def PoolToHikariPool(pool: Pool): HikariDataSource = {
     pool.underlying
@@ -108,7 +118,7 @@ abstract class DBMS
   implicit class ConnectionMethods(connection: Connection) {
     def iterator[T](
       queryText: String,
-      parameters: (String, Option[ParameterValue[_]])*
+      parameters: (String, Option[ParameterValue])*
     )(implicit converter: Row => T
     ): Iterator[T] = {
       Select[T](queryText).on(parameters: _*).iterator()(connection)
@@ -116,21 +126,29 @@ abstract class DBMS
 
     def iteratorForUpdate(
       queryText: String,
-      parameters: (String, Option[ParameterValue[_]])*
-    ): Iterator[MutableRow] = {
+      parameters: (String, Option[ParameterValue])*
+    ): Iterator[UpdatableRow] = {
       SelectForUpdate(queryText).on(parameters: _*).iterator()(connection)
+    }
+
+    def option[T](
+      queryText: String,
+      parameters: (String, Option[ParameterValue])*
+    )(implicit converter: Row => T
+    ): Option[T] = {
+      Select[T](queryText).on(parameters: _*).option()(connection)
     }
 
     def update(
       queryText: String,
-      parameterValues: (String, Option[ParameterValue[_]])*
+      parameterValues: (String, Option[ParameterValue])*
     ): Long = {
       Update(queryText).on(parameterValues: _*).update()(connection)
     }
 
     def execute(
       queryText: String,
-      parameterValues: (String, Option[ParameterValue[_]])*
+      parameterValues: (String, Option[ParameterValue])*
     ): Unit = {
       Execute(queryText).on(parameterValues: _*).execute()(connection)
     }

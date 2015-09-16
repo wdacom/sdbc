@@ -21,12 +21,38 @@ object CompiledStatement {
     }
   }
 
+  /**
+   * Since the original variable names can't be gotten from
+   * the string context (they're replaced by empty strings),
+   * use numbers to represent the parameter names, starting
+   * from 0.
+   * @param sc
+   * @return
+   */
+  def apply(sc: StringContext): CompiledStatement = {
+    val builder = new StringBuilder()
+    val parts = sc.parts.iterator
+    var i = 0
+
+    builder.append(StringContext.treatEscapes(parts.next()))
+
+    while(parts.hasNext) {
+      builder.append(s"@`$i`")
+      i += 1
+      builder.append(StringContext.treatEscapes(parts.next()))
+    }
+
+    val queryText = builder.toString
+
+    apply(queryText)
+  }
+
   //http://www.postgresql.org/docs/9.4/static/sql-syntax-lexical.html
-  //We use '$' to signal the beginning of named parameter.
-  //Parameters are optionally quoted by backticks.
-  //Two '$' in a row are ignored.
+  //We use '@' to signal the beginning of named parameter.
+  //Parameters are optionally quoted by backticks. Quoted parameters can not contain backticks.
+  //Two '@' in a row are ignored.
   private val parameterMatcher =
-    """(?U)\$(?<!\$\$)(?:`([^`]+)`|([\p{L}_][\p{L}\p{N}_$]*))""".r
+    """(?U)@(?<!\@\@)(?:`([^`]+)`|([\p{L}_][\p{L}\p{N}_$]*))""".r
 
   /**
    * Split the string into its parts up to and including the first
@@ -72,13 +98,12 @@ object CompiledStatement {
 
   private def findParameterPositions(parts: Seq[QueryPart]): Map[String, Set[Int]] = {
     parts.collect{case p: Parameter => p}.zipWithIndex.foldLeft(Map.empty[String, Set[Int]]){
-      case (positionMap, (Parameter(name), index0)) =>
-        val index1 = index0 + 1
+      case (positionMap, (Parameter(name), index)) =>
         positionMap.get(name) match {
           case None =>
-            positionMap + (name -> Set(index1))
+            positionMap + (name -> Set(index))
           case Some(parameterPositions) =>
-            positionMap + (name -> (parameterPositions + index1))
+            positionMap + (name -> (parameterPositions + index))
         }
     }
   }

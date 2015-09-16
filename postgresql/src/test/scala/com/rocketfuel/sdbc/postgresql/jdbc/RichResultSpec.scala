@@ -40,7 +40,7 @@ class RichResultSpec
     val randoms = Seq.fill(10)(util.Random.nextInt())
     Execute("CREATE TABLE tbl (x int)").execute()
 
-    val batch = randoms.foldLeft(Batch("INSERT INTO tbl (x) VALUES ($x)")) {
+    val batch = randoms.foldLeft(Batch("INSERT INTO tbl (x) VALUES (@x)")) {
       case (batch, r) =>
         batch.addBatch("x" -> r)
     }
@@ -60,7 +60,7 @@ class RichResultSpec
 
     val incrementedRandoms = randoms.map(_+1)
 
-    val batch = randoms.foldRight(Batch("INSERT INTO tbl (x) VALUES ($x)")) {
+    val batch = randoms.foldRight(Batch("INSERT INTO tbl (x) VALUES (@x)")) {
       case (r, batch) =>
         batch.addBatch("x" -> r)
     }
@@ -68,7 +68,7 @@ class RichResultSpec
     batch.iterator()
 
     for(row <- connection.iteratorForUpdate("SELECT * FROM tbl")) {
-      row("x") = row[Int]("x").map(_ + 1)
+      row("x") = row.get[Int]("x").map(_ + 1)
       row.updateRow()
     }
 

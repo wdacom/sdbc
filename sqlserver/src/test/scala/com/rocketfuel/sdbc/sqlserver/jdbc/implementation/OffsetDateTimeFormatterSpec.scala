@@ -1,10 +1,10 @@
-package com.rocketfuel.sdbc.sqlserver.jdbc
+package com.rocketfuel.sdbc.sqlserver.jdbc.implementation
 
 import org.joda.time.{Duration, DateTimeZone, DateTime}
 
 import org.scalatest.FunSuite
 
-class SqlServerSpec extends FunSuite {
+class OffsetDateTimeFormatterSpec extends FunSuite {
 
   test("Can parse UTC timestamps from ") {
     val asString = "2014-10-21 19:55:15.9600000 +00:00"

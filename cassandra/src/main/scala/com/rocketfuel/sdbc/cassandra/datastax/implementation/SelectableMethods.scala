@@ -6,7 +6,7 @@ import com.rocketfuel.sdbc.cassandra.datastax._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-trait SelectableMethods extends base.SelectableMethods[core.Session, Select] {
+private[sdbc] trait SelectableMethods extends base.SelectableMethods[core.Session, Select] {
 
   def iteratorAsync[Key, Value](
     key: Key

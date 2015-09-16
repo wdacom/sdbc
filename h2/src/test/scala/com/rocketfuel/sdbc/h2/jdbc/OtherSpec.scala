@@ -9,7 +9,7 @@ class OtherSpec
 
     Execute("CREATE TABLE tbl (obj other)").execute()
 
-    Execute("INSERT INTO tbl (obj) VALUES ($obj)").on(
+    Execute("INSERT INTO tbl (obj) VALUES (@obj)").on(
       "obj" -> Serialized(original)
     ).execute()
 

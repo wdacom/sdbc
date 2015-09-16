@@ -1,17 +1,16 @@
 package com.rocketfuel.sdbc.cassandra.datastax
 
 import com.rocketfuel.sdbc.cassandra.datastax.implementation._
-import com.rocketfuel.Logging
 import com.rocketfuel.sdbc.base
-import com.rocketfuel.sdbc.base.CompiledStatement
+import com.rocketfuel.sdbc.base.{Logging, CompiledStatement}
 import com.datastax.driver.core._
 import com.rocketfuel.sdbc.cassandra.datastax
 
 import scala.concurrent.{ExecutionContext, Future}
 
-case class Execute private (
+case class Execute private [cassandra] (
   override val statement: CompiledStatement,
-  override val parameterValues: Map[String, Option[ParameterValue[_]]],
+  override val parameterValues: Map[String, Option[Any]],
   override val queryOptions: QueryOptions
 ) extends base.Execute[Session]
   with ParameterizedQuery[Execute]
@@ -33,7 +32,7 @@ case class Execute private (
 
   override def subclassConstructor(
     statement: CompiledStatement,
-    parameterValues: Map[String, Option[ParameterValue[_]]]
+    parameterValues: Map[String, Option[Any]]
   ): Execute = {
     copy(
       statement = statement,
@@ -50,7 +49,7 @@ object Execute {
   ): Execute = {
     Execute(
       statement = CompiledStatement(queryText, hasParameters),
-      parameterValues = Map.empty[String, Option[ParameterValue[_]]],
+      parameterValues = Map.empty[String, Option[ParameterValue]],
       queryOptions
     )
   }

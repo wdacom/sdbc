@@ -1,20 +1,24 @@
 package com.rocketfuel.sdbc.base
 
 /**
- * Given a query with named parameters beginning with '$',
- * construct the query for use with JDBC, so that named
- * parameters are replaced by '?', and each parameter
+ * Given a query with named parameters beginning with '@',
+ * construct the query for use with JDBC, so that names
+ * are replaced by '?', and each parameter
  * has a map to its positions in the query.
  *
- * Identifiers must start with a letter or underscore, and then
- * any character after the first one can be a letter, number,
- * underscore, or '\$'. An identifier that does not follow
- * this scheme must be quoted by backticks.
+ * Parameter names must start with a unicode letter or underscore, and then
+ * any character after the first one can be a unicode letter, unicode number,
+ * or underscore. A parameter that does not follow
+ * this scheme must be quoted by backticks. Parameter names
+ * are case sensitive.
  *
  * Examples of identifiers:
- * \$hello
- * \$`hello there`
- * \$_i_am_busy
+ *
+ * {{{"@hello"}}}
+ *
+ * {{{"@`hello there`"}}}
+ *
+ * {{{"@_i_am_busy"}}}
  */
 trait ParameterizedQuery[
   Self <: ParameterizedQuery[Self, UnderlyingQuery, Index],
@@ -24,7 +28,7 @@ trait ParameterizedQuery[
 
   def statement: CompiledStatement
 
-  def parameterValues: Map[String, Option[ParameterValue[_, UnderlyingQuery, Index]]]
+  def parameterValues: Map[String, Option[Any]]
 
   /**
    * The query text with name parameters replaced with positional parameters.
@@ -37,27 +41,28 @@ trait ParameterizedQuery[
   def parameterPositions: Map[String, Set[Int]] = statement.parameterPositions
 
   private def setParameter(
-    parameterValues: Map[String, Option[ParameterValue[_, UnderlyingQuery, Index]]],
-    nameValuePair: (String, Option[ParameterValue[_, UnderlyingQuery, Index]])
-  ): Map[String, Option[ParameterValue[_, UnderlyingQuery, Index]]] = {
+    parameterValues: Map[String, Option[Any]],
+    nameValuePair: (String, Option[ParameterValue])
+  ): Map[String, Option[Any]] = {
     if (parameterPositions.contains(nameValuePair._1)) {
-      parameterValues + nameValuePair
+      val stripped = nameValuePair._2.map(p => p.value)
+      parameterValues + (nameValuePair._1 -> stripped)
     } else {
       throw new IllegalArgumentException(s"${nameValuePair._1} is not a parameter in the query.")
     }
   }
 
-  def subclassConstructor(
+  protected def subclassConstructor(
     statement: CompiledStatement,
-    parameterValues: Map[String, Option[ParameterValue[_, UnderlyingQuery, Index]]]
+    parameterValues: Map[String, Option[Any]]
   ): Self
 
-  def on(parameterValues: (String, Option[ParameterValue[_, UnderlyingQuery, Index]])*): Self = {
+  def on(parameterValues: (String, Option[ParameterValue])*): Self = {
     val newValues = setParameters(parameterValues: _*)
     subclassConstructor(statement, newValues)
   }
 
-  protected def setParameters(nameValuePairs: (String, Option[ParameterValue[_, UnderlyingQuery, Index]])*): Map[String, Option[ParameterValue[_, UnderlyingQuery, Index]]] = {
+  protected def setParameters(nameValuePairs: (String, Option[ParameterValue])*): Map[String, Option[Any]] = {
     nameValuePairs.foldLeft(parameterValues)(setParameter)
   }
 

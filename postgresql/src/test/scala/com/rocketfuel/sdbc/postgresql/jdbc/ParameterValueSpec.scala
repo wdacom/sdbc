@@ -1,5 +1,7 @@
 package com.rocketfuel.sdbc.postgresql.jdbc
 
+import java.net.InetAddress
+import java.nio.ByteBuffer
 import java.sql.{Array => _, _}
 import java.util.UUID
 
@@ -12,11 +14,6 @@ import scalaz.Scalaz._
 
 class ParameterValueSpec
   extends PostgreSqlSuite {
-
-  override protected def beforeAll(): Unit = {
-    super.beforeAll()
-    createLTree()
-  }
 
   val jsonString = """{"hi":"there"}"""
 
@@ -32,7 +29,7 @@ class ParameterValueSpec
 
   testSelect[String]("SELECT 'hello'::text", "hello".some)
 
-  testSelect[Array[Byte]]("SELECT E'\\\\x0001ffa0'::bytea", Array(0, 1, -1, -96).map(_.toByte).some)
+  testSelect[ByteBuffer]("SELECT E'\\\\x0001ffa0'::bytea", ByteBuffer.wrap(Array[Byte](0, 1, -1, -96)).some)
 
   testSelect[Float]("SELECT 3.14159::real", 3.14159F.some)
 
@@ -73,13 +70,30 @@ class ParameterValueSpec
     //We can't use the current offset, because of, for example,
     //daylight savings.
     val localTime = LocalDateTime.parse("2014-12-29T01:02:03.5")
-    val offset = DateTimeZone.getDefault()
-    val expectedTime = new Instant(localTime.toDateTime(offset))
-    testSelect[Instant]("SELECT '2014-12-29 01:02:03.5'::timestamp --as Joda Instant", expectedTime.some)
+    val offset = ZoneId.systemDefault().getRules.getOffset(localTime)
+    val expectedTime = localTime.toInstant(offset)
+    testSelect[Instant]("SELECT '2014-12-29 01:02:03.5'::timestamp --as Java 8 Instant", expectedTime.some)
   }
 
   testSelect[DateTime]("SELECT '2014-12-29 01:02:03.5-4'::timestamp with time zone --as Joda DateTime", DateTime.parse("2014-12-29T01:02:03.5-04:00").some)
 
+  testSelect[Instant]("SELECT '2014-12-29 01:02:03.5-4'::timestamp with time zone --as Java 8 Instant", Instant.parse("2014-12-29T05:02:03.5Z").some)
+
+  testSelect[PGInterval]("SELECT '9 years 11 mons 29 days 11:02:13.154936'::interval --as PGInterval", new PGInterval("9 years 11 mons 29 days 11:02:13.154936").some)
+
   testSelect[Duration]("SELECT '9 years 11 mons 29 days 11:02:13.154936'::interval --as Joda Duration", Some[Duration](new PGInterval("9 years 11 mons 29 days 11:02:13.154936")))
 
+  testSelect[LTree]("SELECT 'a.b.c'::ltree", LTree("a", "b", "c").some)
+
+  testSelect[UUID](s"SELECT '$uuid'::uuid", uuid.some)
+
+  testSelect[JValue](s"SELECT '$jsonString'::json", JsonMethods.parse(jsonString).some)
+
+  testSelect[JValue](s"SELECT '$jsonString'::jsonb", JsonMethods.parse(jsonString).some)
+
+  testSelect[InetAddress]("SELECT '1.1.1.1'::inet", Some(InetAddress.getByName("1.1.1.1")))
+
+  testSelect[Cidr]("SELECT '1.1.1.0/24'::cidr", Some(Cidr(InetAddress.getByName("1.1.1.0"), 24)))
+
+  testSelect[Map[String, String]]("SELECT 'a=>b'::hstore", Some(Map("a" -> "b")))
 }

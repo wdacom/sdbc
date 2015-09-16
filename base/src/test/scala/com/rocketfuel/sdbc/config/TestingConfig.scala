@@ -1,6 +1,6 @@
 package com.rocketfuel.sdbc.config
 
-import com.rocketfuel.HasConfig
+import com.rocketfuel.sdbc.base.HasConfig
 
 import scala.util.Random
 
