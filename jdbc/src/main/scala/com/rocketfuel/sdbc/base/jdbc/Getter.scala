@@ -7,6 +7,8 @@ import java.nio.ByteBuffer
 import java.sql.{SQLException, Date, Time, Timestamp}
 import java.util.UUID
 import org.joda.time._
+import scodec.bits.ByteVector
+import com.rocketfuel.sdbc.base.JodaSqlConverters._
 
 object Getter {
   def fromValGetter[T <: AnyVal](valGetter: Row => Int => T): Getter[T] = {
@@ -227,20 +229,6 @@ trait DateTimeGetter {
       ix: Index
     ): Option[DateTime] = {
       Option(row.getTimestamp(ix(row))).map(TimestampToDateTime)
-    }
-  }
-
-}
-
-trait DateTimeFormatterGetter {
-  self: HasDateTimeFormatter with StringGetter =>
-
-  implicit val DateTimeGetter = new Getter[DateTime] {
-    override def apply(
-      row: Row,
-      ix: Index
-    ): Option[DateTime] = {
-      StringGetter(row, ix).map(dateTimeFormatter.parseDateTime)
     }
   }
 

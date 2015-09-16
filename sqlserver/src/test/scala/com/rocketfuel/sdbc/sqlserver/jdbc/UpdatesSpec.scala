@@ -1,7 +1,7 @@
 package com.rocketfuel.sdbc.sqlserver.jdbc
 
 import java.sql.{Time, Date, Timestamp}
-import java.time.{LocalTime, LocalDate, Instant}
+import org.joda.time.{LocalTime, LocalDate, Instant}
 import java.util.UUID
 
 import com.rocketfuel.sdbc.base.jdbc.Updater
@@ -58,17 +58,17 @@ class UpdatesSpec extends SqlServerSuite {
 
   testUpdate[BigDecimal]("decimal")(BigDecimal(3))(BigDecimal("500"))
 
-  testUpdate[Timestamp]("datetime2")(new Timestamp(0))(Timestamp.from(Instant.now()))
+  testUpdate[Timestamp]("datetime2")(new Timestamp(0))(new Timestamp(1442411519164L))
 
-  testUpdate[Date]("date")(new Date(0))(Date.valueOf(LocalDate.now()))
+  testUpdate[Date]("date")(new Date(0))(new Date(1442411519164L))
 
-  testUpdate[Time]("time")(new Time(0))(Time.valueOf(LocalTime.now()))
+  testUpdate[Time]("time")(new Time(0))(new Time(1000))
 
-  testUpdate[Instant]("datetime2")(Instant.ofEpochMilli(0))(Instant.now())
+  testUpdate[Instant]("datetime2")(new Instant(0))(Instant.now())
 
-  testUpdate[LocalDate]("date")(LocalDate.ofEpochDay(0))(LocalDate.now())
+  testUpdate[LocalDate]("date")(new LocalDate(0))(LocalDate.now())
 
-  testUpdate[LocalTime]("time")(LocalTime.of(0, 0, 0))(LocalTime.now())
+  testUpdate[LocalTime]("time")(new LocalTime(0))(LocalTime.now())
 
   testUpdate[Boolean]("bit")(false)(true)
 

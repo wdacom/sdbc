@@ -2,12 +2,12 @@ package com.rocketfuel.sdbc.sqlserver.jdbc.implementation
 
 import java.io.{InputStream, Reader}
 import java.sql.PreparedStatement
-import org.joda.time.format.{ISODateTimeFormat, DateTimeFormatterBuilder, DateTimeFormatter}
-import com.rocketfuel.sdbc.base.jdbc.{HasDateTimeFormatter, DBMS}
+import com.rocketfuel.sdbc.base.jdbc.DBMS
 import java.util.UUID
 import com.rocketfuel.sdbc.base.CISet
 import com.rocketfuel.sdbc.base.jdbc._
 import com.rocketfuel.sdbc.sqlserver.jdbc.{HierarchyNodeImplicits, HierarchyId}
+import org.joda.time.{LocalDate, LocalTime, Instant, DateTime}
 import scodec.bits.ByteVector
 
 import scala.xml.Node
@@ -30,24 +30,17 @@ private[sdbc] abstract class SqlServer
   with Setters
   with Getters
   with Updaters
-  with HasDateTimeFormatter
   with HierarchyNodeImplicits {
 
   override def driverClassName = "net.sourceforge.jtds.jdbc.Driver"
-  override def dataSourceClassName ="net.sourceforge.jtds.jdbcx.JtdsDataSource"
-  override def jdbcSchemes = CISet("jtds:sqlserver")
-  override def productName: String = "Microsoft SQL Server"
-  override val supportsIsValid = false
 
-  override val dateTimeFormatter: DateTimeFormatter = {
-      new DateTimeFormatterBuilder().
-      append(ISODateTimeFormat.date()).
-      appendLiteral(' ').
-      append(ISODateTimeFormat.hourMinuteSecondFraction()).
-      appendLiteral(' ').
-      appendTimeZoneOffset("+00:00", "+00:00", true, 2, 2).
-      toFormatter
-  }
+  override def dataSourceClassName = "net.sourceforge.jtds.jdbcx.JtdsDataSource"
+
+  override def jdbcSchemes = CISet("jtds:sqlserver")
+
+  override def productName: String = "Microsoft SQL Server"
+
+  override val supportsIsValid = false
 
   override implicit val ParameterSetter: ParameterSetter = new ParameterSetter {
     /**
@@ -87,8 +80,8 @@ private[sdbc] abstract class SqlServer
           setParameter[java.sql.Time](preparedStatement, parameterIndex, b)
         case b: java.sql.Timestamp =>
           setParameter[java.sql.Timestamp](preparedStatement, parameterIndex, b)
-        case b: OffsetDateTime =>
-          setParameter[OffsetDateTime](preparedStatement, parameterIndex, b)
+        case b: DateTime =>
+          setParameter[DateTime](preparedStatement, parameterIndex, b)
         case b: Reader =>
           setParameter[Reader](preparedStatement, parameterIndex, b)
         case b: InputStream =>
@@ -146,5 +139,6 @@ private[sdbc] abstract class SqlServer
       case _ =>
         Some(toSqlServerParameter(a))
     }
+  }
 
 }

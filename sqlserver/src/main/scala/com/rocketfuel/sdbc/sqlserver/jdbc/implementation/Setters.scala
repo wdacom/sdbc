@@ -2,11 +2,10 @@ package com.rocketfuel.sdbc.sqlserver.jdbc.implementation
 
 import java.sql.PreparedStatement
 import java.util.UUID
-
 import com.rocketfuel.sdbc.base.{ToParameter, jdbc}
 import com.rocketfuel.sdbc.base.jdbc._
 import com.rocketfuel.sdbc.sqlserver.jdbc.HierarchyId
-
+import org.joda.time._
 import scala.xml.Node
 
 private[sdbc] trait QLocalTimeImplicits {
@@ -23,26 +22,25 @@ private[sdbc] trait QLocalTimeImplicits {
 
 private[sdbc] object QLocalTime extends ToParameter {
   override val toParameter: PartialFunction[Any, Any] = {
-    case o: LocalTime =>
-      o.toString
+    case o: LocalTime => o
   }
 }
 
-private[sdbc] object QOffsetDateTime extends ToParameter {
+private[sdbc] object QDateTime extends ToParameter {
   override val toParameter: PartialFunction[Any, Any] = {
-    case o: OffsetDateTime =>
-      offsetDateTimeFormatter.format(o)
+    case o: DateTime => o
   }
 }
-  with LocalDateTimeParameter
-  with OffsetDateTimeParameter
-  implicit val OffsetDateTimeIsParameter: IsParameter[OffsetDateTime] = new IsParameter[OffsetDateTime] {
-    override def set(preparedStatement: PreparedStatement, parameterIndex: Int, parameter: OffsetDateTime): Unit = {
-      preparedStatement.setString(parameterIndex, offsetDateTimeFormatter.format(parameter))
+
+private[sdbc] trait QDateTimeImplicits {
+  implicit val DateTimeIsParameter: IsParameter[DateTime] = new IsParameter[DateTime] {
+    override def set(preparedStatement: PreparedStatement, parameterIndex: Int, parameter: DateTime): Unit = {
+      preparedStatement.setString(parameterIndex, parameter.toString(dateTimeFormatter))
     }
   }
-  self: HasOffsetDateTimeFormatter with HasOffsetTimeFormatter =>
-    ParameterValue(offsetDateTimeFormatter.format(o))
+
+  implicit def DateTimeToParameterValue(d: DateTime): ParameterValue = {
+    ParameterValue(d)
   }
 }
 
@@ -66,7 +64,7 @@ private[sdbc] trait QUUIDImplicits {
 
 private[sdbc] object QHierarchyId extends ToParameter {
   override val toParameter: PartialFunction[Any, Any] = {
-    case h: HierarchyId => h.toString
+    case h: HierarchyId => h
   }
 }
 
@@ -117,7 +115,7 @@ private[sdbc] trait Setters
   with QLocalDateImplicits
   with QLocalTimeImplicits
   with QLocalDateTimeImplicits
-  with QOffsetDateTimeImplicits
+  with QDateTimeImplicits
   with QUUIDImplicits
   with QHierarchyIdImplicits
   with QXMLImplicits {
@@ -142,7 +140,7 @@ private[sdbc] trait Setters
       QLocalDate.toParameter orElse
       QLocalTime.toParameter orElse
       QLocalDateTime.toParameter orElse
-      QOffsetDateTime.toParameter orElse
+      QDateTime.toParameter orElse
       QUUID.toParameter orElse
       QHierarchyId.toParameter orElse
       QXML.toParameter

@@ -204,21 +204,6 @@ trait DateTimeUpdater {
   }
 }
 
-trait DateTimeFormatterUpdater {
-  self: StringUpdater with HasDateTimeFormatter =>
-
-  implicit val DateTimeUpdater = new Updater[DateTime] {
-    override def update(
-      row: UpdatableRow,
-      columnIndex: Int,
-      x: DateTime
-    ): Unit = {
-      StringUpdater.update(row, columnIndex, x.toString(dateTimeFormatter))
-    }
-  }
-
-}
-
 trait BooleanUpdater {
   implicit val BooleanUpdater = new Updater[Boolean] {
     override def update(row: UpdatableRow, columnIndex: Int, x: Boolean): Unit = {

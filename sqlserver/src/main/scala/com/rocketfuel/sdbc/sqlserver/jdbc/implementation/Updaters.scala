@@ -5,6 +5,7 @@ import java.util.UUID
 import com.rocketfuel.sdbc.base.jdbc._
 import com.rocketfuel.sdbc.sqlserver.jdbc
 import com.rocketfuel.sdbc.sqlserver.jdbc.HierarchyId
+import org.joda.time.DateTime
 
 import scala.xml.Node
 
@@ -25,21 +26,11 @@ private[sdbc] trait Updaters
   with BooleanUpdater
   with StringUpdater
   with InputStreamUpdater
-  with UpdateReader
-  with LocalDateTimeUpdater
-  with InstantUpdater
-  with LocalDateUpdater {
-    self: HasDateTimeFormatter =>
+  with UpdateReader {
 
-  implicit val LocalTimeUpdater = new Updater[LocalTime] {
-    override def update(row: UpdatableRow, columnIndex: Int, x: LocalTime): Unit = {
-      row.updateString(columnIndex, x.toString)
-    }
-  }
-
-  implicit val OffsetDateTimeUpdater: Updater[OffsetDateTime] = new Updater[OffsetDateTime] {
-    override def update(row: UpdatableRow, columnIndex: Int, x: OffsetDateTime): Unit = {
-      row.updateString(columnIndex, offsetDateTimeFormatter.format(x))
+  implicit val DateTimeUpdater: Updater[DateTime] = new Updater[DateTime] {
+    override def update(row: UpdatableRow, columnIndex: Int, x: DateTime): Unit = {
+      row.updateString(columnIndex, x.toString(dateTimeFormatter))
     }
   }
 

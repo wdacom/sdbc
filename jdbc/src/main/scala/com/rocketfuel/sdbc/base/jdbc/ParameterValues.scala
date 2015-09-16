@@ -8,6 +8,7 @@ import java.util.UUID
 import com.rocketfuel.sdbc.base.ToParameter
 import scodec.bits.ByteVector
 import scala.xml.Node
+import com.rocketfuel.sdbc.base.JodaSqlConverters._
 
 object QLong extends ToParameter with QLongImplicits {
   override val toParameter: PartialFunction[Any, Any] = {
@@ -423,55 +424,55 @@ object QBlob extends ToParameter with QBlobImplicits {
 object QInstant extends ToParameter with QInstantImplicits {
 
   override val toParameter: PartialFunction[Any, Any] = {
-    case i: java.time.Instant => i.value
+    case i: org.joda.time.Instant => i.value
   }
 
 }
 
 trait QInstantImplicits {
-  implicit def InstantToParameterValue(x: java.time.Instant): ParameterValue = {
-    ParameterValue(Timestamp.from(x))
+  implicit def InstantToParameterValue(x: org.joda.time.Instant): ParameterValue = {
+    ParameterValue(InstantToTimestamp(x))
   }
 }
 
 object QLocalDate extends ToParameter with QLocalDateImplicits {
 
   override val toParameter: PartialFunction[Any, Any] = {
-    case l: java.time.LocalDate => l.value
+    case l: org.joda.time.LocalDate => l.value
   }
 
 }
 
 trait QLocalDateImplicits {
-  implicit def LocalDateToParameterValue(x: java.time.LocalDate): ParameterValue = {
-    ParameterValue(Date.valueOf(x))
+  implicit def LocalDateToParameterValue(x: org.joda.time.LocalDate): ParameterValue = {
+    ParameterValue(LocalDateToDate(x))
   }
 }
 
 object QLocalTime extends ToParameter with QLocalTimeImplicits {
 
   override val toParameter: PartialFunction[Any, Any] = {
-    case l: java.time.LocalTime => l.value
+    case l: org.joda.time.LocalTime => l.value
   }
 
 }
 
 trait QLocalTimeImplicits {
-  implicit def LocalTimeToParameterValue(x: java.time.LocalTime): ParameterValue = {
-    ParameterValue(Time.valueOf(x))
+  implicit def LocalTimeToParameterValue(x: org.joda.time.LocalTime): ParameterValue = {
+    ParameterValue(LocalTimeToTime(x))
   }
 }
 
 object QLocalDateTime extends ToParameter with QLocalDateTimeImplicits {
 
   override val toParameter: PartialFunction[Any, Any] = {
-    case l: java.time.LocalDateTime => l.value
+    case l: org.joda.time.LocalDateTime => l.value
   }
 
 }
 
 trait QLocalDateTimeImplicits {
-  implicit def LocalDateTimeToParameterValue(x: java.time.LocalDateTime): ParameterValue = {
-    ParameterValue(Timestamp.valueOf(x))
+  implicit def LocalDateTimeToParameterValue(x: org.joda.time.LocalDateTime): ParameterValue = {
+    ParameterValue(LocalDateTimeToTimestamp(x))
   }
 }

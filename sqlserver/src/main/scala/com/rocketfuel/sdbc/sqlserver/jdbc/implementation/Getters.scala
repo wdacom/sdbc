@@ -4,25 +4,12 @@ import java.sql.SQLException
 import java.util.UUID
 import com.rocketfuel.sdbc.base.jdbc._
 import com.rocketfuel.sdbc.sqlserver.jdbc.HierarchyId
-import org.joda.time.Instant
-
+import org.joda.time._
+import com.rocketfuel.sdbc.base.JodaSqlConverters._
 import scala.xml.{Node, XML}
 
-  extends DefaultGetters
-  with InstantGetter
-  with LocalDateGetter
-
-  implicit val LocalTimeGetter: Getter[LocalTime] = new Getter[LocalTime] {
-    override def apply(row: Row, ix: Index): Option[LocalTime] = {
-      Option(row.getString(ix(row))).map(LocalTime.parse)
-    }
-  }
-
-  implicit val OffsetDateTimeGetter: Getter[OffsetDateTime] = new Getter[OffsetDateTime] {
-    override def apply(row: Row, ix: Index): Option[OffsetDateTime] = {
-  self: HasOffsetDateTimeFormatter with HasOffsetTimeFormatter =>
-    }
-  }
+trait Getters
+  extends DefaultGetters {
 
   override implicit val UUIDGetter: Getter[UUID] = new Parser[UUID] {
     override def parse(asString: String): UUID = {
@@ -60,19 +47,25 @@ import scala.xml.{Node, XML}
   /**
    * The JTDS driver sometimes fails to parse timestamps, so when it fails, use our own parser.
    */
-  override implicit val InstantGetter = new Getter[Instant] {
-    override def apply(row: Row, ix: Index): Option[Instant] = {
+  implicit val DateTimeGetter = new Getter[DateTime] {
+    override def apply(row: Row, ix: Index): Option[DateTime] = {
       try {
-        Option(row.getTimestamp(ix(row))).map(t => new Instant(t.getTime))
+        Option(row.getTimestamp(ix(row))).map(TimestampToDateTime)
       } catch {
         case e: SQLException if e.getMessage.endsWith("cannot be converted to TIMESTAMP.") =>
           for {
             asString <- Option(row.getString(ix(row)))
           } yield {
             val parsed = dateTimeFormatter.parseDateTime(asString)
-            parsed.toInstant
+            parsed
           }
       }
+    }
+  }
+
+  override implicit val InstantGetter = new Getter[Instant] {
+    override def apply(row: Row, ix: Index): Option[Instant] = {
+      DateTimeGetter(row, ix).map(_.toInstant)
     }
   }
 

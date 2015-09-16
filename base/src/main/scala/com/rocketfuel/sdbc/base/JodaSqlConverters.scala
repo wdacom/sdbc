@@ -6,7 +6,7 @@ import org.joda.time._
 
 object JodaSqlConverters {
 
-  implicit def InstantTotTimestamp(value: Instant): Timestamp = {
+  implicit def InstantToTimestamp(value: Instant): Timestamp = {
     new Timestamp(value.getMillis)
   }
 

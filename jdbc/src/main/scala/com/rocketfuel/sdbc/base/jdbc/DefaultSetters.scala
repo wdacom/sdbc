@@ -7,6 +7,7 @@ trait DefaultSetters
   with QByteImplicits
   with QBytesImplicits
   with QDateImplicits
+  with QLocalDateImplicits
   with QBigDecimalImplicits
   with QDoubleImplicits
   with QFloatImplicits
@@ -15,7 +16,9 @@ trait DefaultSetters
   with QShortImplicits
   with QStringImplicits
   with QTimeImplicits
+  with QLocalTimeImplicits
   with QTimestampImplicits
+  with QInstantImplicits
   with QReaderImplicits
   with QInputStreamImplicits
   with QUUIDImplicits {
@@ -27,6 +30,8 @@ trait DefaultSetters
   val QBytes = jdbc.QBytes
 
   val QDate = jdbc.QDate
+
+  val QLocalDate = jdbc.QLocalDate
 
   val QBigDecimal = jdbc.QBigDecimal
 
@@ -44,7 +49,11 @@ trait DefaultSetters
 
   val QTime = jdbc.QTime
 
+  val QLocalTime = jdbc.QLocalTime
+
   val QTimestamp = jdbc.QTimestamp
+
+  val QInstant = jdbc.QInstant
 
   val QReader = jdbc.QReader
 
@@ -58,9 +67,12 @@ trait DefaultSetters
       QBytes.toParameter orElse
       //Timestamp must come before Date, or else all Timestamps become Dates.
       QTimestamp.toParameter orElse
+      QInstant.toParameter orElse
       //Time must come before Date, or else all Times become Dates.
       QTime.toParameter orElse
+      QLocalTime.toParameter orElse
       QDate.toParameter orElse
+      QLocalDate.toParameter orElse
       QBigDecimal.toParameter orElse
       QDouble.toParameter orElse
       QFloat.toParameter orElse

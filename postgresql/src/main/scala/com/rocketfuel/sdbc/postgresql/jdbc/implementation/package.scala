@@ -1,24 +1,14 @@
 package com.rocketfuel.sdbc.postgresql.jdbc
 
-import java.time.format.{DateTimeFormatterBuilder, DateTimeFormatter}
+import org.joda.time.format.{ISODateTimeFormat, DateTimeFormatterBuilder, DateTimeFormatter}
 
 package object implementation {
-  private[implementation] val offsetTimeFormatter: DateTimeFormatter = {
+  private[implementation] val dateTimeFormatter: DateTimeFormatter = {
     new DateTimeFormatterBuilder().
-      parseCaseInsensitive().
-      append(DateTimeFormatter.ISO_LOCAL_TIME).
-      optionalStart().
-      appendOffset("+HH:mm", "+00").
-      optionalEnd().
-      toFormatter
-  }
-
-  private[implementation] val offsetDateTimeFormatter: DateTimeFormatter = {
-    new DateTimeFormatterBuilder().
-      parseCaseInsensitive().
-      append(DateTimeFormatter.ISO_LOCAL_DATE).
+      append(ISODateTimeFormat.date()).
       appendLiteral(' ').
-      append(offsetTimeFormatter).
+      append(ISODateTimeFormat.hourMinuteSecondFraction()).
+      appendTimeZoneOffset("+00", "+00", true, 1, 2).
       toFormatter
   }
 }
