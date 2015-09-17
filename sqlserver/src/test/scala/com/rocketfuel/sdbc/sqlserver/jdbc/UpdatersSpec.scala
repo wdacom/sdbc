@@ -9,7 +9,7 @@ import scodec.bits.ByteVector
 
 import scala.reflect.ClassTag
 
-class UpdatesSpec extends SqlServerSuite {
+class UpdatersSpec extends SqlServerSuite {
 
   def testUpdate[T](typeName: String)(before: T)(after: T)(implicit ctag: ClassTag[T], updater: Updater[T], converter: Row => T): Unit = {
     test(s"Update ${ctag.runtimeClass.getName}") {implicit connection =>
