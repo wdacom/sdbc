@@ -1,10 +1,10 @@
 package com.rocketfuel.sdbc.sqlserver.jdbc
 
-import org.joda.time.format.{ISODateTimeFormat, DateTimeFormatterBuilder, DateTimeFormatter}
+import org.joda.time.format._
 
 package object implementation {
 
-  private[implementation] val dateTimeFormatter: DateTimeFormatter = {
+  private[implementation] val dateTimeParser: DateTimeParser = {
     new DateTimeFormatterBuilder().
       append(ISODateTimeFormat.date()).
       appendLiteral(' ').
@@ -21,6 +21,27 @@ package object implementation {
       ).
       appendLiteral(' ').
       appendTimeZoneOffset("+00:00", "+00:00", true, 2, 2).
-      toFormatter
+      toParser
   }
+
+  private[implementation] val dateTimePrinter: DateTimePrinter = {
+    new DateTimeFormatterBuilder().
+    append(ISODateTimeFormat.date()).
+    appendLiteral(' ').
+    appendHourOfDay(2).
+    appendLiteral(":").
+    appendMinuteOfHour(2).
+    appendLiteral(":").
+    appendSecondOfMinute(2).
+    appendLiteral('.').
+    appendFractionOfSecond(1, 7).
+    appendLiteral(' ').
+    appendTimeZoneOffset("+00:00", "+00:00", true, 2, 2).
+    toPrinter
+  }
+
+  private[implementation] val dateTimeFormatter = {
+    new DateTimeFormatter(dateTimePrinter, dateTimeParser)
+  }
+
 }
