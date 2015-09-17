@@ -2,7 +2,7 @@ package com.rocketfuel.sdbc.sqlserver.jdbc
 
 import java.sql.{Time, Date, Timestamp}
 import org.joda.time.{LocalTime, LocalDate, Instant}
-import java.util.UUID
+import java.util.{Calendar, UUID}
 
 import com.rocketfuel.sdbc.base.jdbc.Updater
 import scodec.bits.ByteVector
@@ -26,7 +26,31 @@ class UpdatesSpec extends SqlServerSuite {
 
       assert(maybeValue.nonEmpty)
 
-      assertResult(Some(after))(maybeValue)
+      assert(maybeValue.nonEmpty)
+
+      val actualValue = maybeValue.get
+
+      //Java's java.sql.Time and java.sql.Date equality sucks
+      after match {
+        case _: java.sql.Time =>
+          val actualCalendar = Calendar.getInstance()
+          actualCalendar.setTime(actualValue.asInstanceOf[java.sql.Time])
+          val expectedCalendar = Calendar.getInstance()
+          expectedCalendar.setTime(after.asInstanceOf[java.sql.Time])
+          assertResult(expectedCalendar.get(Calendar.HOUR))(actualCalendar.get(Calendar.HOUR))
+          assertResult(expectedCalendar.get(Calendar.MINUTE))(actualCalendar.get(Calendar.MINUTE))
+          assertResult(expectedCalendar.get(Calendar.SECOND))(actualCalendar.get(Calendar.SECOND))
+        case _: java.sql.Date =>
+          val actualCalendar = Calendar.getInstance()
+          actualCalendar.setTime(actualValue.asInstanceOf[java.sql.Date])
+          val expectedCalendar = Calendar.getInstance()
+          expectedCalendar.setTime(after.asInstanceOf[java.sql.Date])
+          assertResult(expectedCalendar.get(Calendar.YEAR))(actualCalendar.get(Calendar.YEAR))
+          assertResult(expectedCalendar.get(Calendar.MONTH))(actualCalendar.get(Calendar.MONTH))
+          assertResult(expectedCalendar.get(Calendar.DAY_OF_MONTH))(actualCalendar.get(Calendar.DAY_OF_MONTH))
+        case _ =>
+          assertResult(after)(actualValue)
+      }
     }
   }
 
@@ -58,13 +82,13 @@ class UpdatesSpec extends SqlServerSuite {
 
   testUpdate[BigDecimal]("decimal")(BigDecimal(3))(BigDecimal("500"))
 
-  testUpdate[Timestamp]("datetime2")(new Timestamp(0))(new Timestamp(1442411519164L))
+  testUpdate[Timestamp]("datetime2")(new Timestamp(0))(new Timestamp(1442411519163L))
 
   testUpdate[Date]("date")(new Date(0))(new Date(1442411519164L))
 
   testUpdate[Time]("time")(new Time(0))(new Time(1000))
 
-  testUpdate[Instant]("datetime2")(new Instant(0))(Instant.now())
+  testUpdate[Instant]("datetime2")(new Instant(0))(Instant.parse("2015-09-17T19:29:57.697Z"))
 
   testUpdate[LocalDate]("date")(new LocalDate(0))(LocalDate.now())
 

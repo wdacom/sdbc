@@ -82,6 +82,8 @@ private[sdbc] abstract class SqlServer
           setParameter[java.sql.Timestamp](preparedStatement, parameterIndex, b)
         case b: DateTime =>
           setParameter[DateTime](preparedStatement, parameterIndex, b)
+        case b: LocalTime =>
+          setParameter[LocalTime](preparedStatement, parameterIndex, b)
         case b: Reader =>
           setParameter[Reader](preparedStatement, parameterIndex, b)
         case b: InputStream =>

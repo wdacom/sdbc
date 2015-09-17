@@ -5,7 +5,7 @@ import java.util.UUID
 import com.rocketfuel.sdbc.base.jdbc._
 import com.rocketfuel.sdbc.sqlserver.jdbc
 import com.rocketfuel.sdbc.sqlserver.jdbc.HierarchyId
-import org.joda.time.DateTime
+import org.joda.time.{LocalTime, DateTime}
 
 import scala.xml.Node
 
@@ -27,6 +27,12 @@ private[sdbc] trait Updaters
   with StringUpdater
   with InputStreamUpdater
   with UpdateReader {
+
+  override implicit val LocalTimeUpdater: Updater[LocalTime] = new Updater[LocalTime] {
+    override def update(row: UpdatableRow, columnIndex: Int, x: LocalTime): Unit = {
+      row.updateString(columnIndex, x.toString)
+    }
+  }
 
   implicit val DateTimeUpdater: Updater[DateTime] = new Updater[DateTime] {
     override def update(row: UpdatableRow, columnIndex: Int, x: DateTime): Unit = {

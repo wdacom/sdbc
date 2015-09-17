@@ -1,7 +1,8 @@
 package com.rocketfuel.sdbc.sqlserver.jdbc.implementation
 
-import java.sql.SQLException
+import java.sql.{Timestamp, SQLException}
 import java.util.UUID
+import com.rocketfuel.sdbc
 import com.rocketfuel.sdbc.base.jdbc._
 import com.rocketfuel.sdbc.sqlserver.jdbc.HierarchyId
 import org.joda.time._
@@ -10,6 +11,15 @@ import scala.xml.{Node, XML}
 
 trait Getters
   extends DefaultGetters {
+
+  override implicit val LocalTimeGetter = new Getter[LocalTime] {
+    override def apply(
+      row: Row,
+      ix: Index
+    ): Option[LocalTime] = {
+      Option(row.getString(ix(row))).map(LocalTime.parse)
+    }
+  }
 
   override implicit val UUIDGetter: Getter[UUID] = new Parser[UUID] {
     override def parse(asString: String): UUID = {
@@ -60,6 +70,13 @@ trait Getters
             parsed
           }
       }
+    }
+  }
+
+
+  override implicit val TimestampGetter: Getter[Timestamp] = new Getter[Timestamp] {
+    override def apply(row: Row, ix: Index): Option[Timestamp] = {
+      DateTimeGetter(row, ix).map(dt => dt)
     }
   }
 
