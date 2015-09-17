@@ -47,8 +47,10 @@ private[sdbc] trait Getters
   implicit val DateTimeGetter = new Getter[DateTime] {
     override def apply(row: Row, ix: Index): Option[DateTime] = {
       Option(row.getObject(ix(row))) map {
-        case tz: PGTimestampTz => tz.DateTime.get
-        case _ => throw new SQLException("column does not contain a datetimetz")
+        case tz: PGTimestampTz => tz.dateTime.get
+        case t: java.sql.Timestamp =>
+          new DateTime(t.getTime)
+        case _ => throw new SQLException("column does not contain a timestamptz")
       }
     }
   }

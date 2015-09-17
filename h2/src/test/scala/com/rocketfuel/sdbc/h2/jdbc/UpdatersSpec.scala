@@ -2,7 +2,7 @@ package com.rocketfuel.sdbc.h2.jdbc
 
 import java.sql.{Time, Date, Timestamp}
 import org.joda.time._
-import java.util.UUID
+import java.util.{Calendar, UUID}
 
 import com.rocketfuel.sdbc.base.jdbc.Updater
 import scodec.bits.ByteVector
@@ -26,7 +26,29 @@ class UpdatersSpec extends H2Suite {
 
       assert(maybeValue.nonEmpty)
 
-      assertResult(Some(after))(maybeValue)
+      val actualValue = maybeValue.get
+
+      //Java's java.sql.Time and java.sql.Date equality sucks
+      after match {
+        case _: java.sql.Time =>
+          val actualCalendar = Calendar.getInstance()
+          actualCalendar.setTime(actualValue.asInstanceOf[java.sql.Time])
+          val expectedCalendar = Calendar.getInstance()
+          expectedCalendar.setTime(after.asInstanceOf[java.sql.Time])
+          assertResult(expectedCalendar.get(Calendar.HOUR))(actualCalendar.get(Calendar.HOUR))
+          assertResult(expectedCalendar.get(Calendar.MINUTE))(actualCalendar.get(Calendar.MINUTE))
+          assertResult(expectedCalendar.get(Calendar.SECOND))(actualCalendar.get(Calendar.SECOND))
+        case _: java.sql.Date =>
+          val actualCalendar = Calendar.getInstance()
+          actualCalendar.setTime(actualValue.asInstanceOf[java.sql.Date])
+          val expectedCalendar = Calendar.getInstance()
+          expectedCalendar.setTime(after.asInstanceOf[java.sql.Date])
+          assertResult(expectedCalendar.get(Calendar.YEAR))(actualCalendar.get(Calendar.YEAR))
+          assertResult(expectedCalendar.get(Calendar.MONTH))(actualCalendar.get(Calendar.MONTH))
+          assertResult(expectedCalendar.get(Calendar.DAY_OF_MONTH))(actualCalendar.get(Calendar.DAY_OF_MONTH))
+        case _ =>
+          assertResult(after)(actualValue)
+      }
     }
   }
 
@@ -60,9 +82,9 @@ class UpdatersSpec extends H2Suite {
 
   testUpdate[Timestamp]("timestamp")(new Timestamp(0))(new Timestamp(1000))
 
-  testUpdate[Date]("date")(new Date(0))(Date.valueOf(LocalDate.now().toString))
+  testUpdate[Date]("date")(new Date(0))(new Date(DateTime.now().getMillis))
 
-  testUpdate[Time]("time")(new Time(0))(Time.valueOf(LocalTime.now().toString))
+  testUpdate[Time]("time")(new Time(0))(new Time(DateTime.now().getMillis))
 
   testUpdate[Instant]("timestamp")(new Instant(0))(Instant.now())
 

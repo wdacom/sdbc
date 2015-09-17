@@ -51,8 +51,6 @@ class ParameterValueSpec
 
   testSelect[Timestamp]("SELECT '2014-12-29 01:02:03.5-4'::timestamp with time zone --as JDBC Timestamp", new Timestamp(Instant.parse("2014-12-29T01:02:03.5-04:00").getMillis).some)
 
-  testSelect[PGInterval]("SELECT '9 years 11 mons 29 days 11:02:13.154936'::interval --as PGInterval", new PGInterval("9 years 11 mons 29 days 11:02:13.154936").some)
-
   testSelect[LTree]("SELECT 'a.b.c'::ltree", LTree("a", "b", "c").some)
 
   testSelect[UUID](s"SELECT '$uuid'::uuid", uuid.some)
@@ -82,14 +80,6 @@ class ParameterValueSpec
   testSelect[PGInterval]("SELECT '9 years 11 mons 29 days 11:02:13.154936'::interval --as PGInterval", new PGInterval("9 years 11 mons 29 days 11:02:13.154936").some)
 
   testSelect[Duration]("SELECT '9 years 11 mons 29 days 11:02:13.154936'::interval --as Joda Duration", Some[Duration](new PGInterval("9 years 11 mons 29 days 11:02:13.154936")))
-
-  testSelect[LTree]("SELECT 'a.b.c'::ltree", LTree("a", "b", "c").some)
-
-  testSelect[UUID](s"SELECT '$uuid'::uuid", uuid.some)
-
-  testSelect[JValue](s"SELECT '$jsonString'::json", JsonMethods.parse(jsonString).some)
-
-  testSelect[JValue](s"SELECT '$jsonString'::jsonb", JsonMethods.parse(jsonString).some)
 
   testSelect[InetAddress]("SELECT '1.1.1.1'::inet", Some(InetAddress.getByName("1.1.1.1")))
 

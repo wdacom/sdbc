@@ -1,7 +1,6 @@
 package com.rocketfuel.sdbc.postgresql.jdbc
 
 import org.joda.time.DateTime
-import org.joda.time.format._
 import org.postgresql.util.PGobject
 
 class TimeTz() extends PGobject() {
@@ -11,20 +10,35 @@ class TimeTz() extends PGobject() {
   var time: Option[DateTime] = None
 
   override def getValue: String = {
-    time.map(actualTime => actualTime.toString(ISODateTimeFormat.basicTime)).orNull
+    time.map(actualTime => actualTime.toString(implementation.timetzFormatter)).orNull
   }
 
   override def setValue(value: String): Unit = {
-    time = Some(ISODateTimeFormat.basicDateTime.parseDateTime("1970-01-01T" + value))
+    time = Some(implementation.timetzFormatter.parseDateTime("1970-01-01T" + value))
   }
 
   override def equals(obj: scala.Any): Boolean = {
-    obj.isInstanceOf[TimeTz] &&
-    obj.asInstanceOf[TimeTz].time == time
+    val compared = obj match {
+      case objTime: TimeTz =>
+        for {
+          myTime <- time
+          theirTime <- objTime.time
+        } yield {
+          theirTime.millisOfDay() == myTime.millisOfDay()
+        }
+      case _ =>
+        None
+    }
+
+    compared.exists(identity)
   }
 
   override def hashCode(): Int = {
     time.hashCode()
+  }
+
+  override def toString: String = {
+    getValue
   }
 }
 
@@ -35,23 +49,6 @@ object TimeTz {
     ttz.time = Some(truncated)
     ttz
   }
-
-  val builder = new DateTimeFormatterBuilder().
-    appendHourOfDay(2).
-    appendLiteral(":").
-    appendMinuteOfHour(2).
-    appendLiteral(":").
-    appendSecondOfMinute(2).
-    appendOptional(
-      new DateTimeFormatterBuilder().
-        appendLiteral('.').
-        appendFractionOfSecond(1, 6).toParser
-    )
-    .appendTimeZoneOffset("+00", false, 1, 2)
-
-  val formatter = builder.toFormatter
-
-  val parser = builder.toParser
 }
 
 trait TimeTzImplicits {

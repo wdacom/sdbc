@@ -109,6 +109,8 @@ trait HasPostgreSqlPool {
    */
   protected def pgBeforeAll(): Unit = {
     pgCreateTestCatalog()
+    createHstore()
+    createLTree()
   }
 
   /**

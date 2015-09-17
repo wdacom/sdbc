@@ -1,31 +1,33 @@
 package com.rocketfuel.sdbc.postgresql.jdbc.implementation
 
 import org.joda.time.DateTime
-import org.joda.time.format.ISODateTimeFormat
 import com.rocketfuel.sdbc.base.ToParameter
 import org.postgresql.util.PGobject
 
-private[sdbc] class PGTimestampTz() extends PGobject() {
+class PGTimestampTz() extends PGobject() {
 
   setType("timestamptz")
 
-  var DateTime: Option[DateTime] = None
+  var dateTime: Option[DateTime] = None
 
   override def getValue: String = {
-    DateTime.map(_.toString(dateTimeFormatter)).orNull
+    dateTime.map(_.toString(datetimetzFormatter)).orNull
   }
 
   override def setValue(value: String): Unit = {
-    this.DateTime = for {
+    this.dateTime = for {
       reallyValue <- Option(value)
     } yield {
-        dateTimeFormatter.parseDateTime(reallyValue)
+        timestamptzFormatter.parseDateTime(reallyValue)
       }
   }
 
+  override def toString: String = {
+    getValue
+  }
 }
 
-private[sdbc] object PGTimestampTz extends ToParameter {
+object PGTimestampTz extends ToParameter {
   def apply(value: String): PGTimestampTz = {
     val tz = new PGTimestampTz()
     tz.setValue(value)
@@ -34,7 +36,7 @@ private[sdbc] object PGTimestampTz extends ToParameter {
 
   def apply(value: DateTime): PGTimestampTz = {
     val tz = new PGTimestampTz()
-    tz.DateTime = Some(value)
+    tz.dateTime = Some(value)
     tz
   }
 

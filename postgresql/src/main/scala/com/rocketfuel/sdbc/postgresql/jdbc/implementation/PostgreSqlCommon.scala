@@ -39,7 +39,7 @@ private[sdbc] abstract class PostgreSqlCommon
     pgConnection.addDataType("jsonb", classOf[PGJson])
     pgConnection.addDataType("time", classOf[PGLocalTime])
     pgConnection.addDataType("timetz", classOf[TimeTz])
-    pgConnection.addDataType("datetimetz", classOf[PGTimestampTz])
+    pgConnection.addDataType("timestamptz", classOf[PGTimestampTz])
   }
 
   override def toParameter(a: Any): Option[Any] = {

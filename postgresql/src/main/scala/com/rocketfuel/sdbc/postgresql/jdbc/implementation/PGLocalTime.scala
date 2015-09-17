@@ -1,7 +1,6 @@
 package com.rocketfuel.sdbc.postgresql.jdbc.implementation
 
 import org.joda.time.LocalTime
-import org.joda.time.format.ISODateTimeFormat
 
 import com.rocketfuel.sdbc.base.ToParameter
 import org.postgresql.util.PGobject
@@ -13,16 +12,22 @@ private[sdbc] class PGLocalTime() extends PGobject() {
   var localTime: Option[LocalTime] = None
 
   override def getValue: String = {
-    localTime.map(_.toString(ISODateTimeFormat.localTimeParser)).orNull
+    localTime.map(_.toString(timeFormatter)).orNull
   }
 
   override def setValue(value: String): Unit = {
     this.localTime = for {
       reallyValue <- Option(value)
     } yield {
-        ISODateTimeFormat.localTimeParser().parseLocalTime(reallyValue)
+        timeFormatter.parseLocalTime(reallyValue)
       }
   }
+
+  override def toString: String = {
+    getValue
+  }
+
+  override def hashCode(): Int = localTime.hashCode()
 }
 
 private[sdbc] object PGLocalTime extends ToParameter {
