@@ -2,16 +2,16 @@ package com.rocketfuel.sdbc.postgresql.jdbc.implementation
 
 import java.net.InetAddress
 import java.sql.{SQLException, SQLDataException}
-import java.time.format.DateTimeFormatter
-import java.time.Duration
-import scala.concurrent.duration.{Duration => ScalaDuration}
+import org.joda.time.{Duration => JodaDuration, DateTime}
+import org.json4s.jackson.JsonMethods
 import java.util.UUID
 import com.rocketfuel.sdbc.base.jdbc._
-import com.rocketfuel.sdbc.postgresql.jdbc.{Cidr, LTree}
+import com.rocketfuel.sdbc.postgresql.jdbc.{TimeTz, Cidr, LTree}
 import org.json4s.JValue
 import org.postgresql.util.{PGInterval, PGobject}
 import scala.xml.{Node, XML}
 import scala.concurrent.duration.{Duration => ScalaDuration}
+
 private[sdbc] trait Getters
   extends BooleanGetter
   with BytesGetter
@@ -29,15 +29,30 @@ private[sdbc] trait Getters
   with TimeGetter
   with TimestampGetter
   with UUIDGetter
-  with ParameterGetter
-  with InstantGetter
-  with LocalDateGetter
-  with LocalDateTimeGetter  {
+  with ParameterGetter {
   self: PGTimestampTzImplicits
-    with PGTimeTzImplicits
     with IntervalImplicits
     with PGInetAddressImplicits
     with PGJsonImplicits =>
+
+  implicit val OffsetTimeGetter: Getter[TimeTz] = new Getter[TimeTz] {
+    override def apply(row: Row, ix: Index): Option[TimeTz] = {
+      Option(row.getObject(ix(row))) map {
+        case tz: TimeTz => tz
+        case _ => throw new SQLException("column does not contain a timetz")
+      }
+    }
+  }
+
+  implicit val DateTimeGetter = new Getter[DateTime] {
+    override def apply(row: Row, ix: Index): Option[DateTime] = {
+      Option(row.getObject(ix(row))) map {
+        case tz: PGTimestampTz => tz.DateTime.get
+        case _ => throw new SQLException("column does not contain a datetimetz")
+      }
+    }
+  }
+
 
   implicit val LTreeGetter = new Getter[LTree] {
     override def apply(row: Row, ix: Index): Option[LTree] = {
@@ -69,15 +84,32 @@ private[sdbc] trait Getters
     }
   }
 
-  implicit val InetAddressGetter = new Parser[InetAddress] {
-    override def parse(asString: String): InetAddress = {
-      InetAddress.getByName(asString)
+  implicit val CidrGetter = new Getter[Cidr] {
+    override def apply(row: Row, ix: Index): Option[Cidr] = {
+      Option(row.getObject(ix(row))).map {
+        case p: Cidr => p
+        case _ => throw new SQLException("column does not contain a cidr")
+      }
     }
   }
 
-  implicit val JValueGetter = new Parser[JValue] {
-    override def parse(asString: String): JValue = {
-      JsonMethods.parse(asString)
+  private def IsPGobjectGetter[T](implicit converter: PGobject => T): Getter[T] = new Getter[T] {
+    override def apply(row: Row, ix: Index): Option[T] = {
+      val shouldBePgValue = Option(row.getObject(ix(row)))
+      shouldBePgValue.map {
+        case p: PGobject =>
+          converter(p)
+        case _ =>
+          throw new SQLException("column does not contain a PGobject")
+      }
+    }
+  }
+
+  implicit val JValueGetter: Getter[JValue] = IsPGobjectGetter[JValue]
+
+  implicit val InetAddressGetter = new Parser[InetAddress] {
+    override def parse(asString: String): InetAddress = {
+      InetAddress.getByName(asString)
     }
   }
 

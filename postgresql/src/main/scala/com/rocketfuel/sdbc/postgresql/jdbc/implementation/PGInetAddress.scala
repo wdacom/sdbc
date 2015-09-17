@@ -7,6 +7,8 @@ import org.postgresql.util.PGobject
 
 private[sdbc] class PGInetAddress() extends PGobject() {
 
+  setType("inet")
+
   var inetAddress: Option[InetAddress] = None
 
   override def getValue: String = {

@@ -70,8 +70,8 @@ class ParameterValueSpec
     //We can't use the current offset, because of, for example,
     //daylight savings.
     val localTime = LocalDateTime.parse("2014-12-29T01:02:03.5")
-    val offset = ZoneId.systemDefault().getRules.getOffset(localTime)
-    val expectedTime = localTime.toInstant(offset)
+    val offset = DateTimeZone.getDefault
+    val expectedTime = localTime.toDateTime(offset).toInstant
     testSelect[Instant]("SELECT '2014-12-29 01:02:03.5'::timestamp --as Java 8 Instant", expectedTime.some)
   }
 

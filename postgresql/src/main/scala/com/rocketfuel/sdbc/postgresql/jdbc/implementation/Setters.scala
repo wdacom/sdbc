@@ -6,8 +6,6 @@ import com.rocketfuel.sdbc.base.{ParameterValue, ToParameter}
 import com.rocketfuel.sdbc.base.jdbc._
 import org.postgresql.util.PGobject
 import scala.collection.convert.decorateAsJava._
-import org.joda.time.{Duration => JodaDuration}
-import scala.concurrent.duration.{Duration => ScalaDuration}
 
 //PostgreSQL doesn't support Byte, so we don't use the default setters.
 private[sdbc] trait Setters
@@ -31,7 +29,6 @@ private[sdbc] trait Setters
   with QLocalDateImplicits
   with PGLocalTimeImplicits
   with QLocalDateTimeImplicits
-  with PGTimeTzImplicits
   with PGTimestampTzImplicits
   with PGInetAddressImplicits
   with QXMLImplicits
@@ -67,7 +64,6 @@ private[sdbc] trait Setters
       QBlob.toParameter orElse
       QPGObject.toParameter orElse
       QMap.toParameter orElse
-      PGTimeTz.toParameter orElse
       PGTimestampTz.toParameter orElse
       PGJson.toParameter
 
@@ -86,15 +82,7 @@ private[sdbc] trait QPGObjectImplicits {
     }
   }
 
-  def PGIntervalToParameterValue(x: PGInterval): ParameterValue[PGInterval] = {
-    QPGInterval(x)
-  }
-
-  implicit def JodaDurationToParameterValue(x: JodaDuration): ParameterValue[PGInterval] = {
-    QPGInterval(x)
-  }
-
-  implicit def ScalaDurationToParameterValue(x: ScalaDuration): ParameterValue[PGInterval] = {
+  implicit def PGobjectToParameterValue(value: PGobject): ParameterValue = {
     ParameterValue(value)
   }
 

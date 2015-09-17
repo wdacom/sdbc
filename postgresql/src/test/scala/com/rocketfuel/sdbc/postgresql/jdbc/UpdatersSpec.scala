@@ -1,7 +1,7 @@
 package com.rocketfuel.sdbc.postgresql.jdbc
 
 import java.sql.{Date, Time, Timestamp}
-import java.time._
+import org.joda.time._
 import java.util.UUID
 
 import com.rocketfuel.sdbc.base.jdbc.Updater
@@ -58,17 +58,17 @@ class UpdatersSpec
 
   testUpdate[BigDecimal]("numeric")(BigDecimal(3))(BigDecimal("500"))
 
-  testUpdate[Timestamp]("timestamp")(new Timestamp(0))(Timestamp.from(Instant.now()))
+  testUpdate[Timestamp]("timestamp")(new Timestamp(0))(new Timestamp(1))
 
-  testUpdate[Date]("date")(new Date(0))(Date.valueOf(LocalDate.now()))
+  testUpdate[Date]("date")(new Date(0))(new Date(1000 * 60 * 60 * 24 * 2))
 
-  testUpdate[Time]("time")(new Time(0))(Time.valueOf(LocalTime.now()))
+  testUpdate[Time]("time")(new Time(0))(new Time(1000))
 
-  testUpdate[Instant]("timestamp")(Instant.ofEpochMilli(0))(Instant.now())
+  testUpdate[Instant]("timestamp")(new Instant(0))(Instant.now())
 
-  testUpdate[LocalDate]("date")(LocalDate.ofEpochDay(0))(LocalDate.now())
+  testUpdate[LocalDate]("date")(new LocalDate(0))(LocalDate.now())
 
-  testUpdate[LocalTime]("time")(LocalTime.of(0, 0, 0))(LocalTime.now())
+  testUpdate[LocalTime]("time")(new LocalTime(0))(LocalTime.now())
 
   testUpdate[Boolean]("bool")(false)(true)
 

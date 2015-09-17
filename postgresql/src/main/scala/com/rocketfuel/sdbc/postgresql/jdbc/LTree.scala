@@ -12,6 +12,8 @@ import scala.collection.immutable.Seq
  */
 class LTree() extends PGobject() with collection.immutable.Iterable[String] with PartialFunction[Int, String] {
 
+  setType("ltree")
+
   private var path: Option[Seq[String]] = None
 
   def getPath: Seq[String] = {

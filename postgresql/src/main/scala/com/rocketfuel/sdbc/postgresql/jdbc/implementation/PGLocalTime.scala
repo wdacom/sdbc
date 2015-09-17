@@ -1,7 +1,7 @@
 package com.rocketfuel.sdbc.postgresql.jdbc.implementation
 
-import java.time.LocalTime
-import java.time.format.DateTimeFormatter
+import org.joda.time.LocalTime
+import org.joda.time.format.ISODateTimeFormat
 
 import com.rocketfuel.sdbc.base.ToParameter
 import org.postgresql.util.PGobject
@@ -13,15 +13,14 @@ private[sdbc] class PGLocalTime() extends PGobject() {
   var localTime: Option[LocalTime] = None
 
   override def getValue: String = {
-    localTime.map(DateTimeFormatter.ISO_LOCAL_TIME.format).orNull
+    localTime.map(_.toString(ISODateTimeFormat.localTimeParser)).orNull
   }
 
   override def setValue(value: String): Unit = {
     this.localTime = for {
       reallyValue <- Option(value)
     } yield {
-        val parsed = DateTimeFormatter.ISO_LOCAL_TIME.parse(reallyValue)
-        LocalTime.from(parsed)
+        ISODateTimeFormat.localTimeParser().parseLocalTime(reallyValue)
       }
   }
 }

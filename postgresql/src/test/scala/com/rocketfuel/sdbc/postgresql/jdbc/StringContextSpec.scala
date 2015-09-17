@@ -5,6 +5,7 @@ import java.nio.ByteBuffer
 import java.sql.Timestamp
 import java.util.UUID
 
+import com.rocketfuel.sdbc.base.JodaSqlConverters._
 import com.rocketfuel.sdbc.postgresql.jdbc.implementation._
 import org.scalatest.FunSuite
 import scodec.bits.ByteVector
@@ -181,45 +182,45 @@ class StringContextSpec extends FunSuite {
   }
 
   test("Instant interpolation works with execute") {
-    val t = java.time.Instant.now()
+    val t = org.joda.time.Instant.now()
     val e = execute"$t"
 
-    assertResult(Map("0" -> Some(Timestamp.from(t))))(e.parameterValues)
+    assertResult(Map("0" -> Some(new Timestamp(t.getMillis))))(e.parameterValues)
   }
 
   test("LocalDate interpolation works with execute") {
-    val t = java.time.LocalDate.now()
+    val t = org.joda.time.LocalDate.now()
     val e = execute"$t"
 
-    assertResult(Map("0" -> Some(java.sql.Date.valueOf(t))))(e.parameterValues)
+    assertResult(Map("0" -> Some(new java.sql.Date(t.getTime))))(e.parameterValues)
   }
 
   test("LocalTime interpolation works with execute") {
-    val t = java.time.LocalTime.now()
+    val t = org.joda.time.LocalTime.now()
     val e = execute"$t"
 
     assertResult(Map("0" -> Some(PGLocalTime(t))))(e.parameterValues)
   }
 
   test("LocalDateTime interpolation works with execute") {
-    val t = java.time.LocalDateTime.now()
+    val t = org.joda.time.LocalDateTime.now()
     val e = execute"$t"
 
-    assertResult(Map("0" -> Some(Timestamp.valueOf(t))))(e.parameterValues)
+    assertResult(Map("0" -> Some(LocalDateTimeToTimestamp(t))))(e.parameterValues)
   }
 
-  test("OffsetDateTime interpolation works with execute") {
-    val t = java.time.OffsetDateTime.now()
+  test("DateTime interpolation works with execute") {
+    val t = org.joda.time.DateTime.now()
     val e = execute"$t"
 
     assertResult(Map("0" -> Some(PGTimestampTz(t))))(e.parameterValues)
   }
 
-  test("OffsetTime interpolation works with execute") {
-    val t = java.time.OffsetTime.now()
+  test("TimeTz interpolation works with execute") {
+    val t = TimeTz(org.joda.time.DateTime.now())
     val e = execute"$t"
 
-    assertResult(Map("0" -> Some(PGTimeTz(t))))(e.parameterValues)
+    assertResult(Map("0" -> Some(t)))(e.parameterValues)
   }
 
   test("Int interpolation works with select") {

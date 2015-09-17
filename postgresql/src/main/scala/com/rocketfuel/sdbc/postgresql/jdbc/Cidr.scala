@@ -6,6 +6,8 @@ import com.rocketfuel.sdbc.postgresql.jdbc.implementation.PGInetAddress
 
 class Cidr() extends PGInetAddress() {
 
+  setType("cidr")
+
   var netmask: Option[Short] = None
 
   override def getValue: String = {

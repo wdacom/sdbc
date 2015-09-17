@@ -16,6 +16,8 @@ class GettersSpec
       (expectedValue, result) match {
         case (Some(expectedArray: Array[_]), Some(resultArray: Array[_])) =>
           assert(expectedArray.sameElements(resultArray))
+        case (Some(expectedOffset: DateTime), Some(resultOffset: DateTime)) =>
+          assertResult(expectedOffset.toInstant)(resultOffset.toInstant)
         case (Some(x), Some(y)) =>
           assertResult(x)(y)
         case (None, None) => true
@@ -23,8 +25,6 @@ class GettersSpec
       }
     }
   }
-
-  val uuid = UUID.randomUUID()
 
   testSelect[Int]("SELECT NULL", none[Int])
 
@@ -70,7 +70,10 @@ class GettersSpec
     testSelect[Instant](s"SELECT CAST('$timeString' AS datetime) --as Joda Instant", expectedTime.some)
   }
 
-  testSelect[UUID](s"SELECT CAST('$uuid' AS uuid)", uuid.some)
+  {
+    val uuid = UUID.randomUUID()
+    testSelect[UUID](s"SELECT CAST('$uuid' AS uuid)", uuid.some)
+  }
 
   testSelect[Seq[Int]]("SELECT (1, 2, 3)", Seq(1, 2, 3).some)
 

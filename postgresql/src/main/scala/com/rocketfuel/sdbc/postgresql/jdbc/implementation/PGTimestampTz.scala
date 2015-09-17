@@ -1,7 +1,7 @@
 package com.rocketfuel.sdbc.postgresql.jdbc.implementation
 
-import java.time.OffsetDateTime
-
+import org.joda.time.DateTime
+import org.joda.time.format.ISODateTimeFormat
 import com.rocketfuel.sdbc.base.ToParameter
 import org.postgresql.util.PGobject
 
@@ -9,18 +9,17 @@ private[sdbc] class PGTimestampTz() extends PGobject() {
 
   setType("timestamptz")
 
-  var offsetDateTime: Option[OffsetDateTime] = None
+  var DateTime: Option[DateTime] = None
 
   override def getValue: String = {
-    offsetDateTime.map(offsetDateTimeFormatter.format).orNull
+    DateTime.map(_.toString(dateTimeFormatter)).orNull
   }
 
   override def setValue(value: String): Unit = {
-    this.offsetDateTime = for {
+    this.DateTime = for {
       reallyValue <- Option(value)
     } yield {
-        val parsed = offsetDateTimeFormatter.parse(reallyValue)
-        OffsetDateTime.from(parsed)
+        dateTimeFormatter.parseDateTime(reallyValue)
       }
   }
 
@@ -33,19 +32,19 @@ private[sdbc] object PGTimestampTz extends ToParameter {
     tz
   }
 
-  def apply(value: OffsetDateTime): PGTimestampTz = {
+  def apply(value: DateTime): PGTimestampTz = {
     val tz = new PGTimestampTz()
-    tz.offsetDateTime = Some(value)
+    tz.DateTime = Some(value)
     tz
   }
 
   val toParameter: PartialFunction[Any, Any] = {
-    case o: OffsetDateTime => PGTimestampTz(o)
+    case o: DateTime => PGTimestampTz(o)
   }
 }
 
 private[sdbc] trait PGTimestampTzImplicits {
-  implicit def OffsetDateTimeToPGobject(o: OffsetDateTime): PGobject = {
+  implicit def DateTimeToPGobject(o: DateTime): PGobject = {
     PGTimestampTz(o)
   }
 }

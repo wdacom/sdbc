@@ -2,7 +2,7 @@ package com.rocketfuel.sdbc.postgresql.jdbc.implementation
 
 import java.net.InetAddress
 import java.sql._
-import java.time._
+import org.joda.time._
 import java.util.UUID
 import com.rocketfuel.sdbc.base.jdbc._
 import com.rocketfuel.sdbc.postgresql.jdbc.{Cidr, LTree}
@@ -30,12 +30,11 @@ private[sdbc] trait SeqParameter {
       case t if t =:= typeOf[BigDecimal] => "numeric"
       case t if t =:= typeOf[java.math.BigDecimal] => "numeric"
       case t if t =:= typeOf[LocalDateTime] => "timestamp"
-      case t if t =:= typeOf[OffsetDateTime] => "timestamptz"
+      case t if t =:= typeOf[DateTime] => "timestamptz"
       case t if t =:= typeOf[Date] => "date"
       case t if t =:= typeOf[Time] => "time"
-      case t if t =:= typeOf[java.time.LocalDate] => "date"
-      case t if t =:= typeOf[java.time.LocalTime] => "time"
-      case t if t =:= typeOf[OffsetTime] => "timetz"
+      case t if t =:= typeOf[LocalDate] => "date"
+      case t if t =:= typeOf[LocalTime] => "time"
       case t if t =:= typeOf[Duration] => "interval"
       case t if t =:= typeOf[Boolean] => "boolean"
       case t if t =:= typeOf[java.lang.Boolean] => "boolean"

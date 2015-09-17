@@ -6,13 +6,12 @@ import java.util.UUID
 import com.rocketfuel.sdbc.base.CISet
 import com.rocketfuel.sdbc.base.jdbc._
 import com.rocketfuel.sdbc.postgresql.jdbc
-import com.rocketfuel.sdbc.postgresql.jdbc.Cidr
+import com.rocketfuel.sdbc.postgresql.jdbc.{TimeTz, Cidr}
 import org.postgresql.PGConnection
 
 private[sdbc] abstract class PostgreSqlCommon
   extends DBMS
   with Setters
-  with PgDateTimeFormatter
   with IntervalImplicits
   with ConnectionImplicits
   with Getters
@@ -39,6 +38,8 @@ private[sdbc] abstract class PostgreSqlCommon
     pgConnection.addDataType("json", classOf[PGJson])
     pgConnection.addDataType("jsonb", classOf[PGJson])
     pgConnection.addDataType("time", classOf[PGLocalTime])
+    pgConnection.addDataType("timetz", classOf[TimeTz])
+    pgConnection.addDataType("datetimetz", classOf[PGTimestampTz])
   }
 
   override def toParameter(a: Any): Option[Any] = {

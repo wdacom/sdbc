@@ -1,8 +1,7 @@
 package com.rocketfuel.sdbc.h2.jdbc
 
 import java.sql.{Time, Date, Timestamp}
-import java.time.temporal.ChronoUnit
-import java.time.{LocalTime, LocalDate, Instant}
+import org.joda.time._
 import java.util.UUID
 
 import com.rocketfuel.sdbc.base.jdbc.Updater
@@ -59,18 +58,18 @@ class UpdatersSpec extends H2Suite {
 
   testUpdate[BigDecimal]("numeric")(BigDecimal(3))(BigDecimal("500"))
 
-  testUpdate[Timestamp]("timestamp")(new Timestamp(0))(Timestamp.from(Instant.now()))
+  testUpdate[Timestamp]("timestamp")(new Timestamp(0))(new Timestamp(1000))
 
-  testUpdate[Date]("date")(new Date(0))(Date.valueOf(LocalDate.now()))
+  testUpdate[Date]("date")(new Date(0))(Date.valueOf(LocalDate.now().toString))
 
-  testUpdate[Time]("time")(new Time(0))(Time.valueOf(LocalTime.now()))
+  testUpdate[Time]("time")(new Time(0))(Time.valueOf(LocalTime.now().toString))
 
-  testUpdate[Instant]("timestamp")(Instant.ofEpochMilli(0))(Instant.now())
+  testUpdate[Instant]("timestamp")(new Instant(0))(Instant.now())
 
-  testUpdate[LocalDate]("date")(LocalDate.ofEpochDay(0))(LocalDate.now())
+  testUpdate[LocalDate]("date")(new LocalDate(0))(LocalDate.now())
 
   //H2 doesn't store fractional seconds.
-  testUpdate[LocalTime]("time")(LocalTime.of(0, 0, 0))(LocalTime.now().truncatedTo(ChronoUnit.SECONDS))
+  testUpdate[LocalTime]("time")(new LocalTime(0))(new LocalTime(1000))
 
   testUpdate[Boolean]("bool")(false)(true)
 

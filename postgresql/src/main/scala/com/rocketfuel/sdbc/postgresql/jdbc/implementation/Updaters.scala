@@ -1,20 +1,17 @@
 package com.rocketfuel.sdbc.postgresql.jdbc.implementation
 
 import java.net.InetAddress
-import java.time.{Duration => JavaDuration, _}
 import java.util.UUID
 import com.rocketfuel.sdbc.base.jdbc._
 import com.rocketfuel.sdbc.postgresql.jdbc.Cidr
 import org.json4s._
 import org.postgresql.util.PGobject
-import scala.concurrent.duration.{Duration => ScalaDuration}
 import scala.xml.Node
-import org.joda.time.{Duration => JodaDuration}
+import org.joda.time.{Duration => JodaDuration, DateTime}
 import scala.concurrent.duration.{Duration => ScalaDuration}
 
-trait Updaters extends Java8DefaultUpdaters {
-  with DateTimeFormatterUpdater {
-  self: HasOffsetDateTimeFormatter with HasOffsetTimeFormatter =>
+trait Updaters
+  extends LongUpdater
   with IntUpdater
   with ShortUpdater
   with BytesUpdater
@@ -29,12 +26,8 @@ trait Updaters extends Java8DefaultUpdaters {
   with StringUpdater
   with UUIDUpdater
   with InputStreamUpdater
-  with UpdateReader
-  with LocalDateTimeUpdater
-  with InstantUpdater
-  with LocalDateUpdater {
+  with UpdateReader {
   self: PGTimestampTzImplicits
-    with PGTimeTzImplicits
     with IntervalImplicits
     with PGInetAddressImplicits
     with PGJsonImplicits
@@ -48,15 +41,11 @@ trait Updaters extends Java8DefaultUpdaters {
     }
   }
 
-  implicit val OffsetTimeUpdater = IsPGobjectUpdater[OffsetTime]
-
-  implicit val OffsetDateTimeUpdater = IsPGobjectUpdater[OffsetDateTime]
-
-  implicit val LocalTimeUpdater = IsPGobjectUpdater[LocalTime]
+  implicit val DateTimeUpdater = IsPGobjectUpdater[DateTime]
 
   implicit val ScalaDurationUpdater = IsPGobjectUpdater[ScalaDuration]
 
-  implicit val JavaDurationUpdater = IsPGobjectUpdater[JavaDuration]
+  implicit val JodaDurationUpdater = IsPGobjectUpdater[JodaDuration]
 
   implicit val JValueUpdater = IsPGobjectUpdater[JValue]
 
@@ -71,26 +60,6 @@ trait Updaters extends Java8DefaultUpdaters {
       x: PGobject
     ): Unit = {
       row.updateObject(columnIndex, x)
-    }
-  }
-
-  implicit val JodaDurationUpdater = new Updater[JodaDuration] {
-    override def update(
-      row: MutableRow,
-      columnIndex: Int,
-      x: JodaDuration
-    ): Unit = {
-      PGIntervalUpdater.update(row, columnIndex, JodaDurationToPGInterval(x))
-    }
-  }
-
-  implicit val ScalaDurationUpdater = new Updater[ScalaDuration] {
-    override def update(
-      row: MutableRow,
-      columnIndex: Int,
-      x: ScalaDuration
-    ): Unit = {
-      PGIntervalUpdater.update(row, columnIndex, ScalaDurationToPGInterval(x))
     }
   }
 

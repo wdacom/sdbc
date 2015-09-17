@@ -1,14 +1,12 @@
 package com.rocketfuel.sdbc.scalaz
 
-import java.util.concurrent.atomic.AtomicReference
-import java.util.function.UnaryOperator
-
 import com.datastax.driver.core.{BoundStatement, PreparedStatement, ResultSet, Row => CRow}
 import com.google.common.util.concurrent.{FutureCallback, Futures, ListenableFuture}
 import com.rocketfuel.sdbc.cassandra.datastax._
 import com.rocketfuel.sdbc.cassandra.datastax.implementation.ParameterSetter
 import me.jeffshaw.scalaz.stream.IteratorConstructors._
 
+import scala.collection.mutable
 import scalaz.concurrent.Task
 import scalaz.stream._
 import scalaz.{-\/, \/-}
@@ -137,10 +135,11 @@ object datastax {
    * @return
    */
   private [scalaz] def forClusterWithKeyspaceAux[T, O](
-  runner: T => Session => Task[O]
-  )(cluster: Cluster): Channel[Task, (String, T), O] = {
+    runner: T => Session => Task[O]
+  )(cluster: Cluster
+  ): Channel[Task, (String, T), O] = {
 
-    val sessionsRef = new AtomicReference(Map.empty[String, Session])
+    val sessions = mutable.HashMap.empty[String, Session]
 
     /**
      * Get a Session for the keyspace, creating it if it does not exist.
@@ -148,20 +147,16 @@ object datastax {
      * @return
      */
     def getSession(keyspace: String): Task[Session] = Task.delay {
-      val sessions =
-        sessionsRef.updateAndGet(
-          new UnaryOperator[Map[String, Session]] {
-            override def apply(t: Map[String, Session]): Map[String, Session] = {
-              if (t.contains(keyspace)) t
-              else {
-                val session = cluster.connect(keyspace)
-                t + (keyspace -> session)
-              }
-            }
-          }
-        )
-
-      sessions(keyspace)
+      sessions.synchronized {
+        sessions.get(keyspace) match {
+          case None =>
+            val session = cluster.connect(keyspace)
+            sessions(keyspace) = session
+            session
+          case Some(session) =>
+            session
+        }
+      }
     }
 
     /**
@@ -169,13 +164,11 @@ object datastax {
      */
     val closeSessions: Task[Unit] = {
       val getToClose = Task.delay[Map[String, Session]] {
-        sessionsRef.getAndUpdate(
-          new UnaryOperator[Map[String, Session]] {
-            override def apply(t: Map[String, Session]): Map[String, Session] = {
-              Map.empty
-            }
-          }
-        )
+        sessions.synchronized {
+          val sessionValues = sessions.toMap
+          sessions.clear()
+          sessionValues
+        }
       }
 
       for {
