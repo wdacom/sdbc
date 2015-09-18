@@ -11,7 +11,6 @@ libraryDependencies ++= Seq(
   "org.apache.logging.log4j" % "log4j-api" % "2.3" % "test",
   "org.apache.logging.log4j" % "log4j-core" % "2.3" % "test",
   "org.scala-lang" % "scala-reflect" % scalaVersion.value,
-  "com.zaxxer" % "HikariCP-java6" % "2.3.9",
   //Config file loading
   //https://github.com/typesafehub/config
   "com.typesafe" % "config" % "1.2.1",
