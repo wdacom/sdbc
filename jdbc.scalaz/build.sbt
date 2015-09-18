@@ -9,3 +9,5 @@ resolvers += "Scalaz Bintray Repo" at "http://dl.bintray.com/scalaz/releases"
 libraryDependencies ++= Seq(
   "me.jeffshaw.scalaz.stream" %% "iterator" % "3.0.1a"
 )
+
+parallelExecution := false
