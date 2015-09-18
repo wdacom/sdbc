@@ -2,7 +2,7 @@ organization := "com.rocketfuel.sdbc.cassandra"
 
 name := "datastax-java7"
 
-description := "An implementation of SDBC for accessing Apache Cassandra."
+description := "An implementation of SDBC for accessing Apache Cassandra using the DataStax driver."
 
 libraryDependencies ++= Seq(
   "com.datastax.cassandra" % "cassandra-driver-core" % "2.1.7.1",

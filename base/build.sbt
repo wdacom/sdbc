@@ -17,7 +17,7 @@ libraryDependencies ++= Seq(
   "com.typesafe" % "config" % "1.2.1",
   "org.scalatest" %% "scalatest" % "2.2.5" % "test",
   "org.scalacheck" %% "scalacheck" % "1.12.5" % "test",
-  "org.scalaz" %% "scalaz-core" % "7.1.2" % "test",
+  "org.scalaz" %% "scalaz-core" % "7.1.3" % "test",
   "org.apache.commons" % "commons-lang3" % "3.4" % "test",
   "joda-time" % "joda-time" % "2.8.2",
   "org.joda" % "joda-convert" % "1.7"

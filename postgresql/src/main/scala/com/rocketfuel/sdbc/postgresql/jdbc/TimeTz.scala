@@ -11,7 +11,7 @@ class TimeTz() extends PGobject() {
 
   override def getValue: String = {
     time.map(actualTime => actualTime.toString(implementation.timetzFormatter)).
-      throw new IllegalStateException("setValue must be called first")
+      getOrElse(throw new IllegalStateException("setValue must be called first"))
   }
 
   override def setValue(value: String): Unit = {

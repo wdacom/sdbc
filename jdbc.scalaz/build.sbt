@@ -1,8 +1,8 @@
-organization := "com.rocketfuel.sdbc.scalaz"
+organization := "com.rocketfuel.sdbc.jdbc"
 
-name := "jdbc-java7"
+name := "scalaz-java7"
 
-description := "Extensions for SDBC for use with Scalaz streaming"
+description := "Extensions for SDBC's JDBC support for use with Scalaz streaming."
 
 resolvers += "Scalaz Bintray Repo" at "http://dl.bintray.com/scalaz/releases"
 
