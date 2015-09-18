@@ -12,22 +12,20 @@ class RichResultSetSpec
 
   test("iterator() works on several results") {implicit connection =>
     Execute("CREATE KEYSPACE spc WITH REPLICATION = {'class': 'SimpleStrategy', 'replication_factor': 1}").execute()
-    Execute("CREATE TABLE spc.tbl (x int PRIMARY KEY)").execute()
+    Execute("CREATE TABLE spc.tbl (id int PRIMARY KEY, x int)").execute()
 
     forAll { (randoms: Seq[Int]) =>
-      val insert = Execute("INSERT INTO spc.tbl (x) VALUES (@x)")
+      val insert = Execute("INSERT INTO spc.tbl (id, x) VALUES (@id, @x)")
 
-      for (random <- randoms) {
-        insert.on("x" -> random).execute()
+      for ((random, ix) <- randoms.zipWithIndex) {
+        insert.on("id" -> ix, "x" -> random).execute()
       }
 
       val results = Select[Int]("SELECT x FROM spc.tbl").iterator().toSeq
 
-      assertResult(randoms.toSet)(results.toSet)
+      assertResult(randoms.sorted)(results.sorted)
 
-      assertResult(randoms.size)(results.size)
-
-      RichResultSetSpec.truncate.execute()
+      RichResultSetSpec.truncate()
     }
   }
 
@@ -44,26 +42,24 @@ class RichResultSetSpec
 
       val results = Select[Option[Int]]("SELECT y FROM spc.tbl").iterator().toSeq
 
-      assertResult(randoms.toSet)(results.toSet)
+      assertResult(randoms.sorted)(results.sorted)
 
-      assertResult(randoms.size)(results.size)
-
-      RichResultSetSpec.truncate.execute()
+      RichResultSetSpec.truncate()
     }
   }
 
   test("Insert and select works for tuples.") { implicit connection =>
     Execute("CREATE KEYSPACE spc WITH REPLICATION = {'class': 'SimpleStrategy', 'replication_factor': 1}").execute()
-    Execute("CREATE TABLE spc.tbl (x tuple<int, int> PRIMARY KEY)").execute()
+    Execute("CREATE TABLE spc.tbl (id int PRIMARY KEY, x tuple<int, int>)").execute()
 
     forAll { (tuples: Seq[(Int, Int)]) =>
       //Note: Peng verified that values in tuples are nullable, so we need
       //to support that.
 
-      val insert = Execute("INSERT INTO spc.tbl (x) VALUES (@x)")
+      val insert = Execute("INSERT INTO spc.tbl (id, x) VALUES (@id, @x)")
 
-      for (tuple <- tuples) {
-        insert.on("x" -> tuple).execute()
+      for ((tuple, ix) <- tuples.zipWithIndex) {
+        insert.on("id" -> ix, "x" -> tuple).execute()
       }
 
       val results = Select[(Option[Int], Option[Int])]("SELECT x FROM spc.tbl").iterator().toSeq
@@ -74,19 +70,19 @@ class RichResultSetSpec
 
       assertResult(tuples.size)(results.size)
 
-      RichResultSetSpec.truncate.execute()
+      RichResultSetSpec.truncate()
     }
   }
 
   test("Insert and select works for tuples having some null elements.") {implicit connection =>
     Execute("CREATE KEYSPACE spc WITH REPLICATION = {'class': 'SimpleStrategy', 'replication_factor': 1}").execute()
-    Execute("CREATE TABLE spc.tbl (x tuple<int, int> PRIMARY KEY)").execute()
+    Execute("CREATE TABLE spc.tbl (id int PRIMARY KEY, x tuple<int, int>)").execute()
 
     forAll { (tuples: Seq[(Option[Int], Option[Int])]) =>
-      val insert = Execute("INSERT INTO spc.tbl (x) VALUES (@x)")
+      val insert = Execute("INSERT INTO spc.tbl (id, x) VALUES (@id, @x)")
 
-      for (tuple <- tuples) {
-        insert.on("x" -> tuple).execute()
+      for ((tuple, ix) <- tuples.zipWithIndex) {
+        insert.on("id" -> ix, "x" -> tuple).execute()
       }
 
       val results = Select[(Option[Int], Option[Int])]("SELECT x FROM spc.tbl").iterator().toSeq
@@ -95,7 +91,7 @@ class RichResultSetSpec
 
       assertResult(tuples.size)(results.size)
 
-      RichResultSetSpec.truncate.execute()
+      RichResultSetSpec.truncate()
     }
   }
 
@@ -116,7 +112,7 @@ class RichResultSetSpec
 
       assertResult(sets.size)(results.size)
 
-      RichResultSetSpec.truncate.execute()
+      RichResultSetSpec.truncate()
     }
   }
 
@@ -144,12 +140,15 @@ class RichResultSetSpec
 
       assertResult(maps.size)(results.size)
 
-      RichResultSetSpec.truncate.execute()
+      RichResultSetSpec.truncate()
     }
   }
 
 }
 
 object RichResultSetSpec {
-  val truncate = Execute("TRUNCATE spc.tbl")
+  def truncate()(implicit connection: Session): Unit = {
+    Execute("TRUNCATE spc.tbl").execute()
+  }
+
 }
