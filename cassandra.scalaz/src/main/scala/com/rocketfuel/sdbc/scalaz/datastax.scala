@@ -137,8 +137,9 @@ object datastax {
    * @return
    */
   private [scalaz] def forClusterWithKeyspaceAux[T, O](
-  runner: T => Session => Task[O]
-  )(cluster: Cluster): Channel[Task, (String, T), O] = {
+    runner: T => Session => Task[O]
+  )(cluster: Cluster
+  ): Channel[Task, (String, T), O] = {
 
     val sessionsRef = new AtomicReference(Map.empty[String, Session])
 
