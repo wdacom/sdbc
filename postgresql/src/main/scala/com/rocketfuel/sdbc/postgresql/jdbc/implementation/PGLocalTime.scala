@@ -12,7 +12,8 @@ private[sdbc] class PGLocalTime() extends PGobject() {
   var localTime: Option[LocalTime] = None
 
   override def getValue: String = {
-    localTime.map(_.toString(timeFormatter)).orNull
+    localTime.map(_.toString(timeFormatter)).
+      getOrElse(throw new IllegalStateException("setValue must be called first"))
   }
 
   override def setValue(value: String): Unit = {

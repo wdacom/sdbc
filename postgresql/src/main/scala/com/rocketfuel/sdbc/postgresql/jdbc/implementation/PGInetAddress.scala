@@ -12,7 +12,8 @@ private[sdbc] class PGInetAddress() extends PGobject() {
   var inetAddress: Option[InetAddress] = None
 
   override def getValue: String = {
-    inetAddress.map(_.getHostAddress).orNull
+    inetAddress.map(_.getHostAddress).
+      getOrElse(throw new IllegalStateException("setValue must be called first"))
   }
 
   override def setValue(value: String): Unit = {

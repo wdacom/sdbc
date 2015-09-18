@@ -18,7 +18,7 @@ class LTree() extends PGobject() with collection.immutable.Iterable[String] with
 
   def getPath: Seq[String] = {
     path.
-    getOrElse(throw new IllegalStateException("setValue or setPath must be called first"))
+      getOrElse(throw new IllegalStateException("setValue or setPath must be called first"))
   }
 
   def setPath(path: Seq[String]): Unit = {

@@ -11,7 +11,8 @@ class PGTimestampTz() extends PGobject() {
   var dateTime: Option[DateTime] = None
 
   override def getValue: String = {
-    dateTime.map(_.toString(datetimetzFormatter)).orNull
+    dateTime.map(_.toString(datetimetzFormatter)).
+      getOrElse(throw new IllegalStateException("setValue must be called first"))
   }
 
   override def setValue(value: String): Unit = {

@@ -10,7 +10,8 @@ class TimeTz() extends PGobject() {
   var time: Option[DateTime] = None
 
   override def getValue: String = {
-    time.map(actualTime => actualTime.toString(implementation.timetzFormatter)).orNull
+    time.map(actualTime => actualTime.toString(implementation.timetzFormatter)).
+      throw new IllegalStateException("setValue must be called first")
   }
 
   override def setValue(value: String): Unit = {

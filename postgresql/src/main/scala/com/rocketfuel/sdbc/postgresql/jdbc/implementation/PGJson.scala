@@ -14,7 +14,8 @@ private[sdbc] class PGJson() extends PGobject() {
   var jValue: Option[JValue] = None
 
   override def getValue: String = {
-    jValue.map(j => JsonMethods.compact(JsonMethods.render(j))).orNull
+    jValue.map(j => JsonMethods.compact(JsonMethods.render(j))).
+      getOrElse(throw new IllegalStateException("setValue must be called first"))
   }
 
   override def setValue(value: String): Unit = {
