@@ -1,8 +1,8 @@
-organization := "com.rocketfuel.sdbc.scalaz"
+organization := "com.rocketfuel.sdbc.cassandra"
 
-name := "datastax"
+name := "datastax-scalaz"
 
-description := "Extensions for SDBC for use with Scalaz streaming"
+description := "Extensions for SDBC's DataStax support for use with Scalaz streaming."
 
 resolvers += "Scalaz Bintray Repo" at "http://dl.bintray.com/scalaz/releases"
 

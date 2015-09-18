@@ -24,15 +24,13 @@ private[sdbc] trait QLocalTimeImplicits {
 
 private[sdbc] object QLocalTime extends ToParameter {
   override val toParameter: PartialFunction[Any, Any] = {
-    case o: LocalTime =>
-      o.toString
+    case o: LocalTime => o
   }
 }
 
 private[sdbc] object QOffsetDateTime extends ToParameter {
   override val toParameter: PartialFunction[Any, Any] = {
-    case o: OffsetDateTime =>
-      offsetDateTimeFormatter.format(o)
+    case o: OffsetDateTime => o
   }
 }
 
@@ -68,7 +66,7 @@ private[sdbc] trait QUUIDImplicits {
 
 private[sdbc] object QHierarchyId extends ToParameter {
   override val toParameter: PartialFunction[Any, Any] = {
-    case h: HierarchyId => h.toString
+    case h: HierarchyId => h
   }
 }
 

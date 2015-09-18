@@ -15,8 +15,8 @@ libraryDependencies ++= Seq(
   //https://github.com/typesafehub/config
   "com.typesafe" % "config" % "1.3.0",
   "org.scalatest" %% "scalatest" % "2.2.5" % "test",
-  "org.scalacheck" %% "scalacheck" % "1.12.4" % "test",
-  "org.scalaz" %% "scalaz-core" % "7.1.2" % "test",
+  "org.scalacheck" %% "scalacheck" % "1.12.5" % "test",
+  "org.scalaz" %% "scalaz-core" % "7.1.3" % "test",
   "org.apache.commons" % "commons-lang3" % "3.4" % "test"
 )
 

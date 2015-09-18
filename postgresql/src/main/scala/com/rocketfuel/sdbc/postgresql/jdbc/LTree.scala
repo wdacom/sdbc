@@ -12,11 +12,13 @@ import scala.collection.immutable.Seq
  */
 class LTree() extends PGobject() with collection.immutable.Iterable[String] with PartialFunction[Int, String] {
 
+  setType("ltree")
+
   private var path: Option[Seq[String]] = None
 
   def getPath: Seq[String] = {
     path.
-    getOrElse(throw new IllegalStateException("setValue or setPath must be called first"))
+      getOrElse(throw new IllegalStateException("setValue or setPath must be called first"))
   }
 
   def setPath(path: Seq[String]): Unit = {

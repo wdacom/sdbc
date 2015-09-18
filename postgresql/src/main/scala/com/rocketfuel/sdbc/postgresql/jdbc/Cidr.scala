@@ -6,6 +6,8 @@ import com.rocketfuel.sdbc.postgresql.jdbc.implementation.PGInetAddress
 
 class Cidr() extends PGInetAddress() {
 
+  setType("cidr")
+
   var netmask: Option[Short] = None
 
   override def getValue: String = {
@@ -16,7 +18,8 @@ class Cidr() extends PGInetAddress() {
       inetaddr + '/' + actualMask.toString
     }
 
-    result.orNull
+    result.
+      getOrElse(throw new IllegalStateException("setValue must be called first"))
   }
 
   override def setValue(value: String): Unit = {
