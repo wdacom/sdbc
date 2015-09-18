@@ -21,9 +21,11 @@ class RichResultSetSpec
         insert.on("x" -> random).execute()
       }
 
-      val results = Select[Int]("SELECT x FROM spc.tbl").iterator()
+      val results = Select[Int]("SELECT x FROM spc.tbl").iterator().toSeq
 
       assertResult(randoms.toSet)(results.toSet)
+
+      assertResult(randoms.size)(results.size)
 
       RichResultSetSpec.truncate.execute()
     }
@@ -40,9 +42,11 @@ class RichResultSetSpec
         insert.on("x" -> ix, "y" -> random).execute()
       }
 
-      val results = Select[Option[Int]]("SELECT y FROM spc.tbl").iterator()
+      val results = Select[Option[Int]]("SELECT y FROM spc.tbl").iterator().toSeq
 
       assertResult(randoms.toSet)(results.toSet)
+
+      assertResult(randoms.size)(results.size)
 
       RichResultSetSpec.truncate.execute()
     }
@@ -62,11 +66,13 @@ class RichResultSetSpec
         insert.on("x" -> tuple).execute()
       }
 
-      val results = Select[(Option[Int], Option[Int])]("SELECT x FROM spc.tbl").iterator()
+      val results = Select[(Option[Int], Option[Int])]("SELECT x FROM spc.tbl").iterator().toSeq
 
       val expectedResults = tuples.map { case (x, y) => (Some(x), Some(y)) }
 
       assertResult(expectedResults.toSet)(results.toSet)
+
+      assertResult(tuples.size)(results.size)
 
       RichResultSetSpec.truncate.execute()
     }
@@ -83,9 +89,11 @@ class RichResultSetSpec
         insert.on("x" -> tuple).execute()
       }
 
-      val results = Select[(Option[Int], Option[Int])]("SELECT x FROM spc.tbl").iterator()
+      val results = Select[(Option[Int], Option[Int])]("SELECT x FROM spc.tbl").iterator().toSeq
 
       assertResult(tuples.toSet)(results.toSet)
+
+      assertResult(tuples.size)(results.size)
 
       RichResultSetSpec.truncate.execute()
     }
@@ -102,9 +110,11 @@ class RichResultSetSpec
         insert.on( "id" -> id, "x" -> set).execute()
       }
 
-      val results = Select[Set[String]]("SELECT x FROM spc.tbl").iterator()
+      val results = Select[Set[String]]("SELECT x FROM spc.tbl").iterator().toSeq
 
       assertResult(sets.toSet)(results.toSet)
+
+      assertResult(sets.size)(results.size)
 
       RichResultSetSpec.truncate.execute()
     }
@@ -128,9 +138,11 @@ class RichResultSetSpec
         insert.on("id" -> id, "x" -> map).execute()
       }
 
-      val results = Select[Map[String, String]]("SELECT x FROM spc.tbl").iterator()
+      val results = Select[Map[String, String]]("SELECT x FROM spc.tbl").iterator().toSeq
 
       assertResult(maps.toSet)(results.toSet)
+
+      assertResult(maps.size)(results.size)
 
       RichResultSetSpec.truncate.execute()
     }
