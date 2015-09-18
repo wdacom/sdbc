@@ -11,3 +11,5 @@ libraryDependencies ++= Seq(
   "org.scodec" %% "scodec-bits" % "1.0.10",
   "org.cassandraunit" % "cassandra-unit" % "2.1.9.2" % "test"
 )
+
+parallelExecution := false
