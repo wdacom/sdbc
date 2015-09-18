@@ -14,13 +14,13 @@ class DatastaxProcessSpec
 
   test("values are inserted and selected") {implicit connection =>
     Execute("CREATE KEYSPACE spc WITH REPLICATION = {'class': 'SimpleStrategy', 'replication_factor': 1}").execute()
-    Execute("CREATE TABLE spc.tbl (x int PRIMARY KEY)").execute()
+    Execute("CREATE TABLE spc.tbl (id int PRIMARY KEY, x int)").execute()
 
     forAll { (randoms: Seq[Int]) =>
 
       val insert: Process[Task, Unit] = {
-        val execute = Execute("INSERT INTO spc.tbl (x) VALUES (@x)")
-        val randomsParameters = Process.emitAll(randoms).map[ParameterList](x => Seq("x" -> x))
+        val execute = Execute("INSERT INTO spc.tbl (id, x) VALUES (@id, @x)")
+        val randomsParameters = Process.emitAll(randoms.zipWithIndex).map[ParameterList](x => Seq("id" -> x._2, "x" -> x._1))
         randomsParameters.to(Process.datastax.params.execute(execute))
       }
 
@@ -35,7 +35,7 @@ class DatastaxProcessSpec
 
       assertResult(randoms.sorted)(results.sorted)
 
-      RichResultSetSpec.truncate.execute()
+      RichResultSetSpec.truncate()
     }
   }
 
