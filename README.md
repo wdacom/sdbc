@@ -379,11 +379,11 @@ keyStream.through(Process.jdbc.keys.select[K, T](pool)).to(Process.jdbc.update[T
 
 * The sigil for a parameter is @ (was $).
 * Added support for string interpolation for parameters.
-* Cassandra support for Scala 2.11
+* Cassandra support.
 * Scalaz streaming helpers in com.rocketfuel.sdbc.scalaz.
 * Connections and other types are no longer path dependent.
 * Package paths are implementation dependent. (E.G. "import ...postgresql.jdbc" to use the JDBC driver to access PostgreSQL.)
-* Use ByteBuffer or ByteVector instead of Array[Byte].
+* You can use [scodec](https://github.com/scodec/scodec)'s ByteVector instead of Array[Byte].
 * Remove Byte getters, setters, and updaters from PostgreSQL (the JDBC driver uses Short under the hood).
 
 ### 0.10
