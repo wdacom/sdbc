@@ -56,8 +56,8 @@ pomExtra in ThisBuild :=
     </developer>
   </developers>
   <scm>
-    <url>git@github.com:wdacom/sdbc.git</url>
-    <connection>scm:git:git@github.com:wdacom/sdbc.git</connection>
+    <url>git@github.com:rocketfuel/sdbc.git</url>
+    <connection>scm:git:git@github.com:rocketfuel/sdbc.git</connection>
   </scm>
 
 //Some helpful compiler flags from https://tpolecat.github.io/2014/04/11/scalac-flags.html
