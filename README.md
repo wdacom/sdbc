@@ -1,9 +1,12 @@
 # SDBC by Rocketfuel
 
 ## Description
-SDBC is a minimalist database API for Scala in the spirit of [Anorm](https://www.playframework.com/documentation/2.4.x/ScalaAnorm). It currently supports [Apache Cassandra](http://cassandra.apache.org/), [H2](http://www.h2database.com/), [Microsoft SQL Server](http://www.microsoft.com/en-us/server-cloud/products/sql-server/), and [PostgreSQL](http://www.postgresql.org/). Other databases can be supported by implementing com.wda.sdbc.DBMS.
+SDBC is a minimalist database API for Scala in the spirit of [Anorm](https://www.playframework.com/documentation/2.4.x/ScalaAnorm).
+It currently supports [Apache Cassandra](http://cassandra.apache.org/), [H2](http://www.h2database.com/), [Microsoft SQL Server](http://www.microsoft.com/en-us/server-cloud/products/sql-server/), and [PostgreSQL](http://www.postgresql.org/).
 
-It also provides support for connection pools using [HikariCP](https://github.com/brettwooldridge/HikariCP). The pools can be created with a [HikariConfig](https://github.com/brettwooldridge/HikariCP) or [Typesafe Config](https://github.com/typesafehub/config) object.
+JDBC connection pools are provided by [HikariCP](https://github.com/brettwooldridge/HikariCP). The pools can be created with a [HikariConfig](https://github.com/brettwooldridge/HikariCP) or [Typesafe Config](https://github.com/typesafehub/config) object.
+
+There are additional packages that add support for [scalaz-stream](https://github.com/scalaz/scalaz-stream).
 
 ## Requirements
 
@@ -42,39 +45,23 @@ Packages exist on Maven Central for Scala 2.10 and 2.11. The Scala 2.10 builds f
 "com.rocketfuel.sdbc.sqlserver" %% "jdbc" % "1.0"
 ```
 
-### Java 7
-
-#### H2
-
-```scala
-"com.wda.sdbc" %% "h2-java7" % "0.10"
-```
-
-#### PostgreSql
-
-```scala
-"com.wda.sdbc" %% "postgresql-java7" % "0.10"
-```
-
-#### SQL Server
-
-```scala
-"com.wda.sdbc" %% "sqlserver-java7" % "0.10"
-```
-
 ### Scalaz Streaming
 
 #### Cassandra
 
 ```scala
-"com.rocketfuel.sdbc.scalaz" %% "datastax" % "1.0"
+"com.rocketfuel.sdbc.cassandra" %% "datastax-scalaz" % "1.0"
 ```
 
 #### JDBC
 
 ```scala
-"com.rocketfuel.sdbc.scalaz" %% "jdbc" % "1.0"
+"com.rocketfuel.sdbc.jdbc" %% "scalaz" % "1.0"
 ```
+
+### Java 7
+
+Append "-java7" to the package name.
 
 ## License
 
@@ -259,7 +246,7 @@ implicit val connection: Connection = DriverManager.getConnection("...")
 
 val queryText = "UPDATE tbl SET unique_id = @uuid WHERE id = @id"
 
-val parameters =
+val parameters: ParameterList =
     Seq(
         "id" -> 3,
         "uuid" -> java.util.UUID.randomUUID()
