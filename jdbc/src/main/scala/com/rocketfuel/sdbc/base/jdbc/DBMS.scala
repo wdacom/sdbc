@@ -16,9 +16,6 @@ abstract class DBMS
   with base.ExecutableMethods[java.sql.Connection, Execute]
   with StringContextMethods {
 
-  /**
-   *
-   */
   implicit val ParameterSetter: ParameterSetter
 
   type Index = jdbc.Index
